@@ -1,0 +1,282 @@
+
+        #### get pre functions
+        get_diagram_from_args := function( object_specification, morphism_specification, args, is_limit )
+            local given_objects, given_morphisms, unbound_object_positions_to_use, position, unbound_morphism_positions_to_use, morphism, source_position, type, range_position, source_object, range_object, morphisms_to_insert, i;
+            
+            # parse input
+            if number_of_unbound_objects = 0 then
+                given_objects := [];
+            elif number_of_unbound_objects = 1 then
+                given_objects := [ Remove( args, 1 ) ];
+            elif number_of_unbound_objects > 1 then
+                given_objects := Remove( args, 1 );
+            fi;
+
+            if number_of_unbound_morphisms = 0 then
+                given_morphisms := [];
+            elif number_of_unbound_morphisms = 1 then
+                given_morphisms := [ Remove( args, 1 ) ];
+            elif number_of_unbound_morphisms > 1 then
+                given_morphisms := Remove( args, 1 );
+            fi;
+            
+            objects := StructuralCopy( object_specification );
+            morphisms := StructuralCopy( morphism_specification );
+
+            # insert objects
+            unbound_object_positions_to_use := StructuralCopy( unbound_object_positions );
+            while not IsEmpty( unbound_object_positions_to_use ) do
+                if IsEmpty( given_objects ) then
+                    Error("1");
+                    return fail;
+                fi;
+                
+                position := unbound_object_positions_to_use[ 1 ];
+                if objects[ position ] = "fixedobject" then
+                    objects[ position ] := Remove( given_objects, 1 );
+                else
+                    objects[ position ] := given_objects;
+                    given_objects := [];
+                fi;
+                Remove( unbound_object_positions_to_use, 1 );
+            od;
+
+            # insert morphisms
+            unbound_morphism_positions_to_use := StructuralCopy( unbound_morphism_positions );
+            while not IsEmpty( unbound_morphism_positions_to_use ) do
+                if IsEmpty( given_morphisms ) then
+                    Error("2");
+                    return fail;
+                fi;
+                
+                position := unbound_morphism_positions_to_use[ 1 ];
+                morphism := morphisms[ position ];
+
+                type := morphism[ 2 ];
+
+                if is_limit then
+                    source_position := morphism[ 1 ];
+                    range_position := morphism[ 3 ];
+                else
+                    source_position := morphism[ 3 ];
+                    range_position := morphism[ 1 ];
+                fi;
+                
+                source_object := objects[ source_position ];
+                range_object := objects[ range_position ];
+
+                if type = "fixedmorphism" then
+                    morphisms_to_insert := [ Remove( given_morphisms, 1 ) ];
+                else
+                    morphisms_to_insert := given_morphisms;
+                    given_morphisms := [];
+                fi;
+                
+                if source_object = "varobject" then
+                    objects[ source_position ] := List( morphisms_to_insert, x -> Source( x ) );
+                elif source_object = "fixedobject" then
+                    if ForAll( morphisms_to_insert{ [ 2 .. Length( morphisms_to_insert ) ] }, x -> IsEqualForObjects( Source( x ), Source( morphisms_to_insert[ 1 ] ) ) ) then
+                        objects[ source_position ] := Source( morphisms_to_insert[ 1 ] );
+                    fi;
+                elif IsCapCategoryObject( source_object ) then
+                    if not ForAll( morphisms_to_insert, x -> IsEqualForObjects( source_object, Source( x ) ) ) then
+                        Error("5");
+                        return fail;
+                    fi;
+                fi;
+                
+                if range_object = "varobject" then
+                    objects[ range_position ] := List( morphisms_to_insert, x -> Range( x ) );
+                elif range_object = "fixedobject" then
+                    if ForAll( morphisms_to_insert{ [ 2 .. Length( morphisms_to_insert ) ] }, x -> IsEqualForObjects( Range( x ), Range( morphisms_to_insert[ 1 ] ) ) ) then
+                        objects[ range_position ] := Range( morphisms_to_insert[ 1 ] );
+                    fi;
+                elif IsCapCategoryObject( range_object ) then
+                    if not ForAll( morphisms_to_insert, x -> IsEqualForObjects( range_object, Range( x ) ) ) then
+                        Error("6");
+                        return fail;
+                    fi;
+                fi;
+                
+                if type = "fixedmorphism" then
+                    morphisms[ position ] := morphisms_to_insert[ 1 ];
+                else
+                    morphisms[ position ] := morphisms_to_insert;
+                fi;
+                Remove( unbound_morphism_positions_to_use, 1 );
+            od;
+
+            # check that all objects are now bound
+            if ForAny( objects, x -> x in [ "fixedobject", "varobject" ] ) then
+                Error("7");
+                return fail; 
+            fi;
+            
+            # check that all morphisms are now bound
+            for i in [ 1 .. Length( morphisms ) ] do
+                morphism := morphisms[ i ];
+                if IsList( morphism ) and not IsCapCategoryMorphism( morphism[ 1 ] ) then
+                    type := morphism[ 2 ];
+
+                    if is_limit then
+                        source_position := morphism[ 1 ];
+                        range_position := morphism[ 3 ];
+                    else
+                        source_position := morphism[ 3 ];
+                        range_position := morphism[ 1 ];
+                    fi;
+                
+                    if type = "zeromorphism" then
+                        source_object := objects[ source_position ];
+                        range_object := objects[ range_position ];
+                
+                        # TODO
+                        # morphisms[ i ] := ZeroMorphism( source_object, range_object );
+                    else
+                        Error("8");
+                        return fail;
+                    fi;
+                fi;
+            od;
+            
+            return [ objects, morphisms ];
+        end;
+
+        get_object_pre_function := function( is_limit )
+            return function( args... )
+                local given_diagram;
+                
+                given_diagram := get_diagram_from_args( object_specification, morphism_specification, args, is_limit );
+                
+                if given_diagram = fail then
+                    return [ false, "cannot parse diagram" ];
+                fi;
+                
+                return [ true ];
+            end;
+        end;
+
+        get_projection_pre_function := function( is_limit )
+            return function( args... )
+                local given_diagram, objects, morphisms, k, actual_number_of_targets, i;
+                
+                given_diagram := get_diagram_from_args( object_specification, morphism_specification, args, is_limit );
+                
+                if given_diagram = fail then
+                    return [ false, "cannot parse diagram" ];
+                fi;
+                
+                objects := given_diagram[ 1 ];
+                morphisms := given_diagram[ 2 ];
+
+                if number_of_targets > 1 then
+                    k := Remove( args, 1 );
+                    if not IsPosInt( k ) then
+                        return [ false, "k is no positive integer" ];
+                    fi;
+                    
+                    actual_number_of_targets := 0;
+                    for i in target_positions do
+                        if IsList( objects[i] ) then
+                            actual_number_of_targets := actual_number_of_targets + Length( objects[i] );
+                        else
+                            actual_number_of_targets := actual_number_of_targets + 1;
+                        fi;
+                    od;
+                    
+                    if k > actual_number_of_targets then
+                        return [ false, "k is too large" ];
+                    fi;
+                fi;
+                
+                return [ true ];
+            end;
+        end;
+
+        get_universal_morphism_pre_function := function( is_limit )
+            return function( args... )
+                local given_diagram, objects, morphisms, tau, current_objects, i;
+                
+                given_diagram := get_diagram_from_args( object_specification, morphism_specification, args, is_limit );
+
+                if given_diagram = fail then
+                    return [ false, "cannot parse diagram" ];
+                fi;
+                
+                objects := given_diagram[ 1 ];
+                morphisms := given_diagram[ 2 ];
+
+                tau := Remove( args, 1 );
+
+                if number_of_targets = 1 then
+                    tau := [ tau ];
+                fi;
+
+                if number_of_targets > 0 then
+                    if is_limit and not ForAll( tau{ [ 2 .. Length( tau ) ] }, t -> IsEqualForObjects( Source( t ), Source( tau[1] ) ) ) then
+                        return [ false, "inconsistent source" ];
+                    fi;
+                    
+                    if not is_limit and not ForAll( tau{ [ 2 .. Length( tau ) ] }, t -> IsEqualForObjects( Range( t ), Range( tau[1] ) ) ) then
+                        return [ false, "inconsistent ranges" ];
+                    fi;
+                    
+                    for i in target_positions do
+                        if IsList( objects[i] ) then
+                            current_objects := objects[i];
+                        else
+                            current_objects := [ objects[i] ];
+                        fi;
+                        
+                        if Length( tau ) < Length( current_objects ) then
+                            return [ false, "not enough tau" ];
+                        fi;
+                            
+                        if is_limit and not ForAll( [ 1 .. Length( current_objects ) ], j -> IsEqualForObjects( Range( tau[j] ), current_objects[j] ) ) then
+                            return [ false, "wrong range" ];
+                        fi;
+
+                        if not is_limit and not ForAll( [ 1 .. Length( current_objects ) ], j -> IsEqualForObjects( Source( tau[j] ), current_objects[j] ) ) then
+                            return [ false, "wrong source" ];
+                        fi;
+
+                        tau := tau{[ ( Length( current_objects ) + 1 ) .. Length( tau ) ]};
+                    od;
+                fi;
+                
+                return [ true ];
+            end;
+        end;
+        
+
+
+        if not IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(limit_object_name).pre_function ) then
+            CAP_INTERNAL_METHOD_NAME_RECORD.(limit_object_name).pre_function := get_object_pre_function( true );
+        fi;
+
+            if not IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(limit_projection_name).pre_function ) then
+                CAP_INTERNAL_METHOD_NAME_RECORD.(limit_projection_name).pre_function := get_projection_pre_function( true );
+            fi;
+
+            
+        if not IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(limit_universal_morphism_name).pre_function ) then
+            CAP_INTERNAL_METHOD_NAME_RECORD.(limit_universal_morphism_name).pre_function := get_universal_morphism_pre_function( true );
+        fi;
+
+        
+        
+        if not IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(colimit_object_name).pre_function ) then
+            CAP_INTERNAL_METHOD_NAME_RECORD.(colimit_object_name).pre_function := get_object_pre_function( false );
+        fi;
+
+        
+        
+            if not IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(colimit_injection_name).pre_function ) then
+                CAP_INTERNAL_METHOD_NAME_RECORD.(colimit_injection_name).pre_function := get_projection_pre_function( false );
+            fi;
+
+            
+            
+        if not IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(colimit_universal_morphism_name).pre_function ) then
+            CAP_INTERNAL_METHOD_NAME_RECORD.(colimit_universal_morphism_name).pre_function := get_universal_morphism_pre_function( false );
+        fi;
