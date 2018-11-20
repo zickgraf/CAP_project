@@ -580,3 +580,63 @@ AddDerivationToCAP( MonoidalPostComposeMorphismWithGivenObjects,
     
 end : CategoryFilter := IsSymmetricClosedMonoidalCategory and IsStrictMonoidalCategory,
       Description := "MonoidalPostComposeMorphismWithGivenObjects using evaluation, and tensor hom adjunction" );
+
+###########################
+##
+## Methods involving homomorphism structures
+##
+###########################
+
+##
+AddDerivationToCAP( HomomorphismStructureOnObjects,
+  function( a, b )
+    
+    return InternalHomOnObjects( a, b );
+    
+end : Description := "HomomorphismStructureOnObjects using InternalHomOnObjects",
+      CategoryFilter := IsAdditiveCategory and IsSymmetricClosedMonoidalCategory );
+
+##
+AddDerivationToCAP( HomomorphismStructureOnMorphismsWithGivenObjects,
+  function( s, alpha, beta, r )
+      
+      return InternalHomOnMorphismsWithGivenInternalHoms( s, alpha, beta, r );
+    
+end : Description := "HomomorphismStructureOnMorphismsWithGivenObjects using InternalHomOnMorphismsWithGivenInternalHoms",
+      CategoryFilter := IsAdditiveCategory and IsSymmetricClosedMonoidalCategory );
+
+##
+AddDerivationToCAP( DistinguishedObjectOfHomomorphismStructure,
+  function( C )
+    
+    return TensorUnit( C );
+    
+end : Description := "DistinguishedObjectOfHomomorphismStructure using TensorUnit",
+      CategoryFilter := IsAdditiveCategory and IsSymmetricClosedMonoidalCategory );
+
+##
+AddDerivationToCAP( InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure,
+  function( alpha )
+    local a, b, u;
+    
+    a := TensorUnit( CapCategory( alpha ) );
+    b := Source( alpha );
+    u := LeftUnitor( b );
+
+    return TensorProductToInternalHomAdjunctionMap( a, b, PreCompose( u, alpha ) );
+    
+end : Description := "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure using TensorUnit, LeftUnitor and TensorProductToInternalHomAdjunctionMap",
+      CategoryFilter := IsAdditiveCategory and IsSymmetricClosedMonoidalCategory );
+
+##
+AddDerivationToCAP( InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism,
+  function( b, c, iota )
+    local a, u;
+    
+    a := TensorUnit( CapCategory( iota ) );
+    u := LeftUnitorInverse( b );
+
+    return PreCompose( u, InternalHomToTensorProductAdjunctionMap( b, c, iota ) );
+    
+end : Description := "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism using TensorUnit, LeftUnitor and TensorProductToInternalHomAdjunctionMap",
+      CategoryFilter := IsAdditiveCategory and IsSymmetricClosedMonoidalCategory );
