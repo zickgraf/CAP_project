@@ -1784,15 +1784,15 @@ vec := function( A )
 end;
 
 devec := function( v, m, n )
-    if n <= 1 then
-        return v;
+    if n = 0 then
+        return HomalgZeroMatrix( m, n, v!.ring );
     else
         return UnionOfColumns( List( [ 1 .. n ], i -> CertainRows( v, [ (i-1)*m+1 .. i*m ] ) ) );
     fi;
 end;
 
 SolveTwoSidedLinearSystem := function( left_coeffs, right_coeffs, rhs )
-  local coeffs, mat, vec_rhs, vec_sol, sol, last_index, m, n, vec_X, XX, j;
+  local coeffs, mat, vec_rhs, vec_sol, sol, last_index, m, n, vec_X, X, j;
 
     Assert( 0, IsList( rhs ) );
     Assert( 0, ForAll( rhs, x -> IsHomalgMatrix( x ) ) );
@@ -1812,13 +1812,19 @@ SolveTwoSidedLinearSystem := function( left_coeffs, right_coeffs, rhs )
     Assert( 0, ForAll( [ 1 .. Length( left_coeffs[1] ) ], j -> ForAll( left_coeffs, x -> NrColumns( x[j] ) = NrColumns( left_coeffs[1][j] ) ) ) );
     Assert( 0, ForAll( [ 1 .. Length( right_coeffs[1] ) ], j -> ForAll( right_coeffs, x -> NrRows( x[j] ) = NrRows( right_coeffs[1][j] ) ) ) );
     
-    coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( Involution( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
+    coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( HomalgTransposedMat( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
 
     mat := UnionOfRows( List( coeffs, x -> UnionOfColumns( x ) ) );
     
     vec_rhs := UnionOfRows( List( rhs, vec ) );
     
+    Display( Concatenation( "solving ", String( NrRows( mat ) ), "x", String( NrColumns( mat ) ), " system of equations" ) );
+    
+    start_time := NanosecondsSinceEpoch();
+
     vec_sol := LeftDivide( mat, vec_rhs );
+
+    Display( Concatenation( "solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
 
     if vec_sol = fail then
         return fail;
@@ -1832,9 +1838,11 @@ SolveTwoSidedLinearSystem := function( left_coeffs, right_coeffs, rhs )
         n := NrRows(right_coeffs[1][j]);
         vec_X := CertainRows( vec_sol, [ last_index+1 .. last_index+m*n ] );
         last_index := last_index + m*n;
-        XX := devec( vec_X, m, n );
-        Add( sol, XX );
+        X := devec( vec_X, m, n );
+        Add( sol, X );
     od;
+
+    Assert( 0, ForAll( [ 1 .. Length( left_coeffs ) ], i -> Sum( List( [ 1 .. Length( left_coeffs[1] ) ], j -> left_coeffs[i][j] * sol[j] * right_coeffs[i][j] ) ) = rhs[i] ) );
 
     return sol;
     
@@ -1850,7 +1858,7 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
   AddLift( category, 
     
     function( morphism_1, morphism_2 )
-    local P, N, M, A, B, B_tr_I, N_tr_I, zero_1, mat1, mat2, I_P, zero_2, M_tr_I, mat, vec_A, vec_zero, vec, sol, v, s, XX;
+  local P, M, N, u, v, r, s, m, n, A, B, I_1, I_2, I_3, I_4, zero_1, zero_2, zero_3, zero_4, zero_rhs, sol;
     #                 rxs
     #                P
     #                |
@@ -1874,33 +1882,31 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
     
     M := UnderlyingMatrix( Source( morphism_2 ) );
 
-    N := UnderlyingMatrix( Range( morphism_1 ) );
+    N := UnderlyingMatrix( Range( morphism_2 ) );
+    
+    r := NrRows( P );
+    s := NrColumns( P );
     
     u := NrRows( M );
     v := NrColumns( M );
-       
-    r := NrRows( P );
-    s := NrColumns( P );
     
     m := NrRows( N );
     n := NrColumns( N );
     
-    N := UnderlyingMatrix( Range(  morphism_1 ) );
-    
-    # NrColumns( N ) = 0 implies coker(N)=0 and  s = 0 implies coker(P)=0, hence morphism_1 is zero, and the zero morphism can always be lifted. 
-    if NrColumns( N ) = 0 or s = 0 then 
-        return ZeroMorphism( Source( morphism_1 ), Source( morphism_2 ) ); 
-    fi;
-    
-    # if NrColumns(M)=0 then M is zero, hence lift exists iff morphism_1 is zero.
-    if NrColumns( M ) = 0 and IsZeroForMorphisms( morphism_1 ) then 
-        return ZeroMorphism( Source( morphism_1 ), Source( morphism_2 ) );
-    fi;
-
     A := UnderlyingMatrix( morphism_1 );
     
     B := UnderlyingMatrix( morphism_2 );
     
+    # n = 0 implies coker(N)=0 and  s = 0 implies coker(P)=0, hence morphism_1 is zero, and the zero morphism can always be lifted. 
+    if n = 0 or s = 0 then 
+        return ZeroMorphism( Source( morphism_1 ), Source( morphism_2 ) ); 
+    fi;
+    
+    # if v = 0 then M is zero, hence lift exists iff morphism_1 is zero.
+    if v = 0 and IsZeroForMorphisms( morphism_1 ) then 
+        return ZeroMorphism( Source( morphism_1 ), Source( morphism_2 ) );
+    fi;
+
     I_1 := HomalgIdentityMatrix( s, homalg_ring );
     I_2 := HomalgIdentityMatrix( s, homalg_ring );
     I_3 := HomalgIdentityMatrix( v, homalg_ring );
