@@ -1784,10 +1784,36 @@ vec := function( A )
 end;
 
 devec := function( v, m, n )
+    
+    Assert( 0, NrRows( v ) = m * n );
+    
     if n = 0 then
-        return HomalgZeroMatrix( m, n, v!.ring );
+        return HomalgZeroMatrix( m, 0, HomalgRing( v ) );
+    elif n = 1 then
+        return v;
     else
         return UnionOfColumns( List( [ 1 .. n ], i -> CertainRows( v, [ (i-1)*m+1 .. i*m ] ) ) );
+    fi;
+end;
+
+vec_rows := function( A )
+    if NrRows( A ) <= 1 then
+       return A;
+    else
+       return UnionOfColumns( List( [ 1 .. NrRows( A ) ], i -> CertainRows( A, [ i ] ) ) ); 
+    fi;
+end;
+
+devec_rows := function( v, m, n )
+    
+    Assert( 0, NrColumns( v ) = m * n );
+    
+    if m = 0 then
+        return HomalgZeroMatrix( 0, n, HomalgRing( v ) );
+    elif m = 1 then
+        return v;
+    else
+        return UnionOfRows( List( [ 1 .. m ], i -> CertainColumns( v, [ (i-1)*n+1 .. i*n ] ) ) );
     fi;
 end;
 
@@ -1812,19 +1838,31 @@ SolveTwoSidedLinearSystem := function( left_coeffs, right_coeffs, rhs )
     Assert( 0, ForAll( [ 1 .. Length( left_coeffs[1] ) ], j -> ForAll( left_coeffs, x -> NrColumns( x[j] ) = NrColumns( left_coeffs[1][j] ) ) ) );
     Assert( 0, ForAll( [ 1 .. Length( right_coeffs[1] ) ], j -> ForAll( right_coeffs, x -> NrRows( x[j] ) = NrRows( right_coeffs[1][j] ) ) ) );
     
-    coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( HomalgTransposedMat( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
+    coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( TransposedMatrix( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
 
     mat := UnionOfRows( List( coeffs, x -> UnionOfColumns( x ) ) );
     
     vec_rhs := UnionOfRows( List( rhs, vec ) );
+
+    Eval( mat );
+    Eval( vec_rhs );
+
+    tmp_asd := TransposedMatrix( vec_rhs );
+    Eval( tmp_asd );
+    tmp_qwe := TransposedMatrix( mat );
+    Eval( tmp_qwe );
     
     Display( Concatenation( "solving ", String( NrRows( mat ) ), "x", String( NrColumns( mat ) ), " system of equations" ) );
     
     start_time := NanosecondsSinceEpoch();
 
+    # Error("tmp");
+
     vec_sol := LeftDivide( mat, vec_rhs );
+    # vec_sol := TransposedMatrix( RightDivide( tmp_asd, tmp_qwe ) );
 
     Display( Concatenation( "solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
+    Error("stop");
 
     if vec_sol = fail then
         return fail;
