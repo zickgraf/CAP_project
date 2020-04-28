@@ -103,6 +103,7 @@ Dependencies := rec(
                            [ "MatricesForHomalg", ">= 2020.09.06" ],
                            [ "GradedRingForHomalg", ">=2019.08.07" ],
                            [ "LinearAlgebraForCAP", ">= 2020.05.16" ],
+                           [ "ModulePresentationsForCAP", ">= 2020.04.16" ],
                            [ "GeneralizedMorphismsForCAP", ">= 2018.06.15" ]
                          ],
   SuggestedOtherPackages := [
