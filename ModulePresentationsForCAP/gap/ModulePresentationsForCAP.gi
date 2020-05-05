@@ -1779,61 +1779,64 @@ end );
 
 vec := function( A )
     if NrColumns( A ) <= 1 then
-       
        return A;
-       
     else
-       
        return UnionOfRows( List( [ 1 .. NrColumns( A ) ], i -> CertainColumns( A, [ i ] ) ) ); 
-       
     fi;
 end;
 
-SolveTwoSidedLinearSystem := function( B, N, P, M, rhs )
-    local homalg_ring, B_tr_I, N_tr_I, zero_1, mat1, mat2, I_P, zero_2, M_tr_I, mat, vec_A, vec_zero, vec_rhs, sol, v, s, XX;
-    #                 rxs
-    #                P
-    #                |
-    #         sxv    | sxn
-    #        X      (A)   morphism_1
-    #                |
-    #                V
-    #    uxv    vxn   mxn
-    #   M ----(B)--> N
-    #
-    #     morphism_2
-    #
-    # We need to solve the system
-    #     X*B + Y*N = A
-    #     P*X + Z*M = 0
-    # the function is supposed to return X as a ( well defined ) morphism from P to M.
+devec := function( v, m, n )
+    if n <= 1 then
+        return v;
+    else
+        return UnionOfColumns( List( [ 1 .. n ], i -> CertainRows( v, [ (i-1)*m+1 .. i*m ] ) ) );
+    fi;
+end;
+
+SolveTwoSidedLinearSystem := function( left_coeffs, right_coeffs, rhs )
+  local coeffs, mat, vec_rhs, vec_sol, sol, last_index, m, n, vec_X, XX, j;
+
+    Assert( 0, IsList( rhs ) );
+    Assert( 0, ForAll( rhs, x -> IsHomalgMatrix( x ) ) );
+
+    Assert( 0, IsList( left_coeffs ) );
+    Assert( 0, IsList( right_coeffs ) );
     
-    homalg_ring := B!.ring;
+    Assert( 0, Length( left_coeffs ) > 0 );
+    Assert( 0, Length( left_coeffs ) = Length( right_coeffs ) );
+    Assert( 0, Length( left_coeffs ) = Length( rhs ) );
     
-    A := rhs[1];
-    zero_rhs := rhs[2];
+    Assert( 0, ForAll( Concatenation( left_coeffs, right_coeffs ), x -> IsList( x ) and Length( x ) = Length( left_coeffs[1] ) and ForAll( x, y -> IsHomalgMatrix( y ) ) ) );
     
-    B_tr_I := KroneckerMat( Involution( B ), HomalgIdentityMatrix( NrColumns( P ), homalg_ring ) );
+    Assert( 0, ForAll( [ 1 .. Length( left_coeffs ) ], i -> ForAll( left_coeffs[i], coeff -> NrRows( coeff ) = NrRows( rhs[i] ) ) ) );
+    Assert( 0, ForAll( [ 1 .. Length( right_coeffs ) ], i -> ForAll( right_coeffs[i], coeff -> NrColumns( coeff ) = NrColumns( rhs[i] ) ) ) );
+
+    Assert( 0, ForAll( [ 1 .. Length( left_coeffs[1] ) ], j -> ForAll( left_coeffs, x -> NrColumns( x[j] ) = NrColumns( left_coeffs[1][j] ) ) ) );
+    Assert( 0, ForAll( [ 1 .. Length( right_coeffs[1] ) ], j -> ForAll( right_coeffs, x -> NrRows( x[j] ) = NrRows( right_coeffs[1][j] ) ) ) );
     
-    N_tr_I := KroneckerMat( Involution( N ), HomalgIdentityMatrix( NrColumns( P ), homalg_ring ) );
-    
-    zero_1  := HomalgZeroMatrix( NrRows( A )*NrColumns( A ), NrRows( P )*NrRows( M ), homalg_ring );
-    
-    mat1 := UnionOfColumns( B_tr_I, N_tr_I, zero_1 );
-    
-    I_P := KroneckerMat( HomalgIdentityMatrix( NrColumns( M ) ,homalg_ring ), P );
-    
-    zero_2 := HomalgZeroMatrix( NrRows( P )*NrColumns( M ), NrRows( A )*NrRows( N ), homalg_ring );
-    
-    M_tr_I := KroneckerMat( Involution( M ), HomalgIdentityMatrix( NrRows( P ), homalg_ring ) );
-    
-    mat2 := UnionOfColumns( I_P, zero_2, M_tr_I );
-    
-    mat := UnionOfRows( mat1, mat2 );
+    coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( Involution( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
+
+    mat := UnionOfRows( List( coeffs, x -> UnionOfColumns( x ) ) );
     
     vec_rhs := UnionOfRows( List( rhs, vec ) );
     
-    sol := LeftDivide( mat, vec_rhs );
+    vec_sol := LeftDivide( mat, vec_rhs );
+
+    if vec_sol = fail then
+        return fail;
+    fi;
+    
+    sol := [ ];
+    
+    last_index := 0;
+    for j in [ 1 .. Length( left_coeffs[1] ) ] do
+        m := NrColumns(left_coeffs[1][j]);
+        n := NrRows(right_coeffs[1][j]);
+        vec_X := CertainRows( vec_sol, [ last_index+1 .. last_index+m*n ] );
+        last_index := last_index + m*n;
+        XX := devec( vec_X, m, n );
+        Add( sol, XX );
+    od;
 
     return sol;
     
@@ -1865,17 +1868,24 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
     # We need to solve the system
     #     X*B + Y*N = A
     #     P*X + Z*M = 0
+    #     I_1*X*B   + I_2*Y*N   + 0_1*Z*0_2 = A
+    #     P  *X*I_3 + 0_3*Y*0_4 + I_4*Z*M   = 0_rhs
     # the function is supposed to return X as a ( well defined ) morphism from P to M.
     
     P := UnderlyingMatrix( Source( morphism_1 ) );
     
     M := UnderlyingMatrix( Source( morphism_2 ) );
+
+    N := UnderlyingMatrix( Range( morphism_1 ) );
     
+    u := NrRows( M );
     v := NrColumns( M );
        
     r := NrRows( P );
-
     s := NrColumns( P );
+    
+    m := NrRows( N );
+    n := NrColumns( N );
     
     N := UnderlyingMatrix( Range(  morphism_1 ) );
     
@@ -1888,30 +1898,29 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
     if NrColumns( M ) = 0 and IsZeroForMorphisms( morphism_1 ) then 
         return ZeroMorphism( Source( morphism_1 ), Source( morphism_2 ) );
     fi;
+
     A := UnderlyingMatrix( morphism_1 );
     
     B := UnderlyingMatrix( morphism_2 );
     
+    I_1 := HomalgIdentityMatrix( s, homalg_ring );
+    I_2 := HomalgIdentityMatrix( s, homalg_ring );
+    I_3 := HomalgIdentityMatrix( v, homalg_ring );
+    I_4 := HomalgIdentityMatrix( r, homalg_ring );
+    zero_1 := HomalgZeroMatrix( s, r, homalg_ring );
+    zero_2 := HomalgZeroMatrix( u, n, homalg_ring );
+    zero_3 := HomalgZeroMatrix( r, s, homalg_ring );
+    zero_4 := HomalgZeroMatrix( m, v, homalg_ring );
+    
     zero_rhs := HomalgZeroMatrix( r, v, homalg_ring );
     
-    sol := SolveTwoSidedLinearSystem( B, N, P, M, [ A, zero_rhs ] );
-    
-    Display("asd");
+    sol := SolveTwoSidedLinearSystem( [[I_1,I_2,zero_1],[P,zero_3,I_4]], [[B,N,zero_2],[I_3,zero_4,M]], [ A, zero_rhs ] );
     
     if sol = fail then 
-    
-       return fail;
-       
+        return fail;
     else
-       
-       if v <= 1 then
-          XX := CertainRows( sol, [ 1.. s ] );
-       else
-          XX := UnionOfColumns( List( [ 1 .. v ], i-> CertainRows( sol, [ (i-1)*s+1.. i*s ] ) ) );
-       fi;
-       
-       return PresentationMorphism( Source( morphism_1 ), XX, Source( morphism_2 ) );
-       
+        Assert( 0, IsWellDefined( PresentationMorphism( Source( morphism_1 ), sol[1], Source( morphism_2 ) ) ) );
+        return PresentationMorphism( Source( morphism_1 ), sol[1], Source( morphism_2 ) );
     fi;
     
     end );
