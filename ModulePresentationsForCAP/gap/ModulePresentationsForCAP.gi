@@ -7,6 +7,8 @@
 ##
 #############################################################################
 
+
+
 ##
 InstallMethod( LeftPresentations,
                [ IsHomalgRing ],
@@ -1775,6 +1777,68 @@ InstallGlobalFunction( ADD_EPIMORPHISM_FROM_SOME_PROJECTIVE_OBJECT,
     
 end );
 
+vec := function( A )
+    if NrColumns( A ) <= 1 then
+       
+       return A;
+       
+    else
+       
+       return UnionOfRows( List( [ 1 .. NrColumns( A ) ], i -> CertainColumns( A, [ i ] ) ) ); 
+       
+    fi;
+end;
+
+SolveTwoSidedLinearSystem := function( B, N, P, M, rhs )
+    local homalg_ring, B_tr_I, N_tr_I, zero_1, mat1, mat2, I_P, zero_2, M_tr_I, mat, vec_A, vec_zero, vec_rhs, sol, v, s, XX;
+    #                 rxs
+    #                P
+    #                |
+    #         sxv    | sxn
+    #        X      (A)   morphism_1
+    #                |
+    #                V
+    #    uxv    vxn   mxn
+    #   M ----(B)--> N
+    #
+    #     morphism_2
+    #
+    # We need to solve the system
+    #     X*B + Y*N = A
+    #     P*X + Z*M = 0
+    # the function is supposed to return X as a ( well defined ) morphism from P to M.
+    
+    homalg_ring := B!.ring;
+    
+    A := rhs[1];
+    zero_rhs := rhs[2];
+    
+    B_tr_I := KroneckerMat( Involution( B ), HomalgIdentityMatrix( NrColumns( P ), homalg_ring ) );
+    
+    N_tr_I := KroneckerMat( Involution( N ), HomalgIdentityMatrix( NrColumns( P ), homalg_ring ) );
+    
+    zero_1  := HomalgZeroMatrix( NrRows( A )*NrColumns( A ), NrRows( P )*NrRows( M ), homalg_ring );
+    
+    mat1 := UnionOfColumns( B_tr_I, N_tr_I, zero_1 );
+    
+    I_P := KroneckerMat( HomalgIdentityMatrix( NrColumns( M ) ,homalg_ring ), P );
+    
+    zero_2 := HomalgZeroMatrix( NrRows( P )*NrColumns( M ), NrRows( A )*NrRows( N ), homalg_ring );
+    
+    M_tr_I := KroneckerMat( Involution( M ), HomalgIdentityMatrix( NrRows( P ), homalg_ring ) );
+    
+    mat2 := UnionOfColumns( I_P, zero_2, M_tr_I );
+    
+    mat := UnionOfRows( mat1, mat2 );
+    
+    vec_rhs := UnionOfRows( List( rhs, vec ) );
+    
+    sol := LeftDivide( mat, vec_rhs );
+
+    return sol;
+    
+end;
+
 InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT, 
 
   function( category )
@@ -1809,6 +1873,8 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
     
     v := NrColumns( M );
        
+    r := NrRows( P );
+
     s := NrColumns( P );
     
     N := UnderlyingMatrix( Range(  morphism_1 ) );
@@ -1826,39 +1892,11 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
     
     B := UnderlyingMatrix( morphism_2 );
     
-    B_tr_I := KroneckerMat( TransposedMatrix( B ), HomalgIdentityMatrix( NrColumns( P ), homalg_ring ) );
+    zero_rhs := HomalgZeroMatrix( r, v, homalg_ring );
     
-    N_tr_I := KroneckerMat( TransposedMatrix( N ), HomalgIdentityMatrix( NrColumns( P ) ,homalg_ring ) );
+    sol := SolveTwoSidedLinearSystem( B, N, P, M, [ A, zero_rhs ] );
     
-    zero_1  := HomalgZeroMatrix( NrRows( A )*NrColumns( A ), NrRows( P )*NrRows( M ), homalg_ring );
-    
-    mat1 := UnionOfColumns( B_tr_I, N_tr_I, zero_1 );
-    
-    I_P := KroneckerMat( HomalgIdentityMatrix( NrColumns( M ) ,homalg_ring ), P );
-    
-    zero_2 := HomalgZeroMatrix( NrRows( P )*NrColumns( M ), NrRows( A )*NrRows( N ), homalg_ring );
-    
-    M_tr_I := KroneckerMat( TransposedMatrix( M ), HomalgIdentityMatrix( NrRows( P ) ,homalg_ring ) );
-    
-    mat2 := UnionOfColumns( I_P, zero_2, M_tr_I );
-    
-    mat := UnionOfRows( mat1, mat2 );
-    
-    if NrColumns( A ) <= 1 then
-       
-       vec_A := A;
-       
-    else
-       
-       vec_A := UnionOfRows( List( [ 1 .. NrColumns( A ) ], i-> CertainColumns( A, [ i ] ) ) );
-       
-    fi;
-    
-    vec_zero := HomalgZeroMatrix( NrRows( P )*NrColumns( M ), 1, homalg_ring );
-    
-    vec := UnionOfRows( vec_A, vec_zero );
-    
-    sol := LeftDivide( mat, vec );
+    Display("asd");
     
     if sol = fail then 
     
