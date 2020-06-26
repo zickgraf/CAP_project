@@ -2833,18 +2833,47 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     
     ## create lift diagram
     
+    #start_time := NanosecondsSinceEpoch();
+    #Display( "asd1" );
+
     nu :=
       UniversalMorphismIntoDirectSum( range_cat,
         List( [ 1 .. m ],
         i -> InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, right_side[i] ) )
     );
+
+    #Display( "asd2" );
+    
+    #homalgIOMode("d");
+    #MYGLOBALVAR := true;
+    
+    #n := 2;
+    #m := 2;
+    
+    #Error( "we are here" );
     
     list := 
       List( [ 1 .. n ],
       j -> List( [ 1 .. m ], i -> HomomorphismStructureOnMorphisms( left_coefficients[i][j], right_coefficients[i][j] ) ) 
     );
+
+    #Display( "asd3" );
     
     H := MorphismBetweenDirectSums( list );
+    
+    #mymat := UnderlyingMatrix(H);
+    
+    #DisplayGenesisAlongFirstParent( mymat );
+    #
+    #Display( Concatenation( "prepared Lift in ", String( Float( ( NanosecondsSinceEpoch() - start_time ) / 1000 / 1000 / 1000 ) ) ) );
+    #
+    #Display( "asd4" );
+    #
+    #Eval( mymat );
+    #
+    #Display( "asd5" );
+    #
+    #Display( Concatenation( "prepared Lift in ", String( Float( ( NanosecondsSinceEpoch() - start_time ) / 1000 / 1000 / 1000 ) ) ) );
     
     ## the actual computation of the solution
     lift := Lift( range_cat, nu, H );

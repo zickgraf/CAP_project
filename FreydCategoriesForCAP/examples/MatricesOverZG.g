@@ -2,6 +2,7 @@
 
 #! @Section Matrices over ZG
 
+LoadPackage( "MonoidalCategories" );;
 LoadPackage( "FreydCategoriesForCAP" );;
 
 #! Construction of a tower of categories
@@ -11,7 +12,7 @@ G := SymmetricGroup( 3 );;
 CG := GroupAsCategory( G );;
 ZZ := HomalgRingOfIntegers( );;
 ZCG := LinearClosure( ZZ, CG );;
-RowsG := AdditiveClosure( ZCG );;
+RowsG := AdditiveClosure( ZCG : enable_compilation := true );;
 #! @EndExample
 
 #! Construction of elements

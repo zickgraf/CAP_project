@@ -1820,7 +1820,7 @@ devec_rows := function( v, m, n )
 end;
 
 SolveTwoSidedLinearSystem := function( left_coeffs, right_coeffs, rhs )
-  local coeffs, mat, vec_rhs, vec_sol, sol, last_index, m, n, vec_X, X, j;
+  local coeffs, mat, vec_rhs, tmp_asd, tmp_qwe, start_time, vec_sol, sol, last_index, m, n, vec_X, X, j;
 
     Assert( 0, IsList( rhs ) );
     Assert( 0, ForAll( rhs, x -> IsHomalgMatrix( x ) ) );
@@ -1840,14 +1840,27 @@ SolveTwoSidedLinearSystem := function( left_coeffs, right_coeffs, rhs )
     Assert( 0, ForAll( [ 1 .. Length( left_coeffs[1] ) ], j -> ForAll( left_coeffs, x -> NrColumns( x[j] ) = NrColumns( left_coeffs[1][j] ) ) ) );
     Assert( 0, ForAll( [ 1 .. Length( right_coeffs[1] ) ], j -> ForAll( right_coeffs, x -> NrRows( x[j] ) = NrRows( right_coeffs[1][j] ) ) ) );
     
+    Display( "Solve1" );
+
     coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( TransposedMatrix( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
+
+    Display( "Solve2" );
 
     mat := UnionOfRows( List( coeffs, x -> UnionOfColumns( x ) ) );
     
+    Display( "Solve3" );
+
     vec_rhs := UnionOfRows( List( rhs, vec ) );
 
+    Display( "Solve4" );
+
     Eval( mat );
+    
+    Display( "Solve5" );
+
     Eval( vec_rhs );
+
+    Display( "Solve6" );
 
     tmp_asd := TransposedMatrix( vec_rhs );
     Eval( tmp_asd );
@@ -1860,11 +1873,12 @@ SolveTwoSidedLinearSystem := function( left_coeffs, right_coeffs, rhs )
 
     # Error("tmp");
 
+    #homalgIOMode( "d" );
     vec_sol := LeftDivide( mat, vec_rhs );
     # vec_sol := TransposedMatrix( RightDivide( tmp_asd, tmp_qwe ) );
 
     Display( Concatenation( "solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
-    Error("stop");
+    #Error("stop");
 
     if vec_sol = fail then
         return fail;

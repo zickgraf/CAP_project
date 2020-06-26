@@ -973,6 +973,215 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                           )
                         ) );
                 
+                #matrix_alpha := MorphismMatrix( alpha );
+                #
+                #matrix_beta := MorphismMatrix( beta );
+                #
+                #size_i := NrRows( alpha );
+                #
+                #size_j := NrColumns( alpha );
+                #
+                #size_s := NrRows( beta );
+                #
+                #size_t := NrColumns( beta );
+                #
+                #if ForAny( [ size_i, size_j, size_s, size_t ], IsZero ) then
+                #    
+                #    return ZeroMorphism( source, range );
+                #    
+                #fi;
+                #
+                #Display("#############################");
+                #Display(String(size_i));
+                #Display(String(size_j));
+                #Display(String(size_s));
+                #Display(String(size_t));
+                #mycounter := 0;
+                #
+                ##unique_object := AsAdditiveClosureObject( RingAsCategoryUniqueObject( RingAsCategory( R ) ) );
+                ##
+                ##if size_j * size_s * NrRows( generating_system_over_Q_as_matrix ) = 0 then
+                ##    source := ZeroObject( AdditiveClosure( RingAsCategory( R ) ) );
+                ##else
+                ##    source := DirectSum( ListWithIdenticalEntries( size_j * size_s * NrRows( generating_system_over_Q_as_matrix ), unique_object ) );
+                ##fi;
+                ##
+                ##if size_i * size_t * NrRows( generating_system_over_Q_as_matrix ) = 0 then
+                ##    range := ZeroObject( AdditiveClosure( RingAsCategory( R ) ) );
+                ##else
+                ##    range := DirectSum( ListWithIdenticalEntries( size_i * size_t * NrRows( generating_system_over_Q_as_matrix ), unique_object ) );
+                ##fi;
+        
+                ##myA := UnionOfRows( List( matrix_alpha, r -> UnionOfColumns( List( r, c -> UnderlyingRingElement( c ) ) ) ) );
+                ##myB := UnionOfRows( List( matrix_beta, r -> UnionOfColumns( List( r, c -> UnderlyingRingElement( c ) ) ) ) );
+                ##Eval(myA);
+                ##Eval(myB);
+
+                ##homalgIOMode("d");
+                ##Error("qwe1");
+                ##
+                ##mytmp := TransposedMatrix( Involution( KroneckerMat( TransposedMatrix( Involution( myB ) ), TransposedMatrix( Involution( generating_system_over_Q_as_matrix ) ) ) ) );
+                ###mytmp := KroneckerMat( myB, generating_system_over_Q_as_matrix );
+                ##Eval(mytmp);
+
+                ##Error("qwe2");
+                ##
+                ##M2 := KroneckerMat( TransposedMatrix( myA ), mytmp );
+                ##Eval(M2);
+                ##
+                ##Error("qwe3");
+                ##
+                ##diag_mat := DiagMat( ListWithIdenticalEntries( NrColumns( M2 ), generating_system_over_Q_as_matrix ) );
+                ##Eval( diag_mat );
+                ##
+                ##Error("qwe4");
+                ##
+                ##M2 := CoefficientsWithGivenMonomials( M2, diag_mat );
+                ##Eval( M2 );
+                ##
+                ##Error("qwe5");
+
+                ##M2 := CoercedMatrix( M2, CoefficientsRing( R ) );
+                ##Eval(M2);
+
+                ##Error("qwe6");
+                ##
+                ##return AsAdditiveClosureMorphism( source, M2, range );
+
+
+                #myfunc := function( source, alpha, beta, range )
+                #  local category, matrix_alpha, matrix_beta, size_i, size_j, size_s, size_t, result;
+
+                #    category := CapCategory( alpha );
+                #    
+                #    matrix_alpha := MorphismMatrix( alpha );
+                #    
+                #    matrix_beta := MorphismMatrix( beta );
+                #    
+                #    size_i := NrRows( matrix_alpha );
+                #    
+                #    size_j := NrColumns( matrix_alpha );
+                #    
+                #    size_s := NrRows( matrix_beta );
+                #    
+                #    size_t := NrColumns( matrix_beta );
+                #    
+                #    if ForAny( [ size_i, size_j, size_s, size_t ], IsZero ) then
+                #        
+                #        return ZeroMorphism( source, range );
+                #        
+                #    fi;
+                #    
+                #    result := MorphismBetweenDirectSums(
+                #            source,
+                #            List( [ 1 .. size_j ], j ->
+                #              List( [ 1 .. size_i ], function(i)
+                #                #Print(String(i));
+                #                #Print(" ");
+                #                #Print(String(j));
+                #                #Display("");
+                #                #Display("mycounter:");
+                #                #Display(mycounter);
+                #                return MorphismBetweenDirectSums(
+                #                    List( [ 1 .. size_s ], function(s)
+                #                        #local undefined1, undefined2, undefined3, undefined4, undefined5, undefined6, undefined7, undefined8, undefined9, undefined10;
+                #                          return List( [ 1 .. size_t ], t ->
+                #                          HomomorphismStructureOnMorphisms(
+                #                              category!.interpret_matrix_element_as_morphism_in_underlying_category( MorphismMatrix( alpha )[i,j] ),
+                #                              category!.interpret_matrix_element_as_morphism_in_underlying_category( matrix_beta[s,t] ) )
+                #                          );
+                #                      end
+                #                    )
+                #                );
+                #              end
+                #              )
+                #            ),
+                #            range );
+
+                #    return result;
+                #end;
+
+                #CAP_INTERNAL_JIT := function( func, jit_args )
+                #  local tree, compiled_func;
+                #
+                #    tree := ENHANCED_SYNTAX_TREE( func );
+                #    
+                #    CAP_INTERNAL_PRETTY_PRINT_SYNTAX_TREE( tree );
+
+                #    Display( tree );
+
+                #    CAP_INTERNAL_JIT_INLINE_CAP_OPERATIONS( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+
+                #    tree := CAP_INTERNAL_JIT_APPLY_LOGIC_TEMPLATES( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_INLINED_FUNCTION_CALLS( tree );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+
+                #    tree := CAP_INTERNAL_JIT_DROPPED_UNUSED_VARIABLES( tree );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_INLINED_LVARS( tree );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_APPLY_LOGIC( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_INLINED_CATEGORY_VARIABLES( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_APPLY_LOGIC_TEMPLATES( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    # second pass
+                #    CAP_INTERNAL_JIT_INLINE_CAP_OPERATIONS( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+
+                #    tree := CAP_INTERNAL_JIT_APPLY_LOGIC_TEMPLATES( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_INLINED_FUNCTION_CALLS( tree );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+
+                #    tree := CAP_INTERNAL_JIT_DROPPED_UNUSED_VARIABLES( tree );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_INLINED_LVARS( tree );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_APPLY_LOGIC( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_INLINED_CATEGORY_VARIABLES( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_APPLY_LOGIC_TEMPLATES( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    tree := CAP_INTERNAL_JIT_APPLY_LOGIC_TEMPLATES( tree, jit_args );
+                #    compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+                #    
+                #    Error("asd");
+                #    
+                #    return function( args... )
+                #        return CallFuncList( compiled_func, args );
+                #    end;
+                #    
+                #end;
+                #
+                #if not IsBound(myfunccompiled) then
+                #    BindGlobal( "myfunccompiled", CAP_INTERNAL_JIT( myfunc, [ source, alpha, beta, range ] ) );
+                #fi;
+                #
+                #return myfunccompiled( source, alpha, beta, range );
+                
+                #M1 := UnderlyingMatrix( res1 );
+                #Assert( 0, EvalCoefficientsWithGivenMonomials( EvalCoercedMatrix( M1 ) )[2] = diag_mat );
+                #Assert( 0, M1 = M2 );
+
+                # return res1;
+                
             end );
             
         fi;
