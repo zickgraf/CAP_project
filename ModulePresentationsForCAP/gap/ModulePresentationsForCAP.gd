@@ -122,3 +122,5 @@ DeclareGlobalFunction( "ADD_TENSOR_PRODUCT_ON_MORPHISMS" );
 DeclareGlobalFunction( "ADD_LIFT_AND_COLIFT_LEFT" );
 
 DeclareGlobalFunction( "ADD_LIFT_AND_COLIFT_RIGHT" );
+
+DeclareGlobalFunction( "TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT" );
