@@ -1065,12 +1065,17 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                 return AdditiveClosureMorphismListList(
                         A,
                         List( [ 1 .. size_i ], i ->
-                          List( [ 1 .. size_j ], j ->
-                            InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism(
-                              obj_list_A[i],
-                              obj_list_B[j],
-                              listlist[i][j]
-                            )
+                          List( [ 1 .. size_j ], function( j )
+                              Display("#####");
+                              Display( i );
+                              Display( j );
+                              Error("hi");
+                                return InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism(
+                                  obj_list_A[i],
+                                  obj_list_B[j],
+                                  listlist[i][j]
+                                );
+                            end
                           )
                         ),
                         B
