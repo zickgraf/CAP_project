@@ -647,9 +647,17 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
     ##
     AddLift( category,
       function( alpha, beta )
-        local right_divide;
+        local start_time, right_divide;
+        
+        Display( "RightDivide with matrix sizes:" );
+        Display( Concatenation( String( NrRows( UnderlyingMatrix( alpha ) ) ), "x", String( NrCols( UnderlyingMatrix( alpha ) ) ) ) );
+        Display( Concatenation( String( NrRows( UnderlyingMatrix( beta ) ) ), "x", String( NrCols( UnderlyingMatrix( beta ) ) ) ) );
+        
+        start_time := NanosecondsSinceEpoch();
         
         right_divide := RightDivide( UnderlyingMatrix( alpha ), UnderlyingMatrix( beta ) );
+
+        Display( Concatenation( "solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
         
         if right_divide = fail then
           
