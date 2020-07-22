@@ -211,7 +211,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         
     fi;
     
-    if debug then
+    if debug or true then
         
         compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
         
