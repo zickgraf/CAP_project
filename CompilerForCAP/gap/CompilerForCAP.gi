@@ -962,7 +962,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         
     fi;
     
-    if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 1 then
+    if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 1 or true then
         
         # COVERAGE_IGNORE_BLOCK_START
         Print( "######## Finished compilation of\n" );
