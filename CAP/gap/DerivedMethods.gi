@@ -2746,7 +2746,7 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
                       [ HomomorphismStructureOnObjects, 1 ],
                       [ InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism, 1 ] ],
   function( left_coefficients, right_coefficients, right_side )
-    local m, n, nu, H, lift, summands, list;
+    local m, n, nulist, nu, H, lift, summands, list;
     
     m := Size( left_coefficients );
     
@@ -2754,28 +2754,34 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     
     ## create lift diagram
     
-    nu :=
-      UniversalMorphismIntoDirectSum(
-        List( [ 1 .. m ],
-        i -> InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( right_side[i] ) )
-    );
+    nulist := List( [ 1 .. m ],
+        i -> InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( right_side[i] )
+         );
     
+    nu :=
+        UniversalMorphismIntoDirectSumWithGivenDirectSum( List( nulist, Range ), nulist, DirectSum( List( nulist, Range ) )
+    );
+
     list := 
       List( [ 1 .. n ],
       j -> List( [ 1 .. m ], i -> HomomorphismStructureOnMorphisms( left_coefficients[i][j], right_coefficients[i][j] ) ) 
     );
-    
+
     H := MorphismBetweenDirectSums( list );
-    
-    ## the actual computation of the solution
+
+    ### the actual computation of the solution
     lift := Lift( nu, H );
+
+    Error( "lift" );
+
+    #return lift;
     
-    if lift = fail then
-        
-        return fail;
-        
-    fi;
-    
+    #if lift = fail then
+    #    
+    #    return fail;
+    #    
+    #fi;
+    #
     ## reinterpretation of the solution
     summands := List( [ 1 .. n ], j -> HomomorphismStructureOnObjects( Range( left_coefficients[1][j] ), Source( right_coefficients[1][j] ) ) );
     

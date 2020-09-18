@@ -940,6 +940,52 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
               function( source, alpha, beta, range )
                 local size_i, size_j, size_s, size_t;
                 
+                  
+
+                return ObjectifyWithAttributes(
+                    rec(),
+                    CapCategory(source)!.morphism_type,
+                    CapCategory, CapCategory(source),
+                    Source, source,
+                    Range, range,
+                    UnderlyingMatrix, 
+                        KroneckerMat(
+                            TransposedMatrix( MorphismMatrix( alpha ) ),
+                            MorphismMatrix( beta )
+                        )
+                    );
+                
+                
+                  
+                #if NumberRows( MorphismMatrix( alpha ) ) <= 0 or NumberColumns( MorphismMatrix( alpha ) ) <= 0 or NumberRows( MorphismMatrix( beta ) ) <= 0 or NumberColumns( MorphismMatrix( beta ) ) <= 0 then
+                #    return ZeroMorphism( source, range );
+                #else
+                #    return ObjectifyWithAttributes(
+                #        rec(),
+                #        CapCategory(source)!.morphism_type,
+                #        CapCategory, CapCategory(source),
+                #        Source, source,
+                #        Range, range, UnderlyingMatrix, 
+                #        CoefficientsWithGivenMonomials(
+                #            KroneckerMat(
+                #                TransposedMatrix( MorphismMatrix( alpha ) ),
+                #                DualKroneckerMat( UnionOfRows(
+                #                    List( underlying_category!.generating_system,
+                #                        function ( generator )
+                #                            return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
+                #                        end
+                #                    ) ),
+                #                    MorphismMatrix( beta )
+                #                )
+                #            ),
+                #            DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], function ( logic_new_func_471_x )
+                #                return DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], function ( logic_new_func_404_x )
+                #                          return underlying_category!.generating_system_as_column;
+                #                      end ) );
+                #            end ) ) ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ) );
+                #fi;
+                  
+                
                 size_i := NrRows( alpha );
                 
                 size_j := NrCols( alpha );
@@ -994,27 +1040,34 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
             ##
             AddInterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( category,
               function( alpha )
-                local size_i, size_j;
+                local size_i, size_j, outer_list;
                 
                 size_i := NrRows( alpha );
                 
                 size_j := NrCols( alpha );
                 
-                if size_i = 0 or size_j = 0 then
-                    
-                    return UniversalMorphismIntoZeroObject( DistinguishedObjectOfHomomorphismStructure( underlying_category ) );
-                    
-                fi;
+                #if size_i = 0 or size_j = 0 then
+                #    
+                #    return UniversalMorphismIntoZeroObject( DistinguishedObjectOfHomomorphismStructure( underlying_category ) );
+                #    
+                #fi;
+
+                outer_list := List( [ 1 .. size_i ], function(i)
+                            local inner_list;
+                            
+                                inner_list := List( [ 1 .. size_j ], j ->
+                                    InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( alpha[i, j] )
+                                );
+                                
+                                return UniversalMorphismIntoDirectSumWithGivenDirectSum(
+                                    List( inner_list, Range ), inner_list, DirectSum( List( inner_list, Range ) )
+                                );
+                            end
+                        );
                 
-                return UniversalMorphismIntoDirectSum(
-                        List( [ 1 .. size_i ], i ->
-                          UniversalMorphismIntoDirectSum(
-                            List( [ 1 .. size_j ], j ->
-                              InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( alpha[i, j] )
-                            )
-                          )
-                        )
-                      );
+                return UniversalMorphismIntoDirectSumWithGivenDirectSum(
+                    List( outer_list, Range ), outer_list, DirectSum( List( outer_list, Range ) )
+                );
                 
             end );
             
@@ -1066,10 +1119,10 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                         A,
                         List( [ 1 .. size_i ], i ->
                           List( [ 1 .. size_j ], function( j )
-                              Display("#####");
-                              Display( i );
-                              Display( j );
-                              Error("hi");
+                              #Display("#####");
+                              #Display( i );
+                              #Display( j );
+                              #Error("hi");
                                 return InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism(
                                   obj_list_A[i],
                                   obj_list_B[j],

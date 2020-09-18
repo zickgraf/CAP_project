@@ -590,11 +590,11 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
       function( source, listlist, range )
         local mat;
         
-        if IsEmpty( listlist ) or IsEmpty( listlist[1] ) then
-          
-          return ZeroMorphism( source, range );
-          
-        fi;
+        #if IsEmpty( listlist ) or IsEmpty( listlist[1] ) then
+        #  
+        #  return ZeroMorphism( source, range );
+        #  
+        #fi;
         
         return CategoryOfRowsMorphism(
           source, 
@@ -659,11 +659,11 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
 
         Display( Concatenation( "solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
         
-        if right_divide = fail then
-          
-          return fail;
-          
-        fi;
+        #if right_divide = fail then
+        #  
+        #  return fail;
+        #  
+        #fi;
         
         return CategoryOfRowsMorphism( Source( alpha ), right_divide, Source( beta ) );
         
@@ -693,13 +693,21 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
       function( alpha, beta )
         local left_divide;
         
+        Display( "LeftDivide with matrix sizes:" );
+        Display( Concatenation( String( NrRows( UnderlyingMatrix( alpha ) ) ), "x", String( NrCols( UnderlyingMatrix( alpha ) ) ) ) );
+        Display( Concatenation( String( NrRows( UnderlyingMatrix( beta ) ) ), "x", String( NrCols( UnderlyingMatrix( beta ) ) ) ) );
+        
+        start_time := NanosecondsSinceEpoch();
+        
         left_divide := LeftDivide( UnderlyingMatrix( alpha ), UnderlyingMatrix( beta ) );
         
-        if left_divide = fail then
-          
-          return fail;
-          
-        fi;
+        Display( Concatenation( "solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
+        
+        #if left_divide = fail then
+        #  
+        #  return fail;
+        #  
+        #fi;
         
         return CategoryOfRowsMorphism( Range( alpha ), left_divide, Range( beta ) );
         
@@ -738,7 +746,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
       AddKernelObject( category,
         function( morphism )
           local homalg_matrix;
-          
+
           homalg_matrix := UnderlyingMatrix( morphism );
           
           return CategoryOfRowsObject( category, NrRows( homalg_matrix ) - RowRankOfMatrix( homalg_matrix ) );
@@ -749,6 +757,9 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
       AddKernelEmbedding( category,
         function( morphism )
           local kernel_emb, kernel_object;
+          
+          Display( "SyzygiesOfRows with matrix sizes:" );
+          Display( Concatenation( String( NrRows( UnderlyingMatrix( morphism ) ) ), "x", String( NrCols( UnderlyingMatrix( morphism ) ) ) ) );
           
           kernel_emb := SyzygiesOfRows( UnderlyingMatrix( morphism ) );
           
@@ -773,6 +784,9 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
       AddCokernelProjection( category,
         function( morphism )
           local cokernel_proj, cokernel_obj;
+          
+          Display( "SyzygiesOfColumns with matrix sizes:" );
+          Display( Concatenation( String( NrRows( UnderlyingMatrix( morphism ) ) ), "x", String( NrCols( UnderlyingMatrix( morphism ) ) ) ) );
           
           cokernel_proj := SyzygiesOfColumns( UnderlyingMatrix( morphism ) );
           
