@@ -18,41 +18,41 @@ InstallGlobalFunction( AsLeftOrRightPresentation,
   function( matrix, left )
     local module, ring, presentation_category, lazy;
     
-    module := rec( );
+    module := rec( nr_generators := NrColumns( matrix ) );
     
     ring := HomalgRing( matrix );
     
-    if left = true then
+    #if left = true then
         presentation_category := LeftPresentations( ring );
-        if HasEvalSyzygiesOfRows( matrix ) and not HasEval( matrix ) then
-            lazy := true;
-            module.nr_generators := NrRows( EvalSyzygiesOfRows( matrix )[1] );
-        else
-            lazy := false;
-            module.nr_generators := NrColumns( matrix );
-        fi;
-    else
-        presentation_category := RightPresentations( ring );
-        if HasEvalSyzygiesOfColumns( matrix ) and not HasEval( matrix ) then
-            lazy := true;
-            module.nr_generators := NrColumns( EvalSyzygiesOfColumns( matrix )[1] );
-        else
-            lazy := false;
-            module.nr_generators := NrRows( matrix );
-        fi;
-    fi;
-    
-    if lazy then
-        module.LazyUnderlyingMatrix := matrix;
-        return ObjectifyObjectForCAPWithAttributes( module, presentation_category,
-                UnderlyingHomalgRing, ring
-                );
-    else
+    #    if HasEvalSyzygiesOfRows( matrix ) and not HasEval( matrix ) then
+    #        lazy := true;
+    #        module.nr_generators := NrRows( EvalSyzygiesOfRows( matrix )[1] );
+    #    else
+    #        lazy := false;
+    #        module.nr_generators := NrColumns( matrix );
+    #    fi;
+    #else
+    #    presentation_category := RightPresentations( ring );
+    #    if HasEvalSyzygiesOfColumns( matrix ) and not HasEval( matrix ) then
+    #        lazy := true;
+    #        module.nr_generators := NrColumns( EvalSyzygiesOfColumns( matrix )[1] );
+    #    else
+    #        lazy := false;
+    #        module.nr_generators := NrRows( matrix );
+    #    fi;
+    #fi;
+    #
+    #if lazy then
+    #    module.LazyUnderlyingMatrix := matrix;
+    #    return ObjectifyObjectForCAPWithAttributes( module, presentation_category,
+    #            UnderlyingHomalgRing, ring
+    #            );
+    #else
         return ObjectifyObjectForCAPWithAttributes( module, presentation_category,
                 UnderlyingMatrix, matrix,
                 UnderlyingHomalgRing, ring
                 );
-    fi;
+    #fi;
     
 end );
 
@@ -166,43 +166,43 @@ InstallMethod( Annihilator,
     
 end );
 
-##
-InstallMethod( UnderlyingMatrix,
-               [ IsLeftPresentation ],
-               
-  function( M )
-    local mat;
-    
-    mat := M!.LazyUnderlyingMatrix;
-    
-    mat := EvalSyzygiesOfRows( mat );
-    
-    mat := SyzygiesOfRows( mat[1], mat[2] );
-    
-    Unbind( M!.LazyUnderlyingMatrix );
-    
-    return mat;
-    
-end );
-
-##
-InstallMethod( UnderlyingMatrix,
-               [ IsRightPresentation ],
-               
-  function( M )
-    local mat;
-    
-    mat := M!.LazyUnderlyingMatrix;
-    
-    mat := EvalSyzygiesOfColumns( mat );
-    
-    mat := SyzygiesOfColumns( mat[1], mat[2] );
-    
-    Unbind( M!.LazyUnderlyingMatrix );
-    
-    return mat;
-    
-end );
+###
+#InstallMethod( UnderlyingMatrix,
+#               [ IsLeftPresentation ],
+#               
+#  function( M )
+#    local mat;
+#    
+#    mat := M!.LazyUnderlyingMatrix;
+#    
+#    mat := EvalSyzygiesOfRows( mat );
+#    
+#    mat := SyzygiesOfRows( mat[1], mat[2] );
+#    
+#    Unbind( M!.LazyUnderlyingMatrix );
+#    
+#    return mat;
+#    
+#end );
+#
+###
+#InstallMethod( UnderlyingMatrix,
+#               [ IsRightPresentation ],
+#               
+#  function( M )
+#    local mat;
+#    
+#    mat := M!.LazyUnderlyingMatrix;
+#    
+#    mat := EvalSyzygiesOfColumns( mat );
+#    
+#    mat := SyzygiesOfColumns( mat[1], mat[2] );
+#    
+#    Unbind( M!.LazyUnderlyingMatrix );
+#    
+#    return mat;
+#    
+#end );
 
 ##
 InstallMethodWithCacheFromObject( INTERNAL_HOM_EMBEDDING_IN_TENSOR_PRODUCT_LEFT,
