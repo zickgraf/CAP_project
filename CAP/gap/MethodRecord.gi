@@ -3319,7 +3319,7 @@ SolveLinearSystemInAbCategory := rec(
     ## TODO: Type-check of linear system
   installation_name := "SolveLinearSystemInAbCategoryOp",
   argument_list := [ 1, 2, 3 ],
-  filter_list := [ IsList, IsList, IsList, "category" ],
+  filter_list := [ IsList, IsList, "list_of_morphisms", "category" ],
   cache_name := "SolveLinearSystemInAbCategory",
   return_type := "morphism_or_fail"
 ),

@@ -138,6 +138,7 @@ end );
 InstallGlobalFunction( FREYD_CATEGORY_OBJECT,
 function( relation_morphism )
     local category;
+    #% CAP_JIT_RESOLVE_FUNCTION
     
     category := FreydCategory( CapCategory( relation_morphism ) );
 
@@ -170,6 +171,7 @@ end );
 InstallGlobalFunction( FREYD_CATEGORY_MORPHISM,
   function( source, morphism_datum, range )
     local category;
+    #% CAP_JIT_RESOLVE_FUNCTION
     
     if not IsIdenticalObj( CapCategory( morphism_datum ), UnderlyingCategory( CapCategory( source ) ) ) then
         
@@ -970,6 +972,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
         ## 1) the range category is abelian
         ## 2) one could apply the Freyd category constructor to the range category to make it abelian
         ## 3) else
+        
         if HasIsAbelianCategory( range_category ) 
             and IsAbelianCategory( range_category ) 
             and HasIsProjective( distinguished_object )
@@ -1039,10 +1042,11 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
         
         if not homomorphism_structure_derivation_case = "none" then
             
-            diagram_for_homomorphism_structure_as_kernel := FunctionWithCache(
+            diagram_for_homomorphism_structure_as_kernel := #FunctionWithCache(
             
             function( object_A, object_B )
               local rho_A, rho_B, A, B, R_A, R_B, mor_1, mor_2;
+              # CAP_JIT_RESOLVE_FUNCTION
               
               rho_A := RelationMorphism( object_A );
               
@@ -1065,7 +1069,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
               
               return [ CokernelColift( mor_1, mor_2 ), mor_1 ];
               
-            end );
+            end; #);
             
             ##
             AddHomomorphismStructureOnObjects( category,
@@ -1082,6 +1086,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
             diagram_for_homomorphism_structure_as_kernel_on_morphisms :=
               function( alpha, beta )
                 local object_A, object_Ap, object_B, object_Bp, rho_B, rho_Bp, A, Ap, mor_1, mor_2;
+                #% CAP_JIT_RESOLVE_FUNCTION
                 
                 object_A := Range( alpha );
                 
@@ -1122,6 +1127,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 object_B := Source( beta );
                 
                 object_Bp := Range( beta );
+                
+                Error( "functorial" );
                 
                 return KernelObjectFunctorialWithGivenKernelObjects(
                           source,
