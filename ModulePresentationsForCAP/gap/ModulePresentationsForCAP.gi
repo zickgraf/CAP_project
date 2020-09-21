@@ -2233,53 +2233,79 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
         Finalize( freyd );
 
         
-        DeactivateCachingOfCategory(lazy);
-        CapCategorySwitchLogicOff(lazy);
-        DisableSanityChecks(lazy);
+        #DeactivateCachingOfCategory(lazy);
+        #CapCategorySwitchLogicOff(lazy);
+        #DisableSanityChecks(lazy);
 
-        DeactivateCachingOfCategory(freyd);
-        CapCategorySwitchLogicOff(freyd);
-        DisableSanityChecks(freyd);
+        #DeactivateCachingOfCategory(freyd);
+        #CapCategorySwitchLogicOff(freyd);
+        #DisableSanityChecks(freyd);
 
         
         if HasRangeCategoryOfHomomorphismStructure( freyd ) then
             
             o := AsAdditiveClosureObject( RingAsCategoryUniqueObject( CR ) );
             
-            obj_in_freyd := function( obj )
-              local source, range, lazy_mor;
+            obj_in_freyd := #FunctionWithCache(
+            function( obj )
+              local source, range, result, lazy_mor;
                 # CAP_JIT_RESOLVE_FUNCTION
                 
                 source := DirectSum( CRplus, ListWithIdenticalEntries( NrRows( UnderlyingMatrix( obj ) ), o ) );
                 range := DirectSum( CRplus, ListWithIdenticalEntries( NrCols( UnderlyingMatrix( obj ) ), o ) );
 
-                return FreydCategoryObject( AdditiveClosureMorphism( source, UnderlyingMatrix( obj ), range ) );
-                
-                lazy_mor := AsMorphismInLazyCategory( lazy, AdditiveClosureMorphism( source, UnderlyingMatrix( obj ), range ) );
+                result := FreydCategoryObject( AdditiveClosureMorphism( source, UnderlyingMatrix( obj ), range ) );
 
                 if HasName( obj ) then
                     
-                    SetLabel( Source( lazy_mor ), Concatenation( "R_", Name( obj ) ) );
-                    SetLabel( lazy_mor, Concatenation( "rho_", Name( obj ) ) );
-                    SetLabel( Range( lazy_mor ), Name( obj ) );
-
+                    SetName( result, Name( obj ) );
+                    
+                    #SetName( Source( result ), Concatenation( "R_", Name( obj ) ) );
+                    #SetName( result, Concatenation( "rho_", Name( obj ) ) );
+                    #SetName( Range( result ), Name( obj ) );
+                    
                 fi;
+
+                return result;
                 
-                return FreydCategoryObject( lazy_mor );
                 
+                #lazy_mor := AsMorphismInLazyCategory( lazy, AdditiveClosureMorphism( source, UnderlyingMatrix( obj ), range ) );
+
+                #if HasName( obj ) then
+                #    
+                #    SetLabel( Source( lazy_mor ), Concatenation( "R_", Name( obj ) ) );
+                #    SetLabel( lazy_mor, Concatenation( "rho_", Name( obj ) ) );
+                #    SetLabel( Range( lazy_mor ), Name( obj ) );
+
+                #fi;
+                #
+                #return FreydCategoryObject( lazy_mor );
+             
             end;
+            #end );
             
-            obj_from_freyd := function( obj )
+            obj_from_freyd := #FunctionWithCache(
+            function( obj )
+              local result;
                 # CAP_JIT_RESOLVE_FUNCTION
                 
-                return AsLeftPresentation( MorphismMatrix( RelationMorphism( obj ) ) );
-                
-                return AsLeftPresentation( MorphismMatrix( EvaluatedCell( RelationMorphism( obj ) ) ) );
+                result := AsLeftPresentation( MorphismMatrix( RelationMorphism( obj ) ) );
+                #result := AsLeftPresentation( MorphismMatrix( EvaluatedCell( RelationMorphism( obj ) ) ) );
+
+                if HasName( obj ) then
+                    
+                    SetName( result, Name( obj ) );
+                    
+                fi;
+
+                return result;
                 
             end;
+            #end );
             
-            mor_in_freyd := function( mor )
-              local source, range, add_source, add_range, lazy_mor;
+            mor_in_freyd := #FunctionWithCache(
+            function( mor )
+              local source, range, add_source, add_range, result, lazy_mor;
                 # CAP_JIT_RESOLVE_FUNCTION
                 
                 source := obj_in_freyd( Source( mor ) );
@@ -2288,32 +2314,50 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
                 add_source := DirectSum( CRplus, ListWithIdenticalEntries( NrRows( UnderlyingMatrix( mor ) ), o ) );
                 add_range := DirectSum( CRplus, ListWithIdenticalEntries( NrCols( UnderlyingMatrix( mor ) ), o ) );
 
-                return FreydCategoryMorphism( source, AdditiveClosureMorphism( add_source, UnderlyingMatrix( mor ), add_range ), range );
-                
-                lazy_mor := AsMorphismInLazyCategory( lazy, AdditiveClosureMorphism( add_source, UnderlyingMatrix( mor ), add_range ) );
+                result := FreydCategoryMorphism( source, AdditiveClosureMorphism( add_source, UnderlyingMatrix( mor ), add_range ), range );
 
                 if HasName( mor ) then
                     
-                    SetLabel( lazy_mor, Name( mor ) );
-
+                    SetName( result, Name( mor ) );
+                    
                 fi;
+
+                return result;
                 
-                return FreydCategoryMorphism( source, lazy_mor, range );
+                #lazy_mor := AsMorphismInLazyCategory( lazy, AdditiveClosureMorphism( add_source, UnderlyingMatrix( mor ), add_range ) );
+
+                #if HasName( mor ) then
+                #    
+                #    SetLabel( lazy_mor, Name( mor ) );
+
+                #fi;
+                #
+                #return FreydCategoryMorphism( source, lazy_mor, range );
                 
             end;
+            #end );
             
-            mor_from_freyd := function( mor )
-              local source, range;
+            mor_from_freyd := #FunctionWithCache(
+            function( mor )
+              local source, range, result;
                 # CAP_JIT_RESOLVE_FUNCTION
                 
                 source := obj_from_freyd( Source( mor ) );
                 range := obj_from_freyd( Range( mor ) );
                          
-                return PresentationMorphism( source, MorphismMatrix( MorphismDatum( mor ) ), range );
+                result := PresentationMorphism( source, MorphismMatrix( MorphismDatum( mor ) ), range );
+                #result := PresentationMorphism( source, MorphismMatrix( EvaluatedCell( MorphismDatum( mor ) ) ), range );
                 
-                return PresentationMorphism( source, MorphismMatrix( EvaluatedCell( MorphismDatum( mor ) ) ), range );
+                if HasName( mor ) then
+                    
+                    SetName( result, Name( mor ) );
+                    
+                fi;
+
+                return result;
                 
             end;
+            #end );
             
             ReadPackage( "ModulePresentationsForCAP", "gap/CompilerLogic.gi");
             if enable_compilation then

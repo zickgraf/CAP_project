@@ -19,6 +19,8 @@ InstallMethod( CategoryOfRows,
     
     overhead_option := CAP_INTERNAL_RETURN_OPTION_OR_DEFAULT( "overhead", true );
     
+    overhead_option := true;
+
     category := CreateCapCategory( Concatenation( "Rows( ", RingName( homalg_ring )," )" ) : overhead := overhead_option );
     
     SetFilterObj( category, IsCategoryOfRows );
@@ -290,12 +292,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
     is_defined_over_field := HasIsFieldForHomalg( ring ) and IsFieldForHomalg( ring );
     
     ##
-    AddIsEqualForCacheForObjects( category,
-      IsIdenticalObj );
+    #AddIsEqualForCacheForObjects( category,
+    #  IsIdenticalObj );
     
     ##
-    AddIsEqualForCacheForMorphisms( category,
-      IsIdenticalObj );
+    #AddIsEqualForCacheForMorphisms( category,
+    #  IsIdenticalObj );
 
     
     ## Well-defined for objects and morphisms
@@ -782,11 +784,25 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
           
       end );
       
+MYGLOBALNUMBER := 1;
+MYGLOBALLIST := [];
+      
       ##
       AddCokernelProjection( category,
         function( morphism )
           local cokernel_proj, cokernel_obj;
           
+          Add( MYGLOBALLIST, morphism );
+          
+          if not IsBound( morphism!.label ) then
+              
+              morphism!.label := MYGLOBALNUMBER;
+              MYGLOBALNUMBER := MYGLOBALNUMBER + 1;
+              
+          fi;
+
+          Display( morphism!.label );
+            
           Display( "SyzygiesOfColumns with matrix sizes:" );
           Display( Concatenation( String( NrRows( UnderlyingMatrix( morphism ) ) ), "x", String( NrCols( UnderlyingMatrix( morphism ) ) ) ) );
           
