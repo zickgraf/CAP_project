@@ -150,6 +150,16 @@ InstallMethod( IsFinalized,
             
             current_final_derivation := derivation_list[ i ];
             
+            #if IsBound( MYGLOBALQROWS ) and IsIdenticalObj(MYGLOBALQROWS,category) and NameFunction( current_final_derivation.name ) in [ "IsEqualForCacheForMorphisms", "IsEqualForMorphismsOnMor" ] then
+            #    
+            #    Display( CanCompute( category, "IsEqualForMorphismsOnMor" ) );
+            #    
+            #    Error(NameFunction( current_final_derivation.name ));
+
+            #    
+            #    
+            #fi;
+
             if ForAll( current_final_derivation.can_compute, j -> CurrentOperationWeight( weight_list, NameFunction( j[ 1 ] ) ) < infinity ) and
               ForAll( current_final_derivation.cannot_compute, j -> CurrentOperationWeight( weight_list, NameFunction( j ) ) = infinity ) then
                 
@@ -186,6 +196,19 @@ InstallMethod( IsFinalized,
                                           ": ",
                                           current_final_derivation.description, "\n" ) );
             
+            #if IsBound( MYGLOBALQROWS ) and IsIdenticalObj(MYGLOBALQROWS,category) then
+            #    
+            #    Display( Concatenation( "install(",
+            #                              String( weight ),
+            #                              ") ",
+            #                              NameFunction( current_final_derivation.name ),
+            #                              ": ",
+            #                              current_final_derivation.description, "\n" ) );
+            #    
+            #    Error("asd");
+            #    
+            #fi;
+
             ## call function before adding the method
             
             if current_final_derivation.function_called_before_installation <> false then

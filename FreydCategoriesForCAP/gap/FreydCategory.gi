@@ -367,8 +367,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
     end;
     
     ##
-    AddIsEqualForCacheForObjects( category,
-      IsIdenticalObj );
+    #AddIsEqualForCacheForObjects( category,
+    #  IsIdenticalObj );
     
     ##
     AddIsEqualForCacheForMorphisms( category,
@@ -1042,11 +1042,39 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
         
         if not homomorphism_structure_derivation_case = "none" then
             
-            diagram_for_homomorphism_structure_as_kernel := #FunctionWithCache(
+            MYCACHELIST := [];
+            
+            diagram_for_homomorphism_structure_as_kernel := FunctionWithCache(
             
             function( object_A, object_B )
-              local rho_A, rho_B, A, B, R_A, R_B, mor_1, mor_2;
+              local rho_A, rho_B, A, B, R_A, R_B, mor_1, mor_2, asd;
               # CAP_JIT_RESOLVE_FUNCTION
+              
+              
+              Display( "diagram_for_homomorphism_structure_as_kernel" );
+
+              
+              
+              if not HasName( object_A ) then
+                  
+                  SetName( object_A, String( MYGLOBALNUMBER ) );
+                  MYGLOBALNUMBER := MYGLOBALNUMBER + 1;
+                  
+              fi;
+
+              if not HasName( object_B ) then
+                  
+                  SetName( object_B, String( MYGLOBALNUMBER ) );
+                  MYGLOBALNUMBER := MYGLOBALNUMBER + 1;
+                  
+              fi;
+
+              Display( Concatenation( "######### A ", Name( object_A ) ) );
+              Display( Concatenation( "######### B ", Name( object_B ) ) );
+              
+              Add( MYCACHELIST, [object_A, object_B] );
+              #Error("ad");
+              
               
               rho_A := RelationMorphism( object_A );
               
@@ -1059,6 +1087,9 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
               R_A := Source( rho_A );
               
               R_B := Source( rho_B );
+
+
+              Display( "############# begin" );
               
               mor_1 := homomorphism_structure_on_morphisms( IdentityMorphism( A ), rho_B );
               
@@ -1066,15 +1097,23 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                           homomorphism_structure_on_morphisms( rho_A, IdentityMorphism( B ) ),
                           CokernelProjection( homomorphism_structure_on_morphisms( IdentityMorphism( R_A ), rho_B ) )
                         );
+
+              Display( "############# middle" );
               
-              return [ CokernelColift( mor_1, mor_2 ), mor_1 ];
+              asd := [ CokernelColift( mor_1, mor_2 ), mor_1 ];
               
-            end; #);
+              Display( "############# end" );
+
+              return asd;
+              
+            end : Cache := "crisp" );
             
             ##
             AddHomomorphismStructureOnObjects( category,
               function( object_A, object_B )
                 local diagram;
+
+                GASMAN("collect");
                 
                 diagram := diagram_for_homomorphism_structure_as_kernel( object_A, object_B )[1];
                 
@@ -1088,6 +1127,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 local object_A, object_Ap, object_B, object_Bp, rho_B, rho_Bp, A, Ap, mor_1, mor_2;
                 #% CAP_JIT_RESOLVE_FUNCTION
                 
+                Display( "diagram_for_homomorphism_structure_as_kernel_on_morphisms" );
                 object_A := Range( alpha );
                 
                 object_Ap := Source( alpha );
@@ -1128,8 +1168,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 
                 object_Bp := Range( beta );
                 
-                Error( "functorial" );
-                
+                GASMAN("collect");
                 return KernelObjectFunctorialWithGivenKernelObjects(
                           source,
                           diagram_for_homomorphism_structure_as_kernel( object_A, object_B )[1],
