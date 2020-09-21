@@ -896,18 +896,289 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
         AddLift( category,
                  
           function( alpha_freyd, gamma_freyd )
-            local solution;
+            local alpha, gamma, A_freyd, B_freyd, C_freyd, rho_A, A, R_A, rho_B, B, R_B, rho_C, C, R_C, interpretation, range_projection, nu_mod_alpha, other_projection, H_rho_A_C_bar, kernel_embedding, lift_along, solution, composed_solution, reinterpretation;
             
-            solution := 
-              CallFuncList( SolveLinearSystemInAbCategory, lift_via_linear_system_func( alpha_freyd, gamma_freyd ) );
+            Display( "start lift in Freyd" );
+            start_time := NanosecondsSinceEpoch();
             
+            alpha := MorphismDatum( alpha_freyd );
+            gamma := MorphismDatum( gamma_freyd );
+            
+            A_freyd := Source( alpha_freyd );
+            B_freyd := Range( alpha_freyd );
+            C_freyd := Source( gamma_freyd );
+            
+            rho_A := RelationMorphism( A_freyd );
+            A := Range( rho_A );
+            R_A := Source( rho_A );
+            
+            rho_B := RelationMorphism( B_freyd );
+            B := Range( rho_B );
+            R_B := Source( rho_B );
+            
+            rho_C := RelationMorphism( C_freyd );
+            C := Range( rho_C );
+            R_C := Source( rho_C );
+            
+            interpretation := 
+                interpret_homomorphism_as_morphism_from_dinstinguished_object_to_homomorphism_structure( alpha );
+            
+            range_projection := CokernelProjection( homomorphism_structure_on_morphisms( IdentityMorphism( A ), rho_B ) );
+
+            nu_mod_alpha := PreCompose( interpretation, range_projection );
+            
+            other_projection := CokernelProjection( homomorphism_structure_on_morphisms( IdentityMorphism( R_A ), rho_C ) );
+            
+            H_rho_A_C_bar := PreCompose( homomorphism_structure_on_morphisms( rho_A, IdentityMorphism( C ) ), other_projection );
+
+            kernel_embedding := KernelEmbedding( H_rho_A_C_bar );
+
+            lift_along := PreCompose( [ kernel_embedding, homomorphism_structure_on_morphisms( IdentityMorphism( A ), gamma ), range_projection ] );
+
+            solution := Lift( nu_mod_alpha, lift_along );
+                        
             if solution = fail then
                 
+                Display( Concatenation( "Lift in Freyd solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
+
                 return fail;
                 
             fi;
+
+            composed_solution := PreCompose( solution, kernel_embedding );
+
+            reinterpretation := 
+              interpret_morphism_from_dinstinguished_object_to_homomorphism_structure_as_homomorphism(
+                A, C, composed_solution );
+                
+            Display( Concatenation( "Lift in Freyd solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
             
-            return FreydCategoryMorphism( Source( alpha_freyd ), solution[1], Source( gamma_freyd ) );
+            return FreydCategoryMorphism( A_freyd, reinterpretation, C_freyd );
+              
+              
+            #local A, diagram_for_homomorphism_structure_as_kernel, nu, diagram_for_homomorphism_structure_as_kernel_on_morphisms, H, solution;
+            #
+            #A := Source( alpha_freyd );
+            #
+            ###
+            #diagram_for_homomorphism_structure_as_kernel := #FunctionWithCache(
+            #
+            #function( object_A, object_B )
+            #  local rho_A, rho_B, A, B, R_A, R_B, mor_1, mor_2;
+            #  # CAP_JIT_RESOLVE_FUNCTION
+            #  
+            #  rho_A := RelationMorphism( object_A );
+            #  
+            #  rho_B := RelationMorphism( object_B );
+            #  
+            #  A := Range( rho_A );
+            #  
+            #  B := Range( rho_B );
+            #  
+            #  R_A := Source( rho_A );
+            #  
+            #  R_B := Source( rho_B );
+
+            #  mor_1 := homomorphism_structure_on_morphisms( IdentityMorphism( A ), rho_B );
+            #  
+            #  mor_2 := PreCompose(
+            #              homomorphism_structure_on_morphisms( rho_A, IdentityMorphism( B ) ),
+            #              CokernelProjection( homomorphism_structure_on_morphisms( IdentityMorphism( R_A ), rho_B ) )
+            #            );
+            #  
+            #  return [ CokernelColift( mor_1, mor_2 ), mor_1 ];
+            #  
+            #end; #);
+            #
+            #diagram_for_homomorphism_structure_as_kernel_without_source_relations := #FunctionWithCache(
+            #
+            #function( object_A, object_B )
+            #  local rho_A, rho_B, A, B, R_A, R_B, mor_1, mor_2;
+            #  # CAP_JIT_RESOLVE_FUNCTION
+            #  
+            #  rho_A := RelationMorphism( object_A );
+            #  
+            #  rho_B := RelationMorphism( object_B );
+            #  
+            #  A := Range( rho_A );
+            #  
+            #  B := Range( rho_B );
+            #  
+            #  R_A := Source( rho_A );
+            #  
+            #  R_B := Source( rho_B );
+
+            #  #mor_1 := homomorphism_structure_on_morphisms( IdentityMorphism( A ), rho_B );
+            #  
+            #  mor_2 := PreCompose(
+            #              homomorphism_structure_on_morphisms( rho_A, IdentityMorphism( B ) ),
+            #              CokernelProjection( homomorphism_structure_on_morphisms( IdentityMorphism( R_A ), rho_B ) )
+            #            );
+            #  
+            #  return mor_2;
+            #  
+            #end; #);
+            #
+            #nu_mod := function( alpha )
+            #  local phi, interpretation, object_A, object_B, rho_A, rho_B, A, B, R_A, R_B, mor_1;
+            #    
+            #    phi := MorphismDatum( alpha );
+            #    
+            #    interpretation := 
+            #        InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( phi );
+            #    
+            #    object_A := Source( alpha );
+            #    object_B := Range( alpha );
+            #        
+            #    rho_A := RelationMorphism( object_A );
+            #    
+            #    rho_B := RelationMorphism( object_B );
+            #    
+            #    A := Range( rho_A );
+            #    
+            #    B := Range( rho_B );
+            #    
+            #    R_A := Source( rho_A );
+            #    
+            #    R_B := Source( rho_B );
+
+            #    mor_1 := homomorphism_structure_on_morphisms( IdentityMorphism( A ), rho_B );
+            #  
+            #    return PreCompose( interpretation, CokernelProjection( mor_1 ) );
+            #    
+            #end;
+            #
+            ###
+            #diagram_for_homomorphism_structure_as_kernel_on_morphisms :=
+            #  function( alpha, beta )
+            #    local object_A, object_Ap, object_B, object_Bp, rho_B, rho_Bp, A, Ap, mor_1, mor_2;
+            #    #% CAP_JIT_RESOLVE_FUNCTION
+            #    
+            #    object_A := Range( alpha );
+            #    
+            #    object_Ap := Source( alpha );
+            #    
+            #    object_B := Source( beta );
+            #    
+            #    object_Bp := Range( beta );
+            #    
+            #    rho_B := RelationMorphism( object_B );
+            #    
+            #    rho_Bp := RelationMorphism( object_Bp );
+            #    
+            #    A := Range( RelationMorphism( object_A ) );
+            #    
+            #    Ap := Range( RelationMorphism( object_Ap ) );
+            #    
+            #    mor_1 := homomorphism_structure_on_morphisms( IdentityMorphism( A ), rho_B );
+            #    
+            #    mor_2 := PreCompose(
+            #                homomorphism_structure_on_morphisms( MorphismDatum( alpha ), MorphismDatum( beta ) ),
+            #                CokernelProjection( homomorphism_structure_on_morphisms( IdentityMorphism( Ap ), rho_Bp ) )
+            #              );
+            #    
+            #    return CokernelColift( mor_1, mor_2 );
+            #    
+            #end;
+            #
+            ###
+            #diagram_for_homomorphism_structure_as_kernel_on_morphisms_without_source_relations :=
+            #  function( alpha, beta )
+            #    local object_A, object_Ap, object_B, object_Bp, rho_B, rho_Bp, A, Ap, mor_1, mor_2;
+            #    #% CAP_JIT_RESOLVE_FUNCTION
+            #    
+            #    object_A := Range( alpha );
+            #    
+            #    object_Ap := Source( alpha );
+            #    
+            #    object_B := Source( beta );
+            #    
+            #    object_Bp := Range( beta );
+            #    
+            #    rho_B := RelationMorphism( object_B );
+            #    
+            #    rho_Bp := RelationMorphism( object_Bp );
+            #    
+            #    A := Range( RelationMorphism( object_A ) );
+            #    
+            #    Ap := Range( RelationMorphism( object_Ap ) );
+            #    
+            #    #mor_1 := homomorphism_structure_on_morphisms( IdentityMorphism( A ), rho_B );
+            #    
+            #    mor_2 := PreCompose(
+            #                homomorphism_structure_on_morphisms( MorphismDatum( alpha ), MorphismDatum( beta ) ),
+            #                CokernelProjection( homomorphism_structure_on_morphisms( IdentityMorphism( Ap ), rho_Bp ) )
+            #              );
+            #    
+            #    #return CokernelColift( mor_1, mor_2 );
+            #    return mor_2;
+            #    
+            #end;
+            #
+            ###
+            #H_mod := function( alpha, beta )
+            #    local object_A, object_Ap, object_B, object_Bp;
+            #    
+            #    object_A := Range( alpha );
+            #    
+            #    object_Ap := Source( alpha );
+            #    
+            #    object_B := Source( beta );
+            #    
+            #    object_Bp := Range( beta );
+
+            #    return PreCompose(
+            #        KernelEmbedding( diagram_for_homomorphism_structure_as_kernel_without_source_relations( object_A, object_B ) ),
+            #        diagram_for_homomorphism_structure_as_kernel_on_morphisms_without_source_relations( alpha, beta )
+            #    );
+            #    
+            #    #return KernelObjectFunctorial(
+            #    #          diagram_for_homomorphism_structure_as_kernel( object_A, object_B )[1],
+            #    #          diagram_for_homomorphism_structure_as_kernel_on_morphisms( alpha, beta ),
+            #    #          diagram_for_homomorphism_structure_as_kernel( object_Ap, object_Bp )[1]
+            #    #        );
+            #end;
+            #
+            #solution :=  Lift( nu_mod( alpha_freyd ), H_mod( IdentityMorphism( A ), gamma_freyd ) );
+
+            #
+            #nuinv := 
+            #  function( A, B, morphism )
+            #    local diagram, embedding, epsilon, lift, interpretation;
+            #    
+            #    diagram := diagram_for_homomorphism_structure_as_kernel_without_source_relations( A, B );
+            #    
+            #    #embedding := KernelEmbedding( diagram[1] );
+            #    embedding := KernelEmbedding( diagram );
+            #    
+            #    #epsilon := CokernelProjection( diagram[2] );
+            #    
+            #    #lift := ProjectiveLift( PreCompose( morphism, embedding ), epsilon );
+            #    lift := PreCompose( morphism, embedding );
+            #    
+            #    interpretation := 
+            #      interpret_morphism_from_dinstinguished_object_to_homomorphism_structure_as_homomorphism(
+            #        Range( RelationMorphism( A ) ), Range( RelationMorphism( B ) ), lift );
+            #    
+            #    return FreydCategoryMorphism( A, interpretation, B );
+            #    
+            #end;
+        
+            #
+            #return nuinv( Source( alpha_freyd ), Source( gamma_freyd ), solution );
+            
+            #local solution;
+            #
+            #solution := 
+            #  CallFuncList( SolveLinearSystemInAbCategory, lift_via_linear_system_func( alpha_freyd, gamma_freyd ) );
+            #
+            #if solution = fail then
+            #    
+            #    return fail;
+            #    
+            #fi;
+            #
+            #return FreydCategoryMorphism( Source( alpha_freyd ), solution[1], Source( gamma_freyd ) );
             
         end, 300 );
         
@@ -1129,6 +1400,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 #% CAP_JIT_RESOLVE_FUNCTION
                 
                 Display( "diagram_for_homomorphism_structure_as_kernel_on_morphisms" );
+
                 object_A := Range( alpha );
                 
                 object_Ap := Source( alpha );
@@ -1196,6 +1468,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 interpretation := 
                     interpret_homomorphism_as_morphism_from_dinstinguished_object_to_homomorphism_structure( phi );
                 
+                GASMAN("collect");
                 diagram := diagram_for_homomorphism_structure_as_kernel( Source( alpha ), Range( alpha ) );
                 
                 return KernelLift( diagram[1], PreCompose( interpretation, CokernelProjection( diagram[2] ) ) );
@@ -1207,6 +1480,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
               function( A, B, morphism )
                 local diagram, embedding, epsilon, lift, interpretation;
                 
+                GASMAN("collect");
                 diagram := diagram_for_homomorphism_structure_as_kernel( A, B );
                 
                 embedding := KernelEmbedding( diagram[1] );
