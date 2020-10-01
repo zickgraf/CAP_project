@@ -931,6 +931,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
             
             H_rho_A_C_bar := PreCompose( homomorphism_structure_on_morphisms( rho_A, IdentityMorphism( C ) ), other_projection );
 
+            #Error( "before KernelEmbedding" );
+
             kernel_embedding := KernelEmbedding( H_rho_A_C_bar );
 
             lift_along := PreCompose( [ kernel_embedding, homomorphism_structure_on_morphisms( IdentityMorphism( A ), gamma ), range_projection ] );
