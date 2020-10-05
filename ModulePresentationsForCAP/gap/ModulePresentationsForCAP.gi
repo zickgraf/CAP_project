@@ -220,7 +220,7 @@ InstallGlobalFunction( ADD_FUNCTIONS_FOR_LEFT_PRESENTATION,
     
     if HasIsCommutative( category!.ring_for_representation_category ) and IsCommutative( category!.ring_for_representation_category ) then
       
-      #ADD_LIFT_AND_COLIFT_LEFT( category );
+      ADD_LIFT_AND_COLIFT_LEFT( category );
       
       ADD_ASSOCIATOR_LEFT( category );
       
@@ -246,7 +246,11 @@ InstallGlobalFunction( ADD_FUNCTIONS_FOR_LEFT_PRESENTATION,
       
     fi;
     
-    TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT( category );
+    if HasIsExteriorRing( category!.ring_for_representation_category ) and IsExteriorRing( category!.ring_for_representation_category ) then
+    
+        TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT( category );
+
+    fi;
     
 end );
 
@@ -465,8 +469,16 @@ InstallGlobalFunction( ADD_KERNEL_LEFT,
       
       function( morphism )
         local kernel, embedding, source_matrix;
+
+        
+        Display( "SyzygiesOfRows with matrix sizes:" );
+        Display( Concatenation( String( NrRows( UnderlyingMatrix( morphism ) ) ), "x", String( NrCols( UnderlyingMatrix( morphism ) ) ) ) );
+        
+        Error( "ModulePresentations KernelEmbedding" );
         
         embedding := ReducedSyzygiesOfRows( UnderlyingMatrix( morphism ), UnderlyingMatrix( Range( morphism ) ) );
+
+        Display( "finished" );
         
         source_matrix := BasisOfRows( UnderlyingMatrix( Source( morphism ) ) );
         
@@ -1967,7 +1979,7 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
         return PresentationMorphism( Source( morphism_1 ), sol[1], Source( morphism_2 ) );
     fi;
     
-    end );
+    end, 100000 );
   
   AddColift( category, 
     
