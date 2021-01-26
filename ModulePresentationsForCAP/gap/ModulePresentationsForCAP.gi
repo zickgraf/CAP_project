@@ -2486,8 +2486,17 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
             ##
             AddLift( category,
               function( alpha, gamma )
-                  
-                return mor_from_freyd( Lift( mor_in_freyd( alpha ), mor_in_freyd( gamma ) ) );
+                local lift_or_fail;
+                
+                lift_or_fail := Lift( mor_in_freyd( alpha ), mor_in_freyd( gamma ) );
+                
+                if lift_or_fail = fail then
+
+                    return fail;
+                    
+                fi;
+                
+                return mor_from_freyd( lift_or_fail );
               
             end );
             
