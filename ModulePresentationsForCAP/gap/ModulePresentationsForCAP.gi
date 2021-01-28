@@ -1792,7 +1792,7 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
     
     zero_1  := HomalgZeroMatrix( NrRows( A )*NrColumns( A ), NrRows( P )*NrRows( M ), homalg_ring );
     
-    mat1 := UnionOfColumns( B_tr_I, N_tr_I, zero_1 );
+    #mat1 := UnionOfColumns( B_tr_I, N_tr_I, zero_1 );
     
     I_P := KroneckerMat( HomalgIdentityMatrix( NrColumns( M ) ,homalg_ring ), P );
     
@@ -1800,9 +1800,9 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
     
     M_tr_I := KroneckerMat( TransposedMatrix( M ), HomalgIdentityMatrix( NrRows( P ) ,homalg_ring ) );
     
-    mat2 := UnionOfColumns( I_P, zero_2, M_tr_I );
+    #mat2 := UnionOfColumns( I_P, zero_2, M_tr_I );
     
-    mat := UnionOfRows( mat1, mat2 );
+    #mat := UnionOfRows( mat1, mat2 );
     
     if NrColumns( A ) <= 1 then
        
@@ -1813,12 +1813,19 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
        vec_A := UnionOfRows( List( [ 1 .. NrColumns( A ) ], i-> CertainColumns( A, [ i ] ) ) );
        
     fi;
-    
+
     vec_zero := HomalgZeroMatrix( NrRows( P )*NrColumns( M ), 1, homalg_ring );
     
     vec := UnionOfRows( vec_A, vec_zero );
     
-    sol := LeftDivide( mat, vec );
+    #sol := LeftDivide( mat, vec );
+
+    # LA, LB and LL correspond to A, B and L in the documentation of LeftDivide
+    LA := UnionOfRows( B_tr_I, I_P );
+    LL := UnionOfRows( UnionOfColumns( N_tr_I, zero_1 ), UnionOfColumns( zero_2, M_tr_I ) );
+    LB := vec;
+    
+    sol := LeftDivide( LA, LB, LL );
     
     if sol = fail then 
     
