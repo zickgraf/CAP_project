@@ -511,6 +511,29 @@ InstallGlobalFunction( ADD_KERNEL_LEFT,
       function( beta, alpha )
         local lift;
         
+    #                 rxs
+    #                P
+    #                |
+    #         sxv    | sxn
+    #        X      (A)   morphism_1 = alpha
+    #                |
+    #                V
+    #    uxv    vxn   mxn
+    #   M ----(B)--> N
+    #
+    #     morphism_2 = beta
+    #
+    # We need to solve the system
+    #     X*B + Y*N = A
+    #     P*X + Z*M = 0
+    #     I_1*X*B   + I_2*Y*N   + 0_1*Z*0_2 = A
+    #     P  *X*I_3 + 0_3*Y*0_4 + I_4*Z*M   = 0_rhs
+    # the function is supposed to return X as a ( well defined ) morphism from P to M.
+
+    
+    
+        # RightDivide( A, B, N )
+        # XB+YN = A
         lift := RightDivide( UnderlyingMatrix( alpha ), UnderlyingMatrix( beta ), UnderlyingMatrix( Range( beta ) ) );
         
         if lift = fail then
