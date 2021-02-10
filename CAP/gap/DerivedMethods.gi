@@ -2824,7 +2824,101 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     return false;
     
   end,
-  Description := "SolveLinearSystemInAbCategory using the homomorphism structure" 
+  Description := "SolveLinearSystemInAbCategory using the homomorphism structure and Lift in the range category",
+  Weight := 10 # make this more expensive than via SolveLinearSystemInAbCategory in the range category
+);
+
+##
+AddDerivationToCAP( SolveLinearSystemInAbCategory,
+                    [ [ InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure, 1 ],
+                      [ HomomorphismStructureOnMorphismsWithGivenObjects, 1 ],
+                      [ HomomorphismStructureOnObjects, 1 ],
+                      [ InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism, 1 ] ],
+  function( left_coefficients, right_coefficients, right_side )
+    local m, n, category, new_rhs, new_right_coeffs, new_left_coeffs, sol;
+    
+    Display( "SolveLinearSystemInAbCategory in ");
+    Display( Name( CapCategory( left_coefficients[1][1] ) ) );
+    Display( "via hom structure\n" );
+    
+    m := Size( left_coefficients );
+    
+    n := Size( left_coefficients[1] );
+
+    category := CapCategory( left_coefficients[1][1] );
+    
+    ## apply the homomorphism structure
+    
+    new_rhs := List( [ 1 .. m ],
+        i -> InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( right_side[i] )
+         );
+    
+    new_right_coeffs := 
+      List( [ 1 .. m ],
+      i -> List( [ 1 .. n ], j -> HomomorphismStructureOnMorphisms( left_coefficients[i][j], right_coefficients[i][j] ) ) 
+    );
+
+    # TODO: add DistinguishedObjectOfHomomorphismStructure to list of conditions?
+    new_left_coeffs := 
+      List( [ 1 .. m ],
+      i -> List( [ 1 .. n ], j -> IdentityMorphism( DistinguishedObjectOfHomomorphismStructure( category ) ) ) 
+    );
+
+    Assert( 0, Length( new_left_coeffs ) = Length( new_rhs ) );
+
+    ### the actual computation of the solution
+    sol := SolveLinearSystemInAbCategory( new_left_coeffs, new_right_coeffs, new_rhs );
+
+    #return lift;
+    
+    #if lift = fail then
+    #    
+    #    return fail;
+    #    
+    #fi;
+    #
+    ## reinterpretation of the solution
+
+    return
+      List( [ 1 .. n ], j -> 
+        InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism(
+          Range( left_coefficients[1][j] ),
+          Source( right_coefficients[1][j] ),
+          sol[j]
+        )
+      );
+  end :
+  ConditionsListComplete := true,
+  CategoryFilter := function( cat )
+    local B, conditions;
+    
+    if HasIsAbCategory( cat ) and IsAbCategory( cat ) and HasRangeCategoryOfHomomorphismStructure( cat ) then
+        
+        B := RangeCategoryOfHomomorphismStructure( cat );
+        
+        # if the range category of the hom-structure of cat is cat itself, this would cause an infinite recursion
+        if IsIdenticalObj( B, cat ) then
+            
+            return false;
+            
+        fi;
+        
+        conditions := [
+          "SolveLinearSystemInAbCategory",
+        ];
+        
+        if ForAll( conditions, c -> CanCompute( B, c ) ) then
+            
+            return true;
+            
+        fi;
+        
+    fi;
+    
+    return false;
+    
+  end,
+  Description := "SolveLinearSystemInAbCategory using the homomorphism structure and SolveLinearSystemInAbCategory in the range category" 
 );
 
 ##
