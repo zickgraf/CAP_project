@@ -3321,7 +3321,31 @@ SolveLinearSystemInAbCategory := rec(
   argument_list := [ 1, 2, 3 ],
   filter_list := [ IsList, IsList, "list_of_morphisms", "category" ],
   cache_name := "SolveLinearSystemInAbCategory",
-  return_type := "morphism_or_fail"
+  return_type := "morphism_or_fail",
+  pre_function := function( left_coeffs, right_coeffs, rhs, cat )
+        
+        Assert( 0, IsList( rhs ) );
+        Assert( 0, ForAll( rhs, x -> IsCapCategoryMorphism( x ) and CapCategory( x ) = cat ) );
+
+        Assert( 0, IsList( left_coeffs ) );
+        Assert( 0, IsList( right_coeffs ) );
+        
+        Assert( 0, Length( left_coeffs ) > 0 );
+        Assert( 0, Length( left_coeffs ) = Length( right_coeffs ) );
+        Assert( 0, Length( left_coeffs ) = Length( rhs ) );
+        
+        Assert( 0, ForAll( Concatenation( left_coeffs, right_coeffs ), x -> IsList( x ) and Length( x ) = Length( left_coeffs[1] ) and ForAll( x, y -> IsCapCategoryMorphism( y ) and CapCategory( y ) = cat ) ) );
+        
+        Assert( 0, ForAll( [ 1 .. Length( left_coeffs ) ], i -> ForAll( left_coeffs[i], coeff -> Source( coeff ) = Source( rhs[i] ) ) ) );
+        Assert( 0, ForAll( [ 1 .. Length( right_coeffs ) ], i -> ForAll( right_coeffs[i], coeff -> Range( coeff ) = Range( rhs[i] ) ) ) );
+
+        Assert( 0, ForAll( [ 1 .. Length( left_coeffs[1] ) ], j -> ForAll( left_coeffs, x -> Range( x[j] ) = Range( left_coeffs[1][j] ) ) ) );
+        Assert( 0, ForAll( [ 1 .. Length( right_coeffs[1] ) ], j -> ForAll( right_coeffs, x -> Source( x[j] ) = Source( right_coeffs[1][j] ) ) ) );
+
+        return [ true ];
+        
+  end
+        
 ),
 
 MereExistenceOfSolutionOfLinearSystemInAbCategory := rec(
