@@ -893,6 +893,120 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                                [ "SolveLinearSystemInAbCategory" ] ) then
         
         ##
+        AddSolveLinearSystemInAbCategory( category,
+        
+          function( left_coeffs, right_coeffs, rhs )
+            local new_left_coeffs, new_right_coeffs, new_rhs, rho, rho_A, A, rho_C, C, new_equation_left_coeffs, new_equation_right_coeffs, sol, relevant_sol, e, f, v, w;
+            
+            Display( "SolveLinearSystemInAbCategory in "); 
+            Display( Name( category ) );
+            Display( "via going down\n" );
+            
+            # get all the morphism data
+            new_left_coeffs := List( left_coeffs, l ->
+                List( l, coeff -> MorphismDatum( coeff ) )
+            );
+            
+            new_right_coeffs := List( right_coeffs, l ->
+                List( l, coeff -> MorphismDatum( coeff ) )
+            );
+            
+            new_rhs := List( rhs, r -> MorphismDatum( r ) );
+
+            Display( "add modulo" );
+
+            # equality must only hold modulo the relations of the range
+            for e in [ 1 .. Length( left_coeffs ) ] do
+                
+                for f in [ 1 .. Length( left_coeffs ) ] do
+                    
+                    # the equation in the e-th line must hold modulo rho := RelationMorphism( Range( rhs[e] ) )
+                    
+                    rho := RelationMorphism( Range( rhs[e] ) );
+                    
+                    if e = f then
+                        
+                        Add( new_left_coeffs[e], IdentityMorphism( Source( new_rhs[e] ) ) );
+                        Add( new_right_coeffs[e], rho );
+                        
+                    else
+                        
+                        Add( new_left_coeffs[f], ZeroMorphism( Source( new_rhs[f] ), Source( new_rhs[e] ) ) );
+                        Add( new_right_coeffs[f], ZeroMorphism( Source( rho ), Range( new_rhs[f] ) ) );
+                        
+                    fi;
+                    
+                od;
+                
+            od;
+
+            Display( "add well-defined" );
+            
+            # add conditions for being well-defined
+            for v in [ 1 .. Length( left_coeffs[1] ) ] do
+                
+                # Let X be the v-th variable. Then:
+                # A := Source( X ) = Range( new_left_coeffs[1][v] ) and C := Range( X ) = Source( new_right_coeffs[1][v] )
+                # Add the new equation "rho_A * X + Y * rho_C = 0"
+                # and add "+ 0 * Y * 0" to existing equations
+
+                rho_A := RelationMorphism( Range( left_coeffs[1][v] ) );
+                A := Range( rho_A );
+                
+                rho_C := RelationMorphism( Source( right_coeffs[1][v] ) );
+                C := Range( rho_C );
+                
+                for e in [ 1 .. Length( new_left_coeffs ) ] do
+                    
+                    Add( new_left_coeffs[e], ZeroMorphism( Source( new_rhs[e] ), Source( rho_A ) ) );
+                    Add( new_right_coeffs[e], ZeroMorphism( Source( rho_C ), Range( new_rhs[e] ) ) );
+                    
+                od;
+                
+                new_equation_left_coeffs := [];
+                new_equation_right_coeffs := [];
+                
+                # the last entry will be added below
+                for w in [ 1 .. Length( new_left_coeffs[1] ) - 1 ] do
+                    
+                    if v = w then
+                        
+                        Add( new_equation_left_coeffs, rho_A );
+                        Add( new_equation_right_coeffs, IdentityMorphism( Range( rho_C ) ) );
+                        
+                    else
+                        
+                        Add( new_equation_left_coeffs, ZeroMorphism( Source( rho_A ), Range( new_left_coeffs[1][w] ) ) );
+                        Add( new_equation_right_coeffs, ZeroMorphism( Source( new_right_coeffs[1][w] ), Range( rho_C ) ) );
+                        
+                    fi;
+                    
+                od;
+                
+                Add( new_equation_left_coeffs, IdentityMorphism( Source( rho_A ) ) );
+                Add( new_equation_right_coeffs, rho_C );
+                        
+                
+                Add( new_left_coeffs, new_equation_left_coeffs );
+                Add( new_right_coeffs, new_equation_right_coeffs );
+
+                Add( new_rhs, ZeroMorphism( Source( rho_A ), Range( rho_C ) ) );
+                
+            od;
+
+            Display( "go down" );
+
+            Assert( 0, Length( new_left_coeffs ) = Length( new_rhs ) );
+            
+            sol := SolveLinearSystemInAbCategory( new_left_coeffs, new_right_coeffs, new_rhs );
+            
+            relevant_sol := List( [ 1 .. Length( left_coeffs[1] ) ], v -> FreydCategoryMorphism( Range( left_coeffs[1][v] ), sol[v], Source( right_coeffs[1][v] ) ) );
+            
+            return relevant_sol;
+            
+        end );
+                               
+        ##
         AddLift( category,
                  
           function( alpha_freyd, gamma_freyd )
