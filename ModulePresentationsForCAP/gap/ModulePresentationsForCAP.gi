@@ -2523,6 +2523,35 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
               
             end );
             
+            ##
+            AddSolveLinearSystemInAbCategory( category,
+              function( left_coeffs, right_coeffs, rhs )
+                local new_left_coeffs, new_right_coeffs, new_rhs, sol;
+
+                Display( "SolveLinearSystemInAbCategory in "); 
+                Display( Name( category ) );
+                Display( "via Freyd\n" );
+            
+                new_left_coeffs := List( left_coeffs, l ->
+                    List( l, coeff -> mor_in_freyd( coeff ) )
+                );
+                
+                new_right_coeffs := List( right_coeffs, l ->
+                    List( l, coeff -> mor_in_freyd( coeff ) )
+                );
+                
+                new_rhs := List( rhs, r -> mor_in_freyd( r ) );
+
+                Assert( 0, Length( new_left_coeffs ) = Length( new_rhs ) );
+
+                sol := SolveLinearSystemInAbCategory( new_left_coeffs, new_right_coeffs, new_rhs );
+                
+                # TODO: fail?
+                
+                return List( sol, s -> mor_from_freyd( s ) );
+              
+            end, 200 );
+            
         fi;
         
     fi;
