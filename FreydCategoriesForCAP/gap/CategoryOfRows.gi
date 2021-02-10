@@ -671,6 +671,89 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
         
     end );
     
+    if HasIsCommutative( ring ) and IsCommutative( ring ) then
+    ##
+    AddSolveLinearSystemInAbCategory( category,
+      function( left_coeffs, right_coeffs, rhs )
+      local coeffs, mat, vec_rhs, vec_sol, sol, last_index, m, n, vec_X, X, j;
+        Display( "SolveLinearSystemInAbCategory in "); 
+        Display( Name( category ) );
+        Display( "via Kronecker trick\n" );
+            
+        left_coeffs := List( left_coeffs, l -> List( l, coeff -> UnderlyingMatrix( coeff ) ) );
+        right_coeffs := List( right_coeffs, l -> List( l, coeff -> UnderlyingMatrix( coeff ) ) );
+        rhs := List( rhs, r -> UnderlyingMatrix( r ) );
+
+        Assert( 0, IsList( rhs ) );
+        Assert( 0, ForAll( rhs, x -> IsHomalgMatrix( x ) ) );
+
+        Assert( 0, IsList( left_coeffs ) );
+        Assert( 0, IsList( right_coeffs ) );
+        
+        Assert( 0, Length( left_coeffs ) > 0 );
+        Assert( 0, Length( left_coeffs ) = Length( right_coeffs ) );
+        Assert( 0, Length( left_coeffs ) = Length( rhs ) );
+        
+        Assert( 0, ForAll( Concatenation( left_coeffs, right_coeffs ), x -> IsList( x ) and Length( x ) = Length( left_coeffs[1] ) and ForAll( x, y -> IsHomalgMatrix( y ) ) ) );
+        
+        Assert( 0, ForAll( [ 1 .. Length( left_coeffs ) ], i -> ForAll( left_coeffs[i], coeff -> NrRows( coeff ) = NrRows( rhs[i] ) ) ) );
+        Assert( 0, ForAll( [ 1 .. Length( right_coeffs ) ], i -> ForAll( right_coeffs[i], coeff -> NrColumns( coeff ) = NrColumns( rhs[i] ) ) ) );
+
+        Assert( 0, ForAll( [ 1 .. Length( left_coeffs[1] ) ], j -> ForAll( left_coeffs, x -> NrColumns( x[j] ) = NrColumns( left_coeffs[1][j] ) ) ) );
+        Assert( 0, ForAll( [ 1 .. Length( right_coeffs[1] ) ], j -> ForAll( right_coeffs, x -> NrRows( x[j] ) = NrRows( right_coeffs[1][j] ) ) ) );
+        
+        coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( TransposedMatrix( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
+
+        mat := UnionOfRows( List( coeffs, x -> UnionOfColumns( x ) ) );
+        
+        vec_rhs := UnionOfRows( List( rhs, vec ) );
+
+        Eval( mat );
+        Eval( vec_rhs );
+
+        tmp_asd := TransposedMatrix( vec_rhs );
+        Eval( tmp_asd );
+        tmp_qwe := TransposedMatrix( mat );
+        Eval( tmp_qwe );
+        
+        Display( Concatenation( "solving ", String( NrRows( mat ) ), "x", String( NrColumns( mat ) ), " system of equations" ) );
+        Display( Concatenation( "main part of solution: ", String( NrColumns(left_coeffs[1][1]) ), "x", String( NrRows(right_coeffs[1][1]) ), " = ", String( NrColumns(left_coeffs[1][1]) * NrRows(right_coeffs[1][1]) ) ) );
+        
+        interesting := NrColumns(left_coeffs[1][1]) * NrRows(right_coeffs[1][1]);
+        
+        start_time := NanosecondsSinceEpoch();
+
+        # Error("tmp");
+
+        #vec_sol := LeftDivide( mat, vec_rhs :  );
+        vec_sol := TransposedMatrix( RightDivide( tmp_asd, tmp_qwe : interesting := interesting ) );
+
+        Display( Concatenation( "solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
+        Error("stop");
+
+        if vec_sol = fail then
+            return fail;
+        fi;
+        
+        sol := [ ];
+        
+        last_index := 0;
+        for j in [ 1 .. Length( left_coeffs[1] ) ] do
+            m := NrColumns(left_coeffs[1][j]);
+            n := NrRows(right_coeffs[1][j]);
+            vec_X := CertainRows( vec_sol, [ last_index+1 .. last_index+m*n ] );
+            last_index := last_index + m*n;
+            X := devec( vec_X, m, n );
+            Add( sol, X );
+        od;
+        
+        Assert( 0, ForAll( [ 1 .. Length( left_coeffs ) ], i -> Sum( List( [ 1 .. Length( left_coeffs[1] ) ], j -> left_coeffs[i][j] * sol[j] * right_coeffs[i][j] ) ) = rhs[i] ) );
+        
+        return sol;
+        
+    end );
+    fi;
+    
     ##
     AddInjectionOfBiasedWeakPushout( category,
         function( morphism_1, morphism_2 )
