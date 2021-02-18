@@ -901,7 +901,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
             Display( "SolveLinearSystemInAbCategory in "); 
             Display( Name( category ) );
             Display( "via going down\n" );
-            
+
+            ADD := AdditiveClosure( UnderlyingCategory( category ) );
+            OP := Opposite( UnderlyingCategory( category ) );
+            SetIsAbCategory( OP, true );
+            OP_ADD := AdditiveClosure( Opposite( UnderlyingCategory( category ) ) );
+
             # get all the morphism data
             new_left_coeffs := List( left_coeffs, l ->
                 List( l, coeff -> MorphismDatum( coeff ) )
@@ -911,7 +916,78 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 List( l, coeff -> MorphismDatum( coeff ) )
             );
             
+            new_right_coeffs_op := List( right_coeffs, l ->
+                List( l, coeff -> Opposite( MorphismDatum( coeff ) ) )
+            );
+            
             new_rhs := List( rhs, r -> MorphismDatum( r ) );
+            
+            SOURCE_LEFT_COEFFS := AdditiveClosureObject( List( new_left_coeffs, row -> Source( row[1] ) ), ADD );
+            Assert( 0, IsWellDefined( SOURCE_LEFT_COEFFS ) );
+            RANGE_LEFT_COEFFS := AdditiveClosureObject( List( new_left_coeffs[1], coeff -> Range( coeff ) ), ADD );
+            Assert( 0, IsWellDefined( RANGE_LEFT_COEFFS ) );
+            LEFT_COEFFS := AdditiveClosureMorphismListList( SOURCE_LEFT_COEFFS, new_left_coeffs, RANGE_LEFT_COEFFS );
+            Assert( 0, IsWellDefined( LEFT_COEFFS ) );
+            
+            SOURCE_RIGHT_COEFFS := AdditiveClosureObject( List( new_right_coeffs_op, row -> Source( row[1] ) ), OP_ADD );
+            Assert( 0, IsWellDefined( SOURCE_RIGHT_COEFFS ) );
+            RANGE_RIGHT_COEFFS := AdditiveClosureObject( List( new_right_coeffs_op[1], coeff -> Range( coeff ) ), OP_ADD );
+            Assert( 0, IsWellDefined( RANGE_RIGHT_COEFFS ) );
+            RIGHT_COEFFS := AdditiveClosureMorphismListList( SOURCE_RIGHT_COEFFS, new_right_coeffs_op, RANGE_RIGHT_COEFFS );
+            Assert( 0, IsWellDefined( RIGHT_COEFFS ) );
+            
+            # DirectSumFunctorial = DiagMat
+            RHO_A := DirectSumFunctorial( List( left_coeffs[1], x -> AsAdditiveClosureMorphism( RelationMorphism( Range( x ) ) ) ) );
+            Assert( 0, IsWellDefined( RHO_A ) );
+            #RHO_B := DirectSumFunctorial( List( rhs, r -> AsAdditiveClosureMorphism( Opposite( RelationMorphism( Range( r ) ) ) ) ) );
+            #Assert( 0, IsWellDefined( RHO_B ) );
+            #RHO_C := DirectSumFunctorial( List( right_coeffs, row -> AsAdditiveClosureMorphism( Opposite( RelationMorphism( Source( row[1] ) ) ) ) ) );
+            #Assert( 0, IsWellDefined( RHO_C ) );
+            RHO_B_LIST := List( rhs, r -> AsAdditiveClosureMorphism( Opposite( RelationMorphism( Range( r ) ) ) ) );
+            RHO_C_LIST := List( right_coeffs[1], x -> AsAdditiveClosureMorphism( Opposite( RelationMorphism( Source( x ) ) ) ) );
+            RHO_B_RHO_C := DirectSumFunctorial( Concatenation( RHO_B_LIST, RHO_C_LIST ) );
+            Assert( 0, IsWellDefined( RHO_B_RHO_C ) );
+
+            ID_1_ID_3 := IdentityMorphism( DirectSum( SOURCE_LEFT_COEFFS, Source( RHO_A ) ) );
+            
+            #ID_1 := IdentityMorphism( SOURCE_LEFT_COEFFS );
+            #Assert( 0, IsWellDefined( ID_1 ) );
+            #ZERO_1 := ZeroMorphism( SOURCE_LEFT_COEFFS, Source( RHO_A ) );
+            #Assert( 0, IsWellDefined( ZERO_1 ) );
+            #ZERO_2 := ZeroMorphism( Source( RHO_C ), RANGE_RIGHT_COEFFS );
+            #Assert( 0, IsWellDefined( ZERO_2 ) );
+            # op -> swap source and range
+            ID_2 := IdentityMorphism( RANGE_RIGHT_COEFFS );
+            Assert( 0, IsWellDefined( ID_2 ) );
+            #ZERO_3 := ZeroMorphism( Source( RHO_A ), SOURCE_LEFT_COEFFS );
+            #Assert( 0, IsWellDefined( ZERO_3 ) );
+            #ZERO_4 := ZeroMorphism( Source( RHO_B ), SOURCE_RIGHT_COEFFS );
+            #Assert( 0, IsWellDefined( ZERO_4 ) );
+            #ID_3 := IdentityMorphism( Source( RHO_A ) );
+            #Assert( 0, IsWellDefined( ID_3 ) );
+
+            # UniversalMorphismFromDirectSum = UnionOfRows
+            # UniversalMorphismIntoDirectSum = UnionOfColumns
+            #FINAL_LEFT_COEFFS := UniversalMorphismFromDirectSum(
+            #    UniversalMorphismIntoDirectSum( LEFT_COEFFS, ID_1, ZERO_1 ),
+            #    UniversalMorphismIntoDirectSum( RHO_A, ZERO_3, ID_3 )
+            #);
+            FINAL_LEFT_COEFFS := UniversalMorphismIntoDirectSum(
+                UniversalMorphismFromDirectSum(
+                    LEFT_COEFFS,
+                    RHO_A
+                ),
+                ID_1_ID_3
+            );
+            FINAL_RIGHT_COEFFS := UniversalMorphismIntoDirectSum(
+                UniversalMorphismFromDirectSum(
+                    RIGHT_COEFFS,
+                    ID_2
+                ),
+                RHO_B_RHO_C
+            );
+            
+            #Error("hi");
 
             Display( "add modulo" );
 
@@ -997,6 +1073,10 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
             Display( "go down" );
 
             Assert( 0, Length( new_left_coeffs ) = Length( new_rhs ) );
+
+            Assert( 0, new_left_coeffs = MorphismMatrix( FINAL_LEFT_COEFFS ) );
+            Assert( 0, new_right_coeffs = List( MorphismMatrix( FINAL_RIGHT_COEFFS ), row -> List( row, r -> Opposite( r ) ) ) );
+            Error( "success" );
             
             sol := SolveLinearSystemInAbCategory( new_left_coeffs, new_right_coeffs, new_rhs );
             
