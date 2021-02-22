@@ -11,6 +11,13 @@ BindGlobal( "CAP_JIT_LOGIC_TEMPLATES", [
         dst_template := "",
         returns_value := false,
     ),
+    # Display( obj )
+    rec(
+        variable_names := [ "obj" ],
+        src_template := "Display( obj )",
+        dst_template := "",
+        returns_value := false,
+    ),
     # INSTALL_TODO_FOR_LOGICAL_THEOREMS
     rec(
         variable_names := [ "condition", "objectified_morphism", "source", "range", "category" ],
@@ -50,6 +57,28 @@ BindGlobal( "CAP_JIT_LOGIC_TEMPLATES", [
         variable_names := [ "list", "func", "index" ],
         src_template := "List( list, func )[index]",
         dst_template := "func( list[index] )",
+        returns_value := true,
+    ),
+    # TODO
+    rec(
+        # TODO: filters
+        variable_names := [ "homalg_matrix", "nrows1", "ncols", "ring", "nrows3" ],
+        src_template := "homalg_matrix * UnionOfRows( HomalgZeroMatrix( nrows1, ncols, ring ), HomalgIdentityMatrix( ncols, ring ), HomalgZeroMatrix( nrows3, ncols, ring ) )",
+        dst_template := "CertainColumns( homalg_matrix, [ nrows1+1..nrows1+ncols ] )",
+        returns_value := true,
+    ),
+    rec(
+        # TODO: filters
+        variable_names := [ "end", "index" ],
+        src_template := "[ 1 .. end ][index]",
+        dst_template := "index",
+        returns_value := true,
+    ),
+    rec(
+        # TODO: filters
+        variable_names := [ "main_list", "func", "sublist" ],
+        src_template := "List( main_list, func){sublist}",
+        dst_template := "List( main_list{sublist}, func )",
         returns_value := true,
     ),
 ] );
