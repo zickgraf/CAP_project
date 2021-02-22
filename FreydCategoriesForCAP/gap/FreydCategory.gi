@@ -1087,6 +1087,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 local object_A, object_Ap, object_B, object_Bp, rho_B, rho_Bp, A, Ap, mor_1, mor_2;
                 #% CAP_JIT_RESOLVE_FUNCTION
                 
+                Display( "diagram_for_homomorphism_structure_as_kernel_on_morphisms" );
+                
                 object_A := Range( alpha );
                 
                 object_Ap := Source( alpha );
