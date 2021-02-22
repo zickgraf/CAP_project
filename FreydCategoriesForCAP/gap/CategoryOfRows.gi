@@ -106,9 +106,9 @@ InstallMethod( AsCategoryOfRowsMorphism,
   function( homalg_matrix, category )
     local source, range;
     
-    source := CategoryOfRowsObject( NrRows( homalg_matrix ), category );
+    source := CategoryOfRowsObjectOp( category, NrRows( homalg_matrix ) );
     
-    range := CategoryOfRowsObject( NrColumns( homalg_matrix ), category );
+    range := CategoryOfRowsObjectOp( category, NrColumns( homalg_matrix ) );
     
     return CategoryOfRowsMorphism( source, homalg_matrix, range );
     
@@ -176,7 +176,7 @@ InstallMethod( StandardRowMorphismOp,
     category := CapCategory( object );
     
     return CategoryOfRowsMorphism(
-      CategoryOfRowsObject( 1, category ),
+      CategoryOfRowsObjectOp( category, 1 ),
       CertainRows( HomalgIdentityMatrix( rank, UnderlyingRing( category ) ), [ n ] ),
       object
     );
@@ -467,7 +467,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
     AddZeroObject( category,
       function( )
         
-        return CategoryOfRowsObject( 0, category );
+        return CategoryOfRowsObjectOp( category, 0 );
         
     end );
     
@@ -500,7 +500,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
       
       dimension := Sum( List( object_list, object -> RankOfObject( object ) ) );
       
-      return CategoryOfRowsObject( dimension, category );
+      return CategoryOfRowsObjectOp( category, dimension );
       
     end );
     
@@ -914,7 +914,7 @@ MYGLOBALLIST := [];
         AddHomomorphismStructureOnObjects( category,
           function( object_1, object_2 )
             
-            return CategoryOfRowsObject( RankOfObject( object_1 ) * RankOfObject( object_2 ), category );
+            return CategoryOfRowsObjectOp( category, RankOfObject( object_1 ) * RankOfObject( object_2 ) );
             
         end );
         
@@ -932,7 +932,7 @@ MYGLOBALLIST := [];
         AddDistinguishedObjectOfHomomorphismStructure( category,
           function( )
             
-            return CategoryOfRowsObject( 1, category );
+            return CategoryOfRowsObjectOp( category, 1 );
             
         end );
         
