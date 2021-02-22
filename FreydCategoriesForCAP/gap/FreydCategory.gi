@@ -1058,6 +1058,25 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                  
           function( alpha_freyd, gamma_freyd )
             local alpha, gamma, A_freyd, B_freyd, C_freyd, rho_A, A, R_A, rho_B, B, R_B, rho_C, C, R_C, interpretation, range_projection, nu_mod_alpha, other_projection, H_rho_A_C_bar, kernel_embedding, lift_along, solution, composed_solution, reinterpretation;
+
+            if true then
+            
+                Display( "Lift in "); 
+                Display( Name( category ) );
+                Display( "via going down (via SolveLinearSystemInAbCategory)\n" );
+                
+                solution := 
+                  CallFuncList( SolveLinearSystemInAbCategory, lift_via_linear_system_func( alpha_freyd, gamma_freyd ) );
+                
+                if solution = fail then
+                    
+                    return fail;
+                    
+                fi;
+                
+                return FreydCategoryMorphism( Source( alpha_freyd ), solution[1], Source( gamma_freyd ) );
+
+            fi;
             
             Display( "start lift in Freyd" );
             start_time := NanosecondsSinceEpoch();
