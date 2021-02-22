@@ -464,7 +464,12 @@ InstallGlobalFunction( ADD_KERNEL_LEFT,
       function( morphism )
         local kernel, embedding, source_matrix;
         
+        Display( "SyzygiesOfRows with matrix sizes:" );
+        Display( Concatenation( String( NrRows( UnderlyingMatrix( morphism ) ) ), "x", String( NrCols( UnderlyingMatrix( morphism ) ) ) ) );
+        
         embedding := ReducedSyzygiesOfRows( UnderlyingMatrix( morphism ), UnderlyingMatrix( Range( morphism ) ) );
+        
+        Display( "SyzygiesOfRows finished" );
         
         source_matrix := BasisOfRows( UnderlyingMatrix( Source( morphism ) ) );
         
