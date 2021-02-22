@@ -1365,7 +1365,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
             #
             #return FreydCategoryMorphism( Source( alpha_freyd ), solution[1], Source( gamma_freyd ) );
             
-        end, 300 );
+        end, 100 );
         
         ##
         AddColift( category,

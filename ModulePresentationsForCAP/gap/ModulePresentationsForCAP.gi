@@ -2005,7 +2005,7 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_LEFT,
         return PresentationMorphism( Source( morphism_1 ), sol[1], Source( morphism_2 ) );
     fi;
     
-    end, 100000 );
+    end );
   
   AddColift( category, 
     
@@ -2333,7 +2333,6 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
         freyd := FreydCategory( CRplus );
         Finalize( freyd );
 
-        
         #DeactivateCachingOfCategory(lazy);
         #CapCategorySwitchLogicOff(lazy);
         #DisableSanityChecks(lazy);
@@ -2528,7 +2527,7 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
                 
                 return mor_from_freyd( lift_or_fail );
               
-            end );
+            end, 200 );
             
             ##
             AddSolveLinearSystemInAbCategory( category,
