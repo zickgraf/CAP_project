@@ -1078,6 +1078,10 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
             fi;
             
             Display( "start lift in Freyd" );
+            Display( "Lift in "); 
+            Display( Name( category ) );
+            Display( "via SPECIAL\n" );
+                
             start_time := NanosecondsSinceEpoch();
             
             alpha := MorphismDatum( alpha_freyd );
