@@ -694,6 +694,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
     AddIsEqualForMorphisms( category,
       function( morphism_1, morphism_2 )
         
+        if IsHomalgMatrix( MorphismMatrix( morphism_1 ) ) then
+            
+            return MorphismMatrix( morphism_1 ) = MorphismMatrix( morphism_2 );
+            
+        fi;
+        
         return compare_morphisms( morphism_1, morphism_2, IsEqualForMorphisms );
         
     end );
@@ -701,6 +707,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
     ##
     AddIsCongruentForMorphisms( category,
       function( morphism_1, morphism_2 )
+
+        if IsHomalgMatrix( MorphismMatrix( morphism_1 ) ) then
+            
+            return MorphismMatrix( morphism_1 ) = MorphismMatrix( morphism_2 );
+            
+        fi;
         
         return compare_morphisms( morphism_1, morphism_2, IsCongruentForMorphisms );
         
@@ -712,6 +724,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
       
       function( object )
         local object_list, size, listlist, i, j;
+        
+        if IsRingAsCategory( underlying_category ) and IsHomalgRing( UnderlyingRing( underlying_category ) ) then
+
+            return AdditiveClosureMorphism( object, HomalgIdentityMatrix( Length( ObjectList( object ) ), UnderlyingRing( underlying_category ) ), object );
+            
+        fi;
         
         object_list := ObjectList( object );
         
@@ -742,6 +760,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
       function( source, range )
         local object_list_source, object_list_range, size_list_source, size_list_range, listlist, i, j;
         
+        if IsRingAsCategory( underlying_category ) and IsHomalgRing( UnderlyingRing( underlying_category ) ) then
+
+            return AdditiveClosureMorphism( source, HomalgZeroMatrix( Length( ObjectList( source ) ), Length( ObjectList( range ) ), UnderlyingRing( underlying_category ) ), range );
+            
+        fi;
+        
         object_list_source := ObjectList( source );
         
         object_list_range := ObjectList( range );
@@ -764,7 +788,13 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
     AddPreCompose( category,
       function( morphism_1, morphism_2 )
         local nr_rows_1, nr_cols_1, nr_rows_2, nr_cols_2, listlist, i, j;
-        
+
+        if IsHomalgMatrix( MorphismMatrix( morphism_1 ) ) then
+            
+            return AdditiveClosureMorphism( Source( morphism_1 ), MorphismMatrix( morphism_1 ) * MorphismMatrix( morphism_2 ), Range( morphism_2 ) );
+            
+        fi;
+
         nr_rows_1 := NrRows( morphism_1 );
         
         nr_cols_1 := NrCols( morphism_1 );
@@ -942,60 +972,37 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                 
                   
 
-                #return ObjectifyWithAttributes(
-                #    rec(),
-                #    CapCategory(source)!.morphism_type,
-                #    CapCategory, CapCategory(source),
-                #    Source, source,
-                #    Range, range,
-                #    UnderlyingMatrix, 
-                #        KroneckerMat(
-                #            TransposedMatrix( MorphismMatrix( alpha ) ),
-                #            MorphismMatrix( beta )
-                #        )
-                #    );
-                
-                
-                #### OVER Q
-                if false then
-                #if NumberRows( MorphismMatrix( alpha ) ) <= 0 or NumberColumns( MorphismMatrix( alpha ) ) <= 0 or NumberRows( MorphismMatrix( beta ) ) <= 0 or NumberColumns( MorphismMatrix( beta ) ) <= 0 then
-                #    return ZeroMorphism( source, range );
-                #else
-                    result := ObjectifyWithAttributes(
+                # COMMUTATIVE RING
+                if HasUnderlyingRing( underlying_category ) and IsHomalgRing( UnderlyingRing( underlying_category ) ) and HasIsCommutative( UnderlyingRing( underlying_category ) ) and IsCommutative( UnderlyingRing( underlying_category ) ) then
+                    return ObjectifyWithAttributes(
                         rec(),
                         CapCategory(source)!.morphism_type,
                         CapCategory, CapCategory(source),
                         Source, source,
-                        Range, range, UnderlyingMatrix, 
-                        CoefficientsWithGivenMonomials(
+                        Range, range,
+                        UnderlyingMatrix, 
                             KroneckerMat(
                                 TransposedMatrix( MorphismMatrix( alpha ) ),
-                                DualKroneckerMat( UnionOfRows(
-                                    List( underlying_category!.generating_system,
-                                        function ( generator )
-                                            return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
-                                        end
-                                    ) ),
-                                    MorphismMatrix( beta )
-                                )
-                            ),
-                            DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], function ( logic_new_func_471_x )
-                                return DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], function ( logic_new_func_404_x )
-                                          return underlying_category!.generating_system_as_column;
-                                      end ) );
-                            end ) ) ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ) );
-                    
-                    if IsOne( MorphismMatrix( alpha ) ) then
-                        
-                        result2 := ObjectifyWithAttributes(
+                                MorphismMatrix( beta )
+                            )
+                        );
+                fi;
+                
+                
+                #### EXTERIOR ALGEBRA OVER Q (in this case generating_system_over_Q_as_column is NOT bound as it coincides with generating_system_as_column)
+                if IsBound( underlying_category!.generating_system ) and not IsBound( underlying_category!.generating_system_over_Q_as_column ) then
+                    #if NumberRows( MorphismMatrix( alpha ) ) <= 0 or NumberColumns( MorphismMatrix( alpha ) ) <= 0 or NumberRows( MorphismMatrix( beta ) ) <= 0 or NumberColumns( MorphismMatrix( beta ) ) <= 0 then
+                    #    return ZeroMorphism( source, range );
+                    #else
+                        result := ObjectifyWithAttributes(
                             rec(),
                             CapCategory(source)!.morphism_type,
                             CapCategory, CapCategory(source),
                             Source, source,
-                            Range, range, UnderlyingMatrix,
-                            KroneckerMat(
-                                MorphismMatrix( alpha ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ),
-                                CoefficientsWithGivenMonomials(
+                            Range, range, UnderlyingMatrix, 
+                            CoefficientsWithGivenMonomials(
+                                KroneckerMat(
+                                    TransposedMatrix( MorphismMatrix( alpha ) ),
                                     DualKroneckerMat( UnionOfRows(
                                         List( underlying_category!.generating_system,
                                             function ( generator )
@@ -1003,146 +1010,176 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                                             end
                                         ) ),
                                         MorphismMatrix( beta )
-                                    ),
-                                    DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], i -> underlying_category!.generating_system_as_column ) )
-                                ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) )
-                            )
-                        );
+                                    )
+                                ),
+                                DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], function ( logic_new_func_471_x )
+                                    return DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], function ( logic_new_func_404_x )
+                                              return underlying_category!.generating_system_as_column;
+                                          end ) );
+                                end ) ) ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ) );
                         
-                        Assert( 0, result = result2 );
-                        
-                        return result2;
-                        
-                    fi;
+                        if IsOne( MorphismMatrix( alpha ) ) then
+                            
+                            result2 := ObjectifyWithAttributes(
+                                rec(),
+                                CapCategory(source)!.morphism_type,
+                                CapCategory, CapCategory(source),
+                                Source, source,
+                                Range, range, UnderlyingMatrix,
+                                KroneckerMat(
+                                    MorphismMatrix( alpha ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ),
+                                    CoefficientsWithGivenMonomials(
+                                        DualKroneckerMat( UnionOfRows(
+                                            List( underlying_category!.generating_system,
+                                                function ( generator )
+                                                    return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
+                                                end
+                                            ) ),
+                                            MorphismMatrix( beta )
+                                        ),
+                                        DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], i -> underlying_category!.generating_system_as_column ) )
+                                    ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) )
+                                )
+                            );
+                            
+                            Assert( 0, result = result2 );
+                            
+                            return result2;
+                            
+                        fi;
 
-                    #if IsOne( MorphismMatrix( beta ) ) then
-                    #    
-                    #    result2 := ObjectifyWithAttributes(
-                    #        rec(),
-                    #        CapCategory(source)!.morphism_type,
-                    #        CapCategory, CapCategory(source),
-                    #        Source, source,
-                    #        Range, range, UnderlyingMatrix,
-                    #        DualKroneckerMat(
-                    #            CoefficientsWithGivenMonomials(
-                    #                KroneckerMat(
-                    #                    TransposedMatrix( MorphismMatrix( alpha ) ),
-                    #                    UnionOfRows(
-                    #                        List( underlying_category!.generating_system,
-                    #                            function ( generator )
-                    #                                return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
-                    #                            end
-                    #                    ) )
-                    #                ),
-                    #                DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], i -> underlying_category!.generating_system_as_column ) )
-                    #            ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ),
-                    #            MorphismMatrix( beta ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) )
-                    #        )
-                    #    );
-                    #    
-                    #    Assert( 0, result = result2 );
-                    #    
-                    #    return result2;
-                    #    
+                        #if IsOne( MorphismMatrix( beta ) ) then
+                        #    
+                        #    result2 := ObjectifyWithAttributes(
+                        #        rec(),
+                        #        CapCategory(source)!.morphism_type,
+                        #        CapCategory, CapCategory(source),
+                        #        Source, source,
+                        #        Range, range, UnderlyingMatrix,
+                        #        DualKroneckerMat(
+                        #            CoefficientsWithGivenMonomials(
+                        #                KroneckerMat(
+                        #                    TransposedMatrix( MorphismMatrix( alpha ) ),
+                        #                    UnionOfRows(
+                        #                        List( underlying_category!.generating_system,
+                        #                            function ( generator )
+                        #                                return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
+                        #                            end
+                        #                    ) )
+                        #                ),
+                        #                DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], i -> underlying_category!.generating_system_as_column ) )
+                        #            ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ),
+                        #            MorphismMatrix( beta ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) )
+                        #        )
+                        #    );
+                        #    
+                        #    Assert( 0, result = result2 );
+                        #    
+                        #    return result2;
+                        #    
+                        #fi;
+
+                        return result;
                     #fi;
-
-                    return result;
-                #fi;
                 fi;
                   
 
                 
-                #### OVER CENTER
-                #if NumberRows( MorphismMatrix( alpha ) ) <= 0 or NumberColumns( MorphismMatrix( alpha ) ) <= 0 or NumberRows( MorphismMatrix( beta ) ) <= 0 or NumberColumns( MorphismMatrix( beta ) ) <= 0 then
-                #    return ZeroMorphism( source, range );
-                #else
-                    result := ObjectifyWithAttributes(
-                        rec(),
-                        CapCategory(source)!.morphism_type,
-                        CapCategory, CapCategory(source),
-                        Source, source,
-                        Range, range, UnderlyingMatrix, 
-                        ( CoefficientsWithGivenMonomials(
-                            KroneckerMat(
-                                TransposedMatrix( MorphismMatrix( alpha ) ),
-                                DualKroneckerMat( UnionOfRows(
-                                    List( underlying_category!.generating_system,
-                                        function ( generator )
-                                            return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
-                                        end
-                                    ) ),
-                                    MorphismMatrix( beta )
-                                )
-                            ),
-                            DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], function ( logic_new_func_471_x )
-                                return DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], function ( logic_new_func_404_x )
-                                          return underlying_category!.generating_system_over_Q_as_column;
-                                      end ) );
-                            end ) ) ) * RangeCategoryOfHomomorphismStructure( underlying_category )!.ring_for_representation_category ) * DiagMat( ListWithIdenticalEntries( NrRows( alpha ) * NrCols( beta ), underlying_category!.generating_system_over_Q_to_C_trafo_matrix ) ) );
-                    
-                    #if IsOne( MorphismMatrix( alpha ) ) then
-                    #    
-                    #    result2 := ObjectifyWithAttributes(
-                    #        rec(),
-                    #        CapCategory(source)!.morphism_type,
-                    #        CapCategory, CapCategory(source),
-                    #        Source, source,
-                    #        Range, range, UnderlyingMatrix,
-                    #        KroneckerMat(
-                    #            MorphismMatrix( alpha ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ),
-                    #            CoefficientsWithGivenMonomials(
-                    #                DualKroneckerMat( UnionOfRows(
-                    #                    List( underlying_category!.generating_system,
-                    #                        function ( generator )
-                    #                            return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
-                    #                        end
-                    #                    ) ),
-                    #                    MorphismMatrix( beta )
-                    #                ),
-                    #                DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], i -> underlying_category!.generating_system_as_column ) )
-                    #            ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) )
-                    #        )
-                    #    );
-                    #    
-                    #    Assert( 0, result = result2 );
-                    #    
-                    #    return result2;
-                    #    
-                    #fi;
+                #### EXTERIOR ALGEBRA OVER CENTER
+                if IsBound( underlying_category!.generating_system ) and IsBound( underlying_category!.generating_system_over_Q_as_column ) then
+                    #if NumberRows( MorphismMatrix( alpha ) ) <= 0 or NumberColumns( MorphismMatrix( alpha ) ) <= 0 or NumberRows( MorphismMatrix( beta ) ) <= 0 or NumberColumns( MorphismMatrix( beta ) ) <= 0 then
+                    #    return ZeroMorphism( source, range );
+                    #else
+                        result := ObjectifyWithAttributes(
+                            rec(),
+                            CapCategory(source)!.morphism_type,
+                            CapCategory, CapCategory(source),
+                            Source, source,
+                            Range, range, UnderlyingMatrix, 
+                            ( CoefficientsWithGivenMonomials(
+                                KroneckerMat(
+                                    TransposedMatrix( MorphismMatrix( alpha ) ),
+                                    DualKroneckerMat( UnionOfRows(
+                                        List( underlying_category!.generating_system,
+                                            function ( generator )
+                                                return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
+                                            end
+                                        ) ),
+                                        MorphismMatrix( beta )
+                                    )
+                                ),
+                                DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], function ( logic_new_func_471_x )
+                                    return DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], function ( logic_new_func_404_x )
+                                              return underlying_category!.generating_system_over_Q_as_column;
+                                          end ) );
+                                end ) ) ) * RangeCategoryOfHomomorphismStructure( underlying_category )!.ring_for_representation_category ) * DiagMat( ListWithIdenticalEntries( NrRows( alpha ) * NrCols( beta ), underlying_category!.generating_system_over_Q_to_C_trafo_matrix ) ) );
+                        
+                        #if IsOne( MorphismMatrix( alpha ) ) then
+                        #    
+                        #    result2 := ObjectifyWithAttributes(
+                        #        rec(),
+                        #        CapCategory(source)!.morphism_type,
+                        #        CapCategory, CapCategory(source),
+                        #        Source, source,
+                        #        Range, range, UnderlyingMatrix,
+                        #        KroneckerMat(
+                        #            MorphismMatrix( alpha ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ),
+                        #            CoefficientsWithGivenMonomials(
+                        #                DualKroneckerMat( UnionOfRows(
+                        #                    List( underlying_category!.generating_system,
+                        #                        function ( generator )
+                        #                            return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
+                        #                        end
+                        #                    ) ),
+                        #                    MorphismMatrix( beta )
+                        #                ),
+                        #                DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], i -> underlying_category!.generating_system_as_column ) )
+                        #            ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) )
+                        #        )
+                        #    );
+                        #    
+                        #    Assert( 0, result = result2 );
+                        #    
+                        #    return result2;
+                        #    
+                        #fi;
 
-                    #if IsOne( MorphismMatrix( beta ) ) then
-                    #    
-                    #    result2 := ObjectifyWithAttributes(
-                    #        rec(),
-                    #        CapCategory(source)!.morphism_type,
-                    #        CapCategory, CapCategory(source),
-                    #        Source, source,
-                    #        Range, range, UnderlyingMatrix,
-                    #        DualKroneckerMat(
-                    #            CoefficientsWithGivenMonomials(
-                    #                KroneckerMat(
-                    #                    TransposedMatrix( MorphismMatrix( alpha ) ),
-                    #                    UnionOfRows(
-                    #                        List( underlying_category!.generating_system,
-                    #                            function ( generator )
-                    #                                return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
-                    #                            end
-                    #                    ) )
-                    #                ),
-                    #                DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], i -> underlying_category!.generating_system_as_column ) )
-                    #            ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ),
-                    #            MorphismMatrix( beta ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) )
-                    #        )
-                    #    );
-                    #    
-                    #    Assert( 0, result = result2 );
-                    #    
-                    #    return result2;
-                    #    
-                    #fi;
+                        #if IsOne( MorphismMatrix( beta ) ) then
+                        #    
+                        #    result2 := ObjectifyWithAttributes(
+                        #        rec(),
+                        #        CapCategory(source)!.morphism_type,
+                        #        CapCategory, CapCategory(source),
+                        #        Source, source,
+                        #        Range, range, UnderlyingMatrix,
+                        #        DualKroneckerMat(
+                        #            CoefficientsWithGivenMonomials(
+                        #                KroneckerMat(
+                        #                    TransposedMatrix( MorphismMatrix( alpha ) ),
+                        #                    UnionOfRows(
+                        #                        List( underlying_category!.generating_system,
+                        #                            function ( generator )
+                        #                                return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
+                        #                            end
+                        #                    ) )
+                        #                ),
+                        #                DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], i -> underlying_category!.generating_system_as_column ) )
+                        #            ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ),
+                        #            MorphismMatrix( beta ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) )
+                        #        )
+                        #    );
+                        #    
+                        #    Assert( 0, result = result2 );
+                        #    
+                        #    return result2;
+                        #    
+                        #fi;
 
-                    return result;
-                #fi;
+                        return result;
+                    #fi;
+                fi;
+
+                Error( "sorry, I have no precompiled version for you :-(" );
                   
                 # original
                 size_i := NrRows( alpha );
@@ -1205,11 +1242,11 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                 
                 size_j := NrCols( alpha );
                 
-                #if size_i = 0 or size_j = 0 then
-                #    
-                #    return UniversalMorphismIntoZeroObject( DistinguishedObjectOfHomomorphismStructure( underlying_category ) );
-                #    
-                #fi;
+                if size_i = 0 or size_j = 0 then
+                    
+                    return UniversalMorphismIntoZeroObject( DistinguishedObjectOfHomomorphismStructure( underlying_category ) );
+                    
+                fi;
 
                 outer_list := List( [ 1 .. size_i ], function(i)
                             local inner_list;
