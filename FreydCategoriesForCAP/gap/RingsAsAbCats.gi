@@ -379,7 +379,7 @@ else
         matrix_of_relations := GetMatrixOfRelationsOverRealCenter( ring, 1 );
         ring_as_module := AsLeftPresentation( matrix_of_relations );
 
-        Error("we");
+        #Error("we");
         
         # C^{1 x 1}
         distinguished_object := FreeLeftPresentation( 1, C );

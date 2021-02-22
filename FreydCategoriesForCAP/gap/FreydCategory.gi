@@ -987,8 +987,6 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 RHO_B_RHO_C
             );
             
-            #Error("hi");
-
             Display( "add modulo" );
 
             # equality must only hold modulo the relations of the range

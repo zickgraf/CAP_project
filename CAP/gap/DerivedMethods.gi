@@ -2772,7 +2772,7 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     ### the actual computation of the solution
     lift := Lift( nu, H );
 
-    Error( "lift" );
+    #Error( "lift" );
 
     #return lift;
     
@@ -2864,8 +2864,6 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
 
     ### the actual computation of the solution
     sol := SolveLinearSystemInAbCategory( new_left_coeffs, new_right_coeffs, new_rhs );
-
-    Error( "SolveLinearSystemInAbCategory solved using the homomorphism structure and SolveLinearSystemInAbCategory in the range category" );
 
     #return lift;
     
