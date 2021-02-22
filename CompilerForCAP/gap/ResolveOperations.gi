@@ -44,8 +44,17 @@ InstallGlobalFunction( CapJitResolvedOperations, function ( tree, jit_args )
         
         if tree.type = "EXPR_FUNCCALL" and tree.funcref.type = "EXPR_REF_GVAR" then
             
-            # not all CAP operations are operations in the GAP sense
-            return tree.funcref.gvar in RecNames( CAP_INTERNAL_METHOD_NAME_RECORD ) or IsOperation( ValueGlobal( tree.funcref.gvar ) );
+            if tree.funcref.gvar = "CallFuncList" and tree.args[1].type = "EXPR_REF_GVAR" and tree.args[2].type = "EXPR_LIST" then
+                
+                # not all CAP operations are operations in the GAP sense
+                return tree.args[1].gvar in RecNames( CAP_INTERNAL_METHOD_NAME_RECORD ) or IsOperation( ValueGlobal( tree.args[1].gvar ) );
+                
+            else
+                
+                # not all CAP operations are operations in the GAP sense
+                return tree.funcref.gvar in RecNames( CAP_INTERNAL_METHOD_NAME_RECORD ) or IsOperation( ValueGlobal( tree.funcref.gvar ) );
+                
+            fi;
             
         fi;
         
@@ -63,13 +72,31 @@ InstallGlobalFunction( CapJitResolvedOperations, function ( tree, jit_args )
     
     record := CapJitGetNodeByPath( tree, path );
     
-    operation := ValueGlobal( record.funcref.gvar );
-    
-    funccall_args := record.args;
-    
-    result := CapJitGetFunctionCallArgumentsFromJitArgs( tree, path, jit_args );
-    
-    funccall_does_not_return_fail := IsBound( record.funcref.does_not_return_fail ) and record.funcref.does_not_return_fail = true;
+    if record.type = "EXPR_FUNCCALL" and record.funcref.gvar = "CallFuncList" and record.args[1].type = "EXPR_REF_GVAR" and record.args[2].type = "EXPR_LIST" then
+        
+        operation := ValueGlobal( record.args[1].gvar );
+        
+        funccall_args := record.args[2].list;
+        
+        result := CapJitGetExpressionValueFromJitArgs( tree, Concatenation( path, [ "args", 2 ] ), jit_args );
+        
+        funccall_does_not_return_fail := fail;
+        
+    elif record.type = "EXPR_FUNCCALL" then
+        
+        operation := ValueGlobal( record.funcref.gvar );
+
+        funccall_args := record.args;
+        
+        result := CapJitGetFunctionCallArgumentsFromJitArgs( tree, path, jit_args );
+        
+        funccall_does_not_return_fail := IsBound( record.funcref.does_not_return_fail ) and record.funcref.does_not_return_fail = true;
+        
+    else
+        
+        Error( "this should never happen" );
+        
+    fi;
     
     operation_name := NameFunction( operation );
     

@@ -1,3 +1,6 @@
+LoadPackage( "CompilerForCAP ");
+LoadPackage( "LinearAlgebraForCAP" );
+
 #! @Chapter Examples and tests
 
 #! @Section Examples
