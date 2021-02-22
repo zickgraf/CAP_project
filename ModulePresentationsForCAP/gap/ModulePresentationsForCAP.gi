@@ -2030,6 +2030,8 @@ InstallGlobalFunction( ADD_LIFT_AND_COLIFT_RIGHT,
     #       P^t*XX + ZZ*M^t = 0
     #   which can be solved exactly as Lift in left presentations case.
     #   The function is supposed to return X = XX^t as a ( well defined ) morphism from P to M.
+
+    Error( "old lift, please do not use" );
     
     Pt := TransposedMatrix( UnderlyingMatrix( Source( morphism_1 ) ) );
     Mt := TransposedMatrix( UnderlyingMatrix( Source( morphism_2 ) ) );
@@ -2407,6 +2409,58 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
                 return mor_from_freyd( InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( obj_in_freyd( obj1 ), obj_in_freyd( obj2 ), mor ) );
                 
             end );
+            
+            ##
+            AddLift( category,
+              function( alpha, gamma )
+                local lift_or_fail;
+                
+                Display( "Lift in ");
+                Display( Name( category ) );
+                Display( "via Freyd\n" );
+                
+                lift_or_fail := Lift( mor_in_freyd( alpha ), mor_in_freyd( gamma ) );
+                
+                if lift_or_fail = fail then
+                    
+                    return fail;
+                    
+                fi;
+                
+                return mor_from_freyd( lift_or_fail );
+                
+            end, 200 );
+            
+            ##
+            AddSolveLinearSystemInAbCategory( category,
+              function( left_coeffs, right_coeffs, rhs )
+                local new_left_coeffs, new_right_coeffs, new_rhs, sol;
+                
+                Display( "SolveLinearSystemInAbCategory in ");
+                Display( Name( category ) );
+                Display( "via Freyd\n" );
+                
+                new_left_coeffs := List( left_coeffs, l ->
+                    List( l, coeff -> mor_in_freyd( coeff ) )
+                );
+                
+                new_right_coeffs := List( right_coeffs, l ->
+                    List( l, coeff -> mor_in_freyd( coeff ) )
+                );
+                
+                new_rhs := List( rhs, r -> mor_in_freyd( r ) );
+                
+                sol := SolveLinearSystemInAbCategory( new_left_coeffs, new_right_coeffs, new_rhs );
+                
+                if sol = fail then
+                    
+                    return fail;
+                    
+                fi;
+                
+                return List( sol, s -> mor_from_freyd( s ) );
+                
+            end, 200 );
             
         fi;
         
