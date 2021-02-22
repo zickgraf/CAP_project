@@ -241,7 +241,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
     
     range_category := fail;
     
-if false then
+if true then
     ## Homomorphism structure for homalg exterior rings over fields
     if IsHomalgRing( ring ) and HasIsExteriorRing( ring ) and IsExteriorRing( ring ) and IsField( CoefficientsRing( ring ) ) then
         
