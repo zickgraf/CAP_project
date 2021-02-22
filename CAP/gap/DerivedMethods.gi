@@ -2368,6 +2368,10 @@ AddDerivationToCAP( Lift,
   function( alpha, beta )
     local left_coefficients, right_coefficients, right_side, right_divide;
     
+    Display( "Lift in "); 
+    Display( Name( CapCategory( alpha ) ) );
+    Display( "via SolveLinearSystemInAbCategory\n" );
+    
     left_coefficients := [ [ IdentityMorphism( Source( alpha ) ) ] ];
     
     right_coefficients := [ [ beta ] ];
@@ -2747,6 +2751,10 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
                       [ InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism, 1 ] ],
   function( left_coefficients, right_coefficients, right_side )
     local m, n, nulist, nu, H, lift, summands, list;
+    
+    Display( "SolveLinearSystemInAbCategory in "); 
+    Display( Name( CapCategory( left_coefficients[1][1] ) ) );
+    Display( "via Lift\n" );
     
     m := Size( left_coefficients );
     

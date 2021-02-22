@@ -1892,6 +1892,7 @@ SolveTwoSidedLinearSystem := function( left_coeffs, right_coeffs, rhs )
     Eval( tmp_qwe );
     
     Display( Concatenation( "solving ", String( NrRows( mat ) ), "x", String( NrColumns( mat ) ), " system of equations" ) );
+    Display( Concatenation( "main part of solution: ", String( NrColumns(left_coeffs[1][1]) ), "x", String( NrRows(right_coeffs[1][1]) ), " = ", String( NrColumns(left_coeffs[1][1]) * NrRows(right_coeffs[1][1]) ) ) );
     
     start_time := NanosecondsSinceEpoch();
 
@@ -2513,6 +2514,10 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
               function( alpha, gamma )
                 local lift_or_fail;
                 
+                Display( "Lift in "); 
+                Display( Name( category ) );
+                Display( "via Freyd\n" );
+
                 lift_or_fail := Lift( mor_in_freyd( alpha ), mor_in_freyd( gamma ) );
                 
                 if lift_or_fail = fail then
