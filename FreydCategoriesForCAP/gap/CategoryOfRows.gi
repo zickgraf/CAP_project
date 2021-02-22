@@ -832,7 +832,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
           Display( "SyzygiesOfRows with matrix sizes:" );
           Display( Concatenation( String( NrRows( UnderlyingMatrix( morphism ) ) ), "x", String( NrCols( UnderlyingMatrix( morphism ) ) ) ) );
           
-          Error( "CategoryOfRows KernelEmbedding" );
+          #Error( "CategoryOfRows KernelEmbedding" );
           
           kernel_emb := SyzygiesOfRows( UnderlyingMatrix( morphism ) );
           

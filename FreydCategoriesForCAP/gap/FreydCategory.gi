@@ -1043,7 +1043,6 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
 
             Assert( 0, new_left_coeffs = MorphismMatrix( FINAL_LEFT_COEFFS ) );
             Assert( 0, new_right_coeffs = List( MorphismMatrix( FINAL_RIGHT_COEFFS ), row -> List( row, r -> Opposite( r ) ) ) );
-            Error( "success" );
             
             sol := SolveLinearSystemInAbCategory( new_left_coeffs, new_right_coeffs, new_rhs );
             
