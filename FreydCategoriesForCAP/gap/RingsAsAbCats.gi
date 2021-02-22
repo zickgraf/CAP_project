@@ -301,9 +301,9 @@ if false then
         matrix_access := UnderlyingMatrix;
         
     fi;
-fi;
 
-if true then
+else
+
     ## Homomorphism structure for homalg exterior rings over center
     if IsHomalgRing( ring ) and HasIsExteriorRing( ring ) and IsExteriorRing( ring ) and IsField( CoefficientsRing( ring ) ) then
         
