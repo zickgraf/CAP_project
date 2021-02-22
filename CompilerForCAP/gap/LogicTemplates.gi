@@ -574,6 +574,39 @@ CapJitAddLogicTemplate(
     )
 );
 
+# TODO
+CapJitAddLogicTemplate(
+    rec(
+        # TODO: filters
+        variable_names := [ "homalg_matrix", "nrows1", "ncols", "ring", "nrows3" ],
+        src_template := "homalg_matrix * UnionOfRows( HomalgZeroMatrix( nrows1, ncols, ring ), HomalgIdentityMatrix( ncols, ring ), HomalgZeroMatrix( nrows3, ncols, ring ) )",
+        dst_template := "CertainColumns( homalg_matrix, [ nrows1+1..nrows1+ncols ] )",
+        returns_value := true,
+    )
+);
+
+# TODO
+CapJitAddLogicTemplate(
+    rec(
+        # TODO: filters
+        variable_names := [ "end", "index" ],
+        src_template := "[ 1 .. end ][index]",
+        dst_template := "index",
+        returns_value := true,
+    )
+);
+
+# TODO
+CapJitAddLogicTemplate(
+    rec(
+        # TODO: filters
+        variable_names := [ "main_list", "func", "sublist" ],
+        src_template := "List( main_list, func){sublist}",
+        dst_template := "List( main_list{sublist}, func )",
+        returns_value := true,
+    )
+);
+
 InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( tree, template_tree, variable_filters, debug )
   local i, variables, func_id_replacements, pre_func, result_func, additional_arguments_func, result;
     
