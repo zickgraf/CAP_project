@@ -246,11 +246,11 @@ InstallGlobalFunction( ADD_FUNCTIONS_FOR_LEFT_PRESENTATION,
       
     fi;
     
-    if HasIsExteriorRing( category!.ring_for_representation_category ) and IsExteriorRing( category!.ring_for_representation_category ) then
+    #if HasIsExteriorRing( category!.ring_for_representation_category ) and IsExteriorRing( category!.ring_for_representation_category ) then
     
         TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT( category );
 
-    fi;
+    #fi;
     
 end );
 
