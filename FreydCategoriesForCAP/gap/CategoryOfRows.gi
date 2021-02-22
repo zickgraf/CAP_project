@@ -590,11 +590,11 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
       function( source, listlist, range )
         local mat;
         
-        if IsEmpty( listlist ) or IsEmpty( listlist[1] ) then
-          
-          return ZeroMorphism( source, range );
-          
-        fi;
+        #if IsEmpty( listlist ) or IsEmpty( listlist[1] ) then
+        #  
+        #  return ZeroMorphism( source, range );
+        #  
+        #fi;
         
         return CategoryOfRowsMorphism(
           source, 

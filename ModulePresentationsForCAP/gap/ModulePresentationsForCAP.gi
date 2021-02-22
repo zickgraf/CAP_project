@@ -2204,6 +2204,7 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
     fi;
     
     enable_compilation := IsPackageMarkedForLoading( "CompilerForCAP", ">= 2020.06.27" );
+    enable_compilation := false;
     
     if enable_compilation then
         
@@ -2229,6 +2230,7 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
             
             obj_in_freyd := function( obj )
               local source, range;
+                # CAP_JIT_RESOLVE_FUNCTION
                 
                 source := DirectSum( CRplus, ListWithIdenticalEntries( NrRows( UnderlyingMatrix( obj ) ), o ) );
                 range := DirectSum( CRplus, ListWithIdenticalEntries( NrCols( UnderlyingMatrix( obj ) ), o ) );
@@ -2238,6 +2240,7 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
             end;
             
             obj_from_freyd := function( obj )
+                # CAP_JIT_RESOLVE_FUNCTION
                 
                 return AsLeftPresentation( MorphismMatrix( RelationMorphism( obj ) ) );
                 
@@ -2245,6 +2248,7 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
             
             mor_in_freyd := function( mor )
               local source, range, add_source, add_range;
+                # CAP_JIT_RESOLVE_FUNCTION
                 
                 source := obj_in_freyd( Source( mor ) );
                 range := obj_in_freyd( Range( mor ) );
@@ -2258,6 +2262,7 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
             
             mor_from_freyd := function( mor )
               local source, range;
+                # CAP_JIT_RESOLVE_FUNCTION
                 
                 source := obj_from_freyd( Source( mor ) );
                 range := obj_from_freyd( Range( mor ) );
@@ -2266,6 +2271,7 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
                 
             end;
             
+            ReadPackage( "ModulePresentationsForCAP", "gap/CompilerLogic.gi");
             if enable_compilation then
                 
                 # read logic functions and templates

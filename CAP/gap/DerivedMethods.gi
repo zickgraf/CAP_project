@@ -2746,7 +2746,7 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
                       [ HomomorphismStructureOnObjects, 1 ],
                       [ InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism, 1 ] ],
   function( left_coefficients, right_coefficients, right_side )
-    local m, n, nu, H, lift, summands, list;
+    local m, n, nulist, nu, H, lift, summands, list;
     
     m := Size( left_coefficients );
     
@@ -2754,10 +2754,12 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     
     ## create lift diagram
     
+    nulist := List( [ 1 .. m ],
+        i -> InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( right_side[i] )
+         );
+    
     nu :=
-      UniversalMorphismIntoDirectSum(
-        List( [ 1 .. m ],
-        i -> InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( right_side[i] ) )
+        UniversalMorphismIntoDirectSumWithGivenDirectSum( List( nulist, Range ), nulist, DirectSum( List( nulist, Range ) )
     );
     
     list := 

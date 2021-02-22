@@ -994,7 +994,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
             ##
             AddInterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( category,
               function( alpha )
-                local size_i, size_j;
+                local size_i, size_j, outer_list;
                 
                 size_i := NrRows( alpha );
                 
@@ -1005,16 +1005,23 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                     return UniversalMorphismIntoZeroObject( DistinguishedObjectOfHomomorphismStructure( underlying_category ) );
                     
                 fi;
+
+                outer_list := List( [ 1 .. size_i ], function(i)
+                            local inner_list;
+                            
+                                inner_list := List( [ 1 .. size_j ], j ->
+                                    InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( alpha[i, j] )
+                                );
+                                
+                                return UniversalMorphismIntoDirectSumWithGivenDirectSum(
+                                    List( inner_list, Range ), inner_list, DirectSum( List( inner_list, Range ) )
+                                );
+                            end
+                        );
                 
-                return UniversalMorphismIntoDirectSum(
-                        List( [ 1 .. size_i ], i ->
-                          UniversalMorphismIntoDirectSum(
-                            List( [ 1 .. size_j ], j ->
-                              InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( alpha[i, j] )
-                            )
-                          )
-                        )
-                      );
+                return UniversalMorphismIntoDirectSumWithGivenDirectSum(
+                    List( outer_list, Range ), outer_list, DirectSum( List( outer_list, Range ) )
+                );
                 
             end );
             

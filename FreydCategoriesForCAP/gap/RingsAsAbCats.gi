@@ -259,8 +259,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
                 Add( generating_system, Product( comb ) );
             od;
         od;
+
+        category!.generating_system := generating_system;
         
         generating_system_as_column := HomalgMatrix( generating_system, Length( generating_system ), 1, ring );
+        
+        category!.generating_system_as_column := generating_system_as_column;
         
         ring_as_module := CategoryOfRowsObjectOp( range_category, Length( generating_system ) );
         
