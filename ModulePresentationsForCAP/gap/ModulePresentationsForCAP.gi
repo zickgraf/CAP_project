@@ -1776,7 +1776,9 @@ InstallGlobalFunction( ADD_EPIMORPHISM_FROM_SOME_PROJECTIVE_OBJECT,
 end );
 
 vec := function( A )
-    if NrColumns( A ) <= 1 then
+    if NrCols( A ) = 0 then
+        return HomalgZeroMatrix( 0, 1, HomalgRing( A ) );
+    elif NrCols( A ) = 1 then
        return A;
     else
        return UnionOfRows( List( [ 1 .. NrColumns( A ) ], i -> CertainColumns( A, [ i ] ) ) ); 
