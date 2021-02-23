@@ -708,6 +708,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
         AddIsEqualForMorphisms( category,
           function( cat, morphism_1, morphism_2 )
             
+            if IsHomalgMatrix( MorphismMatrix( morphism_1 ) ) then
+                
+                return MorphismMatrix( morphism_1 ) = MorphismMatrix( morphism_2 );
+                
+            fi;
+            
             return compare_morphisms( cat, morphism_1, morphism_2, IsEqualForMorphisms );
             
         end );
@@ -719,6 +725,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
         ##
         AddIsCongruentForMorphisms( category,
           function( cat, morphism_1, morphism_2 )
+            
+            if IsHomalgMatrix( MorphismMatrix( morphism_1 ) ) then
+                
+                return MorphismMatrix( morphism_1 ) = MorphismMatrix( morphism_2 );
+                
+            fi;
             
             return compare_morphisms( cat, morphism_1, morphism_2, IsCongruentForMorphisms );
             
@@ -732,6 +744,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
         AddIdentityMorphism( category,
           function( cat, object )
             local object_list, size, listlist, i, j;
+            
+            if IsRingAsCategory( underlying_category ) and IsHomalgRing( UnderlyingRing( underlying_category ) ) then
+                
+                return AdditiveClosureMorphism( object, HomalgIdentityMatrix( Length( ObjectList( object ) ), UnderlyingRing( underlying_category ) ), object );
+                
+            fi;
             
             object_list := ObjectList( object );
             
@@ -766,6 +784,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
           function( cat, source, range )
             local object_list_source, object_list_range, size_list_source, size_list_range, listlist, i, j;
             
+            if IsRingAsCategory( underlying_category ) and IsHomalgRing( UnderlyingRing( underlying_category ) ) then
+                
+                return AdditiveClosureMorphism( source, HomalgZeroMatrix( Length( ObjectList( source ) ), Length( ObjectList( range ) ), UnderlyingRing( underlying_category ) ), range );
+                
+            fi;
+            
             object_list_source := ObjectList( source );
             
             object_list_range := ObjectList( range );
@@ -792,6 +816,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
         AddPreCompose( category,
           function( cat, morphism_1, morphism_2 )
             local nr_rows_1, nr_cols_1, nr_rows_2, nr_cols_2, listlist, i, j;
+            
+            if IsHomalgMatrix( MorphismMatrix( morphism_1 ) ) then
+                
+                return AdditiveClosureMorphism( Source( morphism_1 ), MorphismMatrix( morphism_1 ) * MorphismMatrix( morphism_2 ), Range( morphism_2 ) );
+                
+            fi;
             
             nr_rows_1 := NrRows( morphism_1 );
             
