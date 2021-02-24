@@ -2226,6 +2226,16 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
     
         freyd := FreydCategory( CRplus );
         Finalize( freyd );
+
+        
+        DeactivateCachingOfCategory(lazy);
+        CapCategorySwitchLogicOff(lazy);
+        DisableSanityChecks(lazy);
+
+        DeactivateCachingOfCategory(freyd);
+        CapCategorySwitchLogicOff(freyd);
+        DisableSanityChecks(freyd);
+
         
         if HasRangeCategoryOfHomomorphismStructure( freyd ) then
             
