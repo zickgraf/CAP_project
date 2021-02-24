@@ -140,7 +140,7 @@ end );
 InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
   
   function( category )
-    local ring, equality_func, range_category, field, generating_system, indets, l, generating_system_as_column, ring_as_module, distinguished_object, interpret_element_as_row_vector, morphism_constructor, ring_inclusion, k, comb;
+    local ring, equality_func, range_category, field, generating_system, indets, l, generating_system_as_column, ring_as_module, distinguished_object, interpret_element_as_row_vector, morphism_constructor, ring_inclusion, k, comb, Qrows, matrix_access;
     
     ring := UnderlyingRing( category );
     
@@ -244,9 +244,17 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
     ## Homomorphism structure for homalg exterior rings over fields
     if IsHomalgRing( ring ) and HasIsExteriorRing( ring ) and IsExteriorRing( ring ) and IsField( CoefficientsRing( ring ) ) then
         
+        LoadPackage( "LazyCategories" );
+        
         field := CoefficientsRing( ring );
         
-        range_category := CategoryOfRows( field );
+        SetInfoLevel( ValueGlobal( "InfoLazyCategory" ), 1000 );
+
+        Qrows := CategoryOfRows( field );
+        Finalize( Qrows );
+        
+        #range_category := LazyCategory( Qrows : optimize := 0, show_evaluation := true );
+        range_category := Qrows;
         
         generating_system := [ One( ring ) ];
         
@@ -266,10 +274,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
         
         category!.generating_system_as_column := generating_system_as_column;
         
-        ring_as_module := CategoryOfRowsObjectOp( range_category, Length( generating_system ) );
+        #ring_as_module := AsObjectInLazyCategory( range_category, CategoryOfRowsObjectOp( Qrows, Length( generating_system ) ) );
+        ring_as_module := CategoryOfRowsObjectOp( Qrows, Length( generating_system ) );
         
         # field^{1 x 1}
-        distinguished_object := CategoryOfRowsObjectOp( range_category, 1 );
+        #distinguished_object := AsObjectInLazyCategory( range_category, CategoryOfRowsObjectOp( Qrows, 1 ) );
+        distinguished_object := CategoryOfRowsObjectOp( Qrows, 1 );
         
         interpret_element_as_row_vector := function( r )
             #% CAP_JIT_RESOLVE_FUNCTION
@@ -278,9 +288,13 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
             
         end;
         
+        #morphism_constructor := {source, matrix, range} -> AsMorphismInLazyCategory( source, CategoryOfRowsMorphism( EvaluatedCell( source ), matrix, EvaluatedCell( range ) ), range );
         morphism_constructor := CategoryOfRowsMorphism;
         
         ring_inclusion := RingMap( [], field, ring );
+
+        #matrix_access := mor -> UnderlyingMatrix( EvaluatedCell( mor ) );
+        matrix_access := UnderlyingMatrix;
         
     fi;
     
@@ -309,6 +323,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
         
         # identity
         ring_inclusion := RingMap( ring );
+        
+        matrix_access := UnderlyingMatrix;
         
     fi;
     
@@ -362,7 +378,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
           function( a, b, mor )
             local element;
             
-            element := EntriesOfHomalgMatrix( Pullback( ring_inclusion, UnderlyingMatrix( mor ) ) * generating_system_as_column )[1];
+            element := EntriesOfHomalgMatrix( Pullback( ring_inclusion, matrix_access( mor ) ) * generating_system_as_column )[1];
             
             return RingAsCategoryMorphism( category, element );
             

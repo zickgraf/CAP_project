@@ -2218,8 +2218,11 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
     
     CRplus := AdditiveClosure( CR : enable_compilation := compilation_option );
     Finalize( CRplus );
-    
-    if IsValidInputForFreydCategory( CRplus, false ) then
+
+    lazy := LazyCategory( CRplus : optimize := 0, show_evaluation := true );
+    Finalize( lazy );
+
+    if IsValidInputForFreydCategory( lazy, false ) then
     
         freyd := FreydCategory( CRplus );
         Finalize( freyd );
@@ -2229,13 +2232,25 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
             o := AsAdditiveClosureObject( RingAsCategoryUniqueObject( CR ) );
             
             obj_in_freyd := function( obj )
-              local source, range;
+              local source, range, lazy_mor;
                 # CAP_JIT_RESOLVE_FUNCTION
                 
                 source := DirectSum( CRplus, ListWithIdenticalEntries( NrRows( UnderlyingMatrix( obj ) ), o ) );
                 range := DirectSum( CRplus, ListWithIdenticalEntries( NrCols( UnderlyingMatrix( obj ) ), o ) );
-                
+
                 return FreydCategoryObject( AdditiveClosureMorphism( source, UnderlyingMatrix( obj ), range ) );
+                
+                lazy_mor := AsMorphismInLazyCategory( lazy, AdditiveClosureMorphism( source, UnderlyingMatrix( obj ), range ) );
+
+                if HasName( obj ) then
+                    
+                    SetLabel( Source( lazy_mor ), Concatenation( "R_", Name( obj ) ) );
+                    SetLabel( lazy_mor, Concatenation( "rho_", Name( obj ) ) );
+                    SetLabel( Range( lazy_mor ), Name( obj ) );
+
+                fi;
+                
+                return FreydCategoryObject( lazy_mor );
                 
             end;
             
@@ -2244,10 +2259,12 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
                 
                 return AsLeftPresentation( MorphismMatrix( RelationMorphism( obj ) ) );
                 
+                return AsLeftPresentation( MorphismMatrix( EvaluatedCell( RelationMorphism( obj ) ) ) );
+                
             end;
             
             mor_in_freyd := function( mor )
-              local source, range, add_source, add_range;
+              local source, range, add_source, add_range, lazy_mor;
                 # CAP_JIT_RESOLVE_FUNCTION
                 
                 source := obj_in_freyd( Source( mor ) );
@@ -2255,8 +2272,18 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
                 
                 add_source := DirectSum( CRplus, ListWithIdenticalEntries( NrRows( UnderlyingMatrix( mor ) ), o ) );
                 add_range := DirectSum( CRplus, ListWithIdenticalEntries( NrCols( UnderlyingMatrix( mor ) ), o ) );
-                
+
                 return FreydCategoryMorphism( source, AdditiveClosureMorphism( add_source, UnderlyingMatrix( mor ), add_range ), range );
+                
+                lazy_mor := AsMorphismInLazyCategory( lazy, AdditiveClosureMorphism( add_source, UnderlyingMatrix( mor ), add_range ) );
+
+                if HasName( mor ) then
+                    
+                    SetLabel( lazy_mor, Name( mor ) );
+
+                fi;
+                
+                return FreydCategoryMorphism( source, lazy_mor, range );
                 
             end;
             
@@ -2268,6 +2295,8 @@ InstallGlobalFunction( TRY_TO_ADD_HOMOMORPHISM_STRUCTURE_LEFT,
                 range := obj_from_freyd( Range( mor ) );
                          
                 return PresentationMorphism( source, MorphismMatrix( MorphismDatum( mor ) ), range );
+                
+                return PresentationMorphism( source, MorphismMatrix( EvaluatedCell( MorphismDatum( mor ) ) ), range );
                 
             end;
             
