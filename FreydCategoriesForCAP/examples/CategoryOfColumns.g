@@ -16,6 +16,8 @@ obj1 := CategoryOfColumnsObject( 2, cols );
 #! <A column module over Z of rank 2>
 obj2 := CategoryOfColumnsObject( 8, cols );
 #! <A column module over Z of rank 8>
+HasIsProjective( obj2 ) and IsProjective( obj2 );
+#! true
 #! @EndExample
 
 

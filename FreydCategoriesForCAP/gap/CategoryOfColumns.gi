@@ -49,7 +49,7 @@ InstallMethod( CategoryOfColumns,
       
     fi;
     
-    AddObjectRepresentation( category, IsCategoryOfColumnsObject );
+    AddObjectRepresentation( category, IsCategoryOfColumnsObject and HasIsProjective and IsProjective );
     
     AddMorphismRepresentation( category, IsCategoryOfColumnsMorphism and HasUnderlyingMatrix );
     

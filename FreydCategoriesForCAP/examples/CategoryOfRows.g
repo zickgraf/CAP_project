@@ -16,6 +16,8 @@ obj1 := CategoryOfRowsObject( 2, rows );
 #! <A row module over Z of rank 2>
 obj2 := CategoryOfRowsObject( 8, rows );
 #! <A row module over Z of rank 8>
+HasIsProjective( obj2 ) and IsProjective( obj2 );
+#! true
 #! @EndExample
 
 

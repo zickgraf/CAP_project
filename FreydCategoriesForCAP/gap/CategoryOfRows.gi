@@ -49,7 +49,7 @@ InstallMethod( CategoryOfRows,
       
     fi;
     
-    AddObjectRepresentation( category, IsCategoryOfRowsObject );
+    AddObjectRepresentation( category, IsCategoryOfRowsObject and HasIsProjective and IsProjective );
     
     AddMorphismRepresentation( category, IsCategoryOfRowsMorphism and HasUnderlyingMatrix );
     
