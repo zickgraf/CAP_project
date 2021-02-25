@@ -252,7 +252,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
     
     generating_system := fail;
     
-if true then
+if false then
     ## Homomorphism structure for homalg exterior rings over fields
     if IsHomalgRing( ring ) and HasIsExteriorRing( ring ) and IsExteriorRing( ring ) and IsField( BaseRing( ring ) ) then
         
@@ -611,6 +611,12 @@ fi;
         
         ##
         SetRangeCategoryOfHomomorphismStructure( category, range_category );
+        
+        if not ( HasIsProjective( distinguished_object ) and IsProjective( distinguished_object ) ) then
+            
+            Error( "distinguished object is not projective" );
+            
+        fi;
         
         ##
         AddDistinguishedObjectOfHomomorphismStructure( category, { cat } -> distinguished_object( ) );

@@ -2508,7 +2508,9 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     
     Display( "SolveLinearSystemInAbCategory in ");
     Display( Name( CapCategory( left_coefficients[1][1] ) ) );
-    Display( "via Lift\n" );
+    Display( "via Lift in range category of hom structure:" );
+    Display( Name( RangeCategoryOfHomomorphismStructure( CapCategory( left_coefficients[1][1] ) ) ) );
+    Display( "" );
     
     m := Length( left_coefficients );
     
@@ -2570,7 +2572,9 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     
     Display( "SolveLinearSystemInAbCategory in ");
     Display( Name( CapCategory( left_coefficients[1][1] ) ) );
-    Display( "via hom structure\n" );
+    Display( "via SolveLinearSystemInAbCategory in range category of hom structure:" );
+    Display( Name( RangeCategoryOfHomomorphismStructure( CapCategory( left_coefficients[1][1] ) ) ) );
+    Display( "" );
     
     m := Size( left_coefficients );
     
