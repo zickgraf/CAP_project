@@ -977,7 +977,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
         end;
     
     ##
-    if false and is_possible_to_install( "Lift, Colift",
+    if IsAdditiveClosureCategory( underlying_category ) and IsRingAsCategory( UnderlyingCategory( underlying_category ) ) and HasIsCommutative( UnderlyingRing( UnderlyingCategory( underlying_category ) ) ) and IsCommutative( UnderlyingRing( UnderlyingCategory( underlying_category ) ) )
+        and is_possible_to_install( "Lift, Colift",
                                [ "SolveLinearSystemInAbCategory" ] ) then
         
         ##
