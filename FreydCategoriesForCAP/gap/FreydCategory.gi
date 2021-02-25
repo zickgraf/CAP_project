@@ -977,8 +977,6 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 RHO_B_RHO_C
             );
             
-            Display( "add modulo" );
-
             # equality must only hold modulo the relations of the range
             for e in [ 1 .. Length( left_coeffs ) ] do
                 
@@ -1004,8 +1002,6 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 
             od;
 
-            Display( "add well-defined" );
-            
             # add conditions for being well-defined
             for v in [ 1 .. Length( left_coeffs[1] ) ] do
                 
@@ -1057,8 +1053,6 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
                 Add( new_rhs, ZeroMorphism( Source( rho_A ), Range( rho_C ) ) );
                 
             od;
-
-            Display( "go down" );
 
             Assert( 0, Length( new_left_coeffs ) = Length( new_rhs ) );
 
