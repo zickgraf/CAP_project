@@ -1150,12 +1150,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                             CoefficientsWithGivenMonomials(
                                 KroneckerMat(
                                     TransposedMatrix( MorphismMatrix( alpha ) ),
-                                    DualKroneckerMat( UnionOfRows(
-                                        List( underlying_category!.generating_system,
-                                            function ( generator )
-                                                return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
-                                            end
-                                        ) ),
+                                    DualKroneckerMat(
+                                        underlying_category!.generating_system_as_column,
                                         MorphismMatrix( beta )
                                     )
                                 ),
@@ -1248,12 +1244,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                             ( CoefficientsWithGivenMonomials(
                                 KroneckerMat(
                                     TransposedMatrix( MorphismMatrix( alpha ) ),
-                                    DualKroneckerMat( UnionOfRows(
-                                        List( underlying_category!.generating_system,
-                                            function ( generator )
-                                                return HomalgMatrix( [ generator ], 1, 1, UnderlyingRing( underlying_category ) );
-                                            end
-                                        ) ),
+                                    DualKroneckerMat(
+                                        underlying_category!.generating_system_as_column,
                                         MorphismMatrix( beta )
                                     )
                                 ),
