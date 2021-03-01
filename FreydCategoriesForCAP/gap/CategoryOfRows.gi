@@ -730,31 +730,40 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
         right_coeffs := List( right_coeffs, l -> List( l, coeff -> UnderlyingMatrix( coeff ) ) );
         rhs := List( rhs, r -> UnderlyingMatrix( r ) );
 
-        coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( TransposedMatrix( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
+        #coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( TransposedMatrix( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
 
-        mat := UnionOfRows( List( coeffs, x -> UnionOfColumns( x ) ) );
+        #mat := UnionOfRows( List( coeffs, x -> UnionOfColumns( x ) ) );
+        #
+        #vec_rhs := UnionOfRows( List( rhs, ConvertMatrixToColumn ) );
+
+        #Eval( mat );
+        #Eval( vec_rhs );
+
+        #tmp_asd := TransposedMatrix( vec_rhs );
+        #Eval( tmp_asd );
+        #tmp_qwe := TransposedMatrix( mat );
+        #Eval( tmp_qwe );
         
-        vec_rhs := UnionOfRows( List( rhs, ConvertMatrixToColumn ) );
+        coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( TransposedMatrix( left_coeffs[i][j] ), right_coeffs[i][j] ) ) );
+
+        mat := UnionOfColumns( List( coeffs, x -> UnionOfRows( x ) ) );
+        
+        vec_rhs := UnionOfColumns( List( rhs, ConvertMatrixToRow ) );
 
         Eval( mat );
         Eval( vec_rhs );
 
-        tmp_asd := TransposedMatrix( vec_rhs );
-        Eval( tmp_asd );
-        tmp_qwe := TransposedMatrix( mat );
-        Eval( tmp_qwe );
-        
-        Display( Concatenation( "solving ", String( NrRows( tmp_qwe ) ), "x", String( NrColumns( tmp_qwe ) ), " system of equations" ) );
+        Display( Concatenation( "solving ", String( NrRows( mat ) ), "x", String( NrColumns( mat ) ), " system of equations" ) );
         Display( Concatenation( "main part of solution: ", String( NrColumns(left_coeffs[1][1]) ), "x", String( NrRows(right_coeffs[1][1]) ), " = ", String( NrColumns(left_coeffs[1][1]) * NrRows(right_coeffs[1][1]) ) ) );
         
         interesting := NrColumns(left_coeffs[1][1]) * NrRows(right_coeffs[1][1]);
         
         start_time := NanosecondsSinceEpoch();
 
-        # Error("tmp");
+        #Error("tmp");
 
         #vec_sol := LeftDivide( mat, vec_rhs :  );
-        vec_sol := RightDivide( tmp_asd, tmp_qwe : interesting := interesting );
+        vec_sol := RightDivide( vec_rhs, mat : interesting := interesting );
 
         Display( Concatenation( "solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
 
@@ -762,17 +771,15 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
             return fail;
         fi;
 
-        vec_sol := TransposedMatrix( vec_sol );
-        
         sol := [ ];
         
         last_index := 0;
         for j in [ 1 .. Length( left_coeffs[1] ) ] do
             m := NrColumns(left_coeffs[1][j]);
             n := NrRows(right_coeffs[1][j]);
-            vec_X := CertainRows( vec_sol, [ last_index+1 .. last_index+m*n ] );
+            vec_X := CertainColumns( vec_sol, [ last_index+1 .. last_index+m*n ] );
             last_index := last_index + m*n;
-            X := ConvertColumnToMatrix( vec_X, m, n );
+            X := ConvertRowToMatrix( vec_X, m, n );
             Add( sol, CategoryOfRowsMorphism( Range( orig_left_coeffs[1][j] ), X, Source( orig_right_coeffs[1][j] ) ) );
         od;
         
