@@ -1000,6 +1000,10 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                     #if NumberRows( MorphismMatrix( alpha ) ) <= 0 or NumberColumns( MorphismMatrix( alpha ) ) <= 0 or NumberRows( MorphismMatrix( beta ) ) <= 0 or NumberColumns( MorphismMatrix( beta ) ) <= 0 then
                     #    return ZeroMorphism( source, range );
                     #else
+                        
+                    if IsCategoryOfRows( RangeCategoryOfHomomorphismStructure( underlying_category ) ) then
+                    
+                        # QRows
                         result := ObjectifyWithAttributes(
                             rec(),
                             CapCategory(source)!.morphism_type,
@@ -1019,8 +1023,33 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
                                               return underlying_category!.generating_system_as_column;
                                           end ) );
                                 end ) ) ) * UnderlyingRing( RangeCategoryOfHomomorphismStructure( underlying_category ) ) );
+
+                    else
                         
-                        # optimization
+                        # Qfpres
+                        result := ObjectifyWithAttributes(
+                            rec(),
+                            CapCategory(source)!.morphism_type,
+                            CapCategory, CapCategory(source),
+                            Source, source,
+                            Range, range, UnderlyingMatrix, 
+                            CoefficientsWithGivenMonomials(
+                                KroneckerMat(
+                                    TransposedMatrix( MorphismMatrix( alpha ) ),
+                                    DualKroneckerMat(
+                                        underlying_category!.generating_system_as_column,
+                                        MorphismMatrix( beta )
+                                    )
+                                ),
+                                DiagMat( List( [ 1 .. NumberRows( MorphismMatrix( alpha ) ) ], function ( logic_new_func_471_x )
+                                    return DiagMat( List( [ 1 .. NumberColumns( MorphismMatrix( beta ) ) ], function ( logic_new_func_404_x )
+                                              return underlying_category!.generating_system_as_column;
+                                          end ) );
+                                end ) ) ) * RangeCategoryOfHomomorphismStructure( underlying_category )!.ring_for_representation_category );
+
+                    fi;
+                        
+                        # optimization (QRows)
                         #if IsOne( MorphismMatrix( alpha ) ) then
                         #    
                         #    result2 := ObjectifyWithAttributes(
