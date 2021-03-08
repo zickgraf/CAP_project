@@ -464,7 +464,9 @@ InstallGlobalFunction( ADD_KERNEL_LEFT,
       function( morphism )
         local kernel, embedding, source_matrix;
         
-        Display( "SyzygiesOfRows with matrix sizes:" );
+        Display( "SyzygiesOfRows in" );
+        Display( Name( category ) );
+        Display( "with matrix sizes:" );
         Display( Concatenation( String( NrRows( UnderlyingMatrix( morphism ) ) ), "x", String( NrCols( UnderlyingMatrix( morphism ) ) ) ) );
         
         embedding := ReducedSyzygiesOfRows( UnderlyingMatrix( morphism ), UnderlyingMatrix( Range( morphism ) ) );
@@ -831,6 +833,10 @@ InstallGlobalFunction( ADD_COKERNEL_LEFT,
                      
       function( morphism )
         local cokernel_object, projection;
+        
+        Display( "CokernelProjection in:" );
+        Display( Name( category ) );
+        
         
         cokernel_object := UnionOfRows( UnderlyingMatrix( morphism ), UnderlyingMatrix( Range( morphism ) ) );
         
