@@ -252,7 +252,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_RING_AS_CATEGORY,
     
     generating_system := fail;
     
-if false then
+if true then
     ## Homomorphism structure for homalg exterior rings over fields
     if IsHomalgRing( ring ) and HasIsExteriorRing( ring ) and IsExteriorRing( ring ) and IsField( BaseRing( ring ) ) then
         
@@ -262,6 +262,9 @@ if false then
         
         SetInfoLevel( ValueGlobal( "InfoLazyCategory" ), 1000 );
         
+    if true then
+        
+        # QRows
         Qrows := CategoryOfRows( field );
         Finalize( Qrows );
         
@@ -327,6 +330,53 @@ if false then
 
         #matrix_access := mor -> UnderlyingMatrix( EvaluatedCell( mor ) );
         matrix_access := UnderlyingMatrix;
+        
+
+    else
+        
+        # Qfpres
+        Qfpres := LeftPresentations( field );
+        Finalize( Qfpres );
+        
+        range_category := Qfpres;
+        
+        generating_system := [ One( ring ) ];
+        
+        indets := IndeterminatesOfExteriorRing( ring );
+        
+        l := Length( indets );
+        
+        for k in [ 1 .. l ] do
+            for comb in Combinations( indets, k ) do
+                Add( generating_system, Product( comb ) );
+            od;
+        od;
+
+        category!.generating_system := generating_system;
+        
+        generating_system_as_column := HomalgMatrix( generating_system, Length( generating_system ), 1, ring );
+        
+        category!.generating_system_as_column := generating_system_as_column;
+        
+        ring_as_module := FreeLeftPresentation( Length( generating_system ), field );
+        
+        # Q^{1 x 1}
+        distinguished_object := FreeLeftPresentation( 1, field );
+        
+        interpret_element_as_row_vector := function( r )
+            #% CAP_JIT_RESOLVE_FUNCTION
+            
+            return CoefficientsWithGivenMonomials( HomalgMatrix( [ r ], 1, 1, ring ), generating_system_as_column ) * field;
+            
+        end;
+
+        morphism_constructor := PresentationMorphism;
+        
+        ring_inclusion := RingMap( [], field, ring );
+        
+        matrix_access := UnderlyingMatrix;
+
+    fi;
         
     fi;
 
