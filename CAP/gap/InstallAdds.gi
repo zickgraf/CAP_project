@@ -268,13 +268,16 @@ InstallGlobalFunction( CapInternalInstallAdd,
             
             current_function_argument_number := NumberArgumentsFunction( method_list[ current_function_number ][ 1 ] );
             
-            if current_function_argument_number = -1 then
-                continue;
-            fi;
-            
-            if current_function_argument_number <> number_of_proposed_arguments then
+            if current_function_argument_number >= 0 and current_function_argument_number <> number_of_proposed_arguments then
                 Error( "In ", add_name, ": given function ", String( current_function_number ), " has ", String( current_function_argument_number ),
                        " arguments but should have ", String( number_of_proposed_arguments ) );
+            fi;
+            
+            current_additional_filter_list_length := Length( method_list[ current_function_number ][ 2 ] );
+            
+            if current_additional_filter_list_length > 0 and current_additional_filter_list_length <> number_of_proposed_arguments then
+                Error( "In ", add_name, ": the additional filter list of given function ", String( current_function_number ),
+                       " has length ", String( current_additional_filter_list_length ), " but should have ", String( number_of_proposed_arguments ) );
             fi;
             
         od;
