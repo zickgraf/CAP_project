@@ -148,6 +148,12 @@ InstallGlobalFunction( CapInternalInstallAdd,
         
         InstallMethod( ValueGlobal( install_name ), replaced_filter_list, get_convenience_function( ValueGlobal( install_name ) ) );
         
+        if install_name <> function_name and IsOperation( ValueGlobal( function_name ) ) then
+            
+            InstallOtherMethod( ValueGlobal( function_name ), enhanced_filter_list, ValueGlobal( install_name ) );
+            
+        fi;
+        
     fi;
     
     InstallMethod( ValueGlobal( add_name ),
@@ -181,7 +187,7 @@ InstallGlobalFunction( CapInternalInstallAdd,
                    [ IsCapCategory, IsList, IsInt ],
       
       function( category, method_list, weight )
-        local install_func, replaced_filter_list, install_method, popper, i, set_primitive, is_derivation, without_given_name, with_given_name,
+        local install_func, replaced_filter_list, install_method, popper, i, set_primitive, is_derivation, is_final_derivation, without_given_name, with_given_name,
               without_given_weight, with_given_weight, number_of_proposed_arguments, current_function_number,
               current_function_argument_number, filter, input_human_readable_identifier_getter, input_sanity_check_functions,
               output_human_readable_identifier_getter, output_sanity_check_function, cap_jit_compiled_function;
@@ -207,6 +213,11 @@ InstallGlobalFunction( CapInternalInstallAdd,
         is_derivation := ValueOption( "IsDerivation" );
         if is_derivation <> true then
             is_derivation := false;
+        fi;
+        
+        is_final_derivation := ValueOption( "IsFinalDerivation" );
+        if is_final_derivation <> true then
+            is_final_derivation := false;
         fi;
         
         if weight = -1 then
@@ -262,19 +273,38 @@ InstallGlobalFunction( CapInternalInstallAdd,
         
         ## Nr arguments sanity check
         
-        number_of_proposed_arguments := Length( filter_list );
+        if filter_list[1] <> "category" then
+            
+            if ( is_derivation or is_final_derivation ) or ( IsBound( category!.category_as_first_argument ) and category!.category_as_first_argument = true ) then
+                
+                number_of_proposed_arguments := Length( filter_list ) + 1;
+                
+            else
+                
+                number_of_proposed_arguments := Length( filter_list );
+                
+            fi;
+            
+        else
+            
+            number_of_proposed_arguments := Length( filter_list );
+            
+        fi;
         
         for current_function_number in [ 1 .. Length( method_list ) ] do
             
             current_function_argument_number := NumberArgumentsFunction( method_list[ current_function_number ][ 1 ] );
             
-            if current_function_argument_number = -1 then
-                continue;
-            fi;
-            
-            if current_function_argument_number <> number_of_proposed_arguments then
+            if current_function_argument_number >= 0 and current_function_argument_number <> number_of_proposed_arguments then
                 Error( "In ", add_name, ": given function ", String( current_function_number ), " has ", String( current_function_argument_number ),
                        " arguments but should have ", String( number_of_proposed_arguments ) );
+            fi;
+            
+            # wrap function if needed
+            if filter_list[1] <> "category" and not ( ( is_derivation or is_final_derivation ) or ( IsBound( category!.category_as_first_argument ) and category!.category_as_first_argument = true ) ) then
+                
+                method_list[ current_function_number ][ 1 ] := CAP_INTERNAL_CREATE_NEW_FUNC_WITH_ONE_MORE_ARGUMENT_WITH_RETURN( method_list[ current_function_number ][ 1 ] );
+                
             fi;
             
         od;
@@ -439,43 +469,20 @@ InstallGlobalFunction( CapInternalInstallAdd,
                 
                 index := Length( category!.added_functions.( function_name ) );
                 
-                if filter_list[1] <> "category" then
+                InstallMethod( ValueGlobal( install_name ),
+                            new_filter_list,
                     
-                    InstallMethod( ValueGlobal( install_name ),
-                                new_filter_list,
+                    function( arg )
                         
-                        function( arg )
+                        if not IsBound( category!.compiled_functions.( function_name )[ index ] ) then
                             
-                            if not IsBound( category!.compiled_functions.( function_name )[ index ] ) then
-                                
-                                # strip category as first argument if it was artificially added above
-                                category!.compiled_functions.( function_name )[ index ] := cap_jit_compiled_function( func_to_install, arg{[ 2 .. Length( arg ) ]} );
-                                
-                            fi;
+                            category!.compiled_functions.( function_name )[ index ] := cap_jit_compiled_function( func_to_install, arg );
                             
-                            # strip category as first argument if it was artificially added above
-                            return CallFuncList( category!.compiled_functions.( function_name )[ index ], arg{[ 2 .. Length( arg ) ]} );
-                            
-                    end );
-                    
-                else
-                    
-                    InstallMethod( ValueGlobal( install_name ),
-                                new_filter_list,
+                        fi;
                         
-                        function( arg )
-                            
-                            if not IsBound( category!.compiled_functions.( function_name )[ index ] ) then
-                                
-                                category!.compiled_functions.( function_name )[ index ] := cap_jit_compiled_function( func_to_install, arg );
-                                
-                            fi;
-                            
-                            return CallFuncList( category!.compiled_functions.( function_name )[ index ], arg );
-                            
-                    end );
-                    
-                fi;
+                        return CallFuncList( category!.compiled_functions.( function_name )[ index ], arg );
+                        
+                end );
                 
             elif category!.overhead then
             
@@ -483,9 +490,12 @@ InstallGlobalFunction( CapInternalInstallAdd,
                                 new_filter_list,
                                 
                   function( arg )
-                    local redirect_return, filter, human_readable_identifier_getter, pre_func_return, result, i, j;
+                    local arg_with_cat, redirect_return, filter, human_readable_identifier_getter, pre_func_return, result, i, j;
                     
                     # strip category as first argument if it was artificially added above
+
+                    arg_with_cat := arg;
+                    
                     if filter_list[1] <> "category" then
                         
                         arg := arg{[ 2 .. Length( arg ) ]};
@@ -521,7 +531,7 @@ InstallGlobalFunction( CapInternalInstallAdd,
                         
                     fi;
                     
-                    result := CallFuncList( func_to_install, arg );
+                    result := CallFuncList( func_to_install, arg_with_cat );
                     
                     if category!.predicate_logic then
                         INSTALL_TODO_FOR_LOGICAL_THEOREMS( record.function_name, arg, result, category );
@@ -549,30 +559,14 @@ InstallGlobalFunction( CapInternalInstallAdd,
             
             else #category!.overhead = false
                 
-                if filter_list[1] <> "category" then
+                InstallMethod( ValueGlobal( install_name ),
+                            new_filter_list,
                     
-                    InstallMethod( ValueGlobal( install_name ),
-                                new_filter_list,
+                    function( arg )
                         
-                        function( arg )
-                            
-                            # strip category as first argument if it was artificially added above
-                            return CallFuncList( func_to_install, arg{[ 2 .. Length( arg ) ]} );
-                            
-                    end );
-                    
-                else
-                    
-                    InstallMethod( ValueGlobal( install_name ),
-                                new_filter_list,
+                        return CallFuncList( func_to_install, arg );
                         
-                        function( arg )
-                            
-                            return CallFuncList( func_to_install, arg );
-                            
-                    end );
-                    
-                fi;
+                end );
                 
             fi;
             
@@ -654,11 +648,8 @@ BindGlobal( "CAP_INTERNAL_INSTALL_WITH_GIVEN_DERIVATIONS", function( record )
             without_given_name := current_rec.with_given_without_given_name_pair[1];
             with_given_name := current_recname;
             object_name := current_rec.universal_object;
-            if current_rec.number_of_diagram_arguments > 0 then
-                object_arguments := [ 1 .. current_rec.number_of_diagram_arguments ];
-            else
-                object_arguments := [ 1 ];
-            fi;
+            # first argument is the category
+            object_arguments := [ 1 .. current_rec.number_of_diagram_arguments + 1 ];
             
             CAP_INTERNAL_INSTALL_WITH_GIVEN_DERIVATION_PAIR( without_given_name, with_given_name, object_name, object_arguments );
             
@@ -712,6 +703,12 @@ InstallMethod( AddZeroObject,
   function( category, func, weight )
     local wrapped_func;
     
+    if IsBound( category!.category_as_first_argument ) and category!.category_as_first_argument = true then
+        
+        TryNextMethod( );
+        
+    fi;
+    
     wrapped_func := function( cat ) return func(); end;
     
     AddZeroObject( category, [ [ wrapped_func, [ ] ] ], weight );
@@ -724,6 +721,12 @@ InstallMethod( AddInitialObject,
                
   function( category, func, weight )
     local wrapped_func;
+    
+    if IsBound( category!.category_as_first_argument ) and category!.category_as_first_argument = true then
+        
+        TryNextMethod( );
+        
+    fi;
     
     wrapped_func := function( cat ) return func(); end;
     
@@ -738,6 +741,12 @@ InstallMethod( AddTerminalObject,
   function( category, func, weight )
     local wrapped_func;
     
+    if IsBound( category!.category_as_first_argument ) and category!.category_as_first_argument = true then
+        
+        TryNextMethod( );
+        
+    fi;
+    
     wrapped_func := function( cat ) return func(); end;
     
     AddTerminalObject( category, [ [ wrapped_func, [ ] ] ], weight );
@@ -750,6 +759,12 @@ InstallMethod( AddDistinguishedObjectOfHomomorphismStructure,
                
   function( category, func, weight )
     local wrapped_func;
+    
+    if IsBound( category!.category_as_first_argument ) and category!.category_as_first_argument = true then
+        
+        TryNextMethod( );
+        
+    fi;
     
     wrapped_func := function( cat ) return func(); end;
     
