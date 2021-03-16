@@ -3856,6 +3856,7 @@ DeclareOperation( "AddDirectSumProjectionInPushout",
 DeclareOperation( "AddDirectSumProjectionInPushout",
                   [ IsCapCategory, IsList ] );
 
+# NOTE: Pushout cannot be a global function because it is already declared as an operation by the packages homalg and HAP
 #! @Description
 #! The argument is a list of morphisms $D = ( \beta_i: B \rightarrow I_i )_{i = 1 \dots n}$
 #! The output is the pushout $\mathrm{Pushout}(D)$.

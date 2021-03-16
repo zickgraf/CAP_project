@@ -148,12 +148,6 @@ InstallGlobalFunction( CapInternalInstallAdd,
         
         InstallMethod( ValueGlobal( install_name ), replaced_filter_list, get_convenience_function( ValueGlobal( install_name ) ) );
         
-        if install_name <> function_name and IsOperation( ValueGlobal( function_name ) ) then
-            
-            InstallOtherMethod( ValueGlobal( function_name ), enhanced_filter_list, ValueGlobal( install_name ) );
-            
-        fi;
-        
     fi;
     
     InstallMethod( ValueGlobal( add_name ),

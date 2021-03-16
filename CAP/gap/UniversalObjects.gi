@@ -624,6 +624,12 @@ InstallMethod( Pushout,
 end );
 
 ##
+InstallOtherMethod( Pushout,
+                    [ IsCapCategory, IsList ],
+                    
+  PushoutOp );
+
+##
 InstallGlobalFunction( UniversalMorphismFromPushout,
 
   function( arg )
