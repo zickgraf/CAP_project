@@ -97,7 +97,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_GENERALIZED_MORPHISM_CATEGORY_BY_CO
           
           return GeneralizedMorphismByCospan( arrow, ReversedArrow( morphism2 ) );
           
-      end, [ HasIdentityAsReversedArrow, ] ] ] );
+      end, [ HasIdentityAsReversedArrow, IsCapCategoryMorphism ] ] ] );
     
     
     ## AdditionForMorphisms

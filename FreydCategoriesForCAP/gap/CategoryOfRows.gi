@@ -391,19 +391,19 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
             
             return CategoryOfRowsMorphism( Source( morphism_1 ), composition, Range( morphism_2 ) );
             
-          end, [ , ] ],
+          end, [ ] ],
         
         [ function( left_morphism, identity_morphism )
             
             return left_morphism;
             
-          end, [ , IsIdenticalToIdentityMorphism ] ],
+          end, [ IsCapCategoryMorphism, IsIdenticalToIdentityMorphism ] ],
         
         [ function( identity_morphism, right_morphism )
             
             return right_morphism;
             
-          end, [ IsIdenticalToIdentityMorphism, ] ],
+          end, [ IsIdenticalToIdentityMorphism, IsCapCategoryMorphism ] ],
         
         [ function( left_morphism, zero_morphism )
             
@@ -412,7 +412,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
                                         NrColumns( UnderlyingMatrix( zero_morphism ) ), ring ),
                                         Range( zero_morphism ) );
           
-          end, [ , IsZeroForMorphisms ] ],
+          end, [ IsCapCategoryMorphism, IsZeroForMorphisms ] ],
         
         [ function( zero_morphism, right_morphism )
             
@@ -421,7 +421,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
                                            NrColumns( UnderlyingMatrix( right_morphism ) ), ring ),
                                            Range( right_morphism ) );
           
-          end, [ IsZeroForMorphisms, ] ],
+          end, [ IsZeroForMorphisms, IsCapCategoryMorphism ] ],
       ]
     
     );

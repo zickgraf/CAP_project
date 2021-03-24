@@ -182,9 +182,6 @@ The function CAP_INTERNAL_ENHANCE_NAME_RECORD can be applied to a method name re
 
 * Function name: Set the component function_name to the entry name.
 
-* Redirect and post functions: Since the redirect and post functions need the category to work correctly, the given functions in the method records are
-            packed up to discard the first argument (which is the category) if necessary.
-
 * WithGiven special case: If the current entry belongs to a WithGiven operation or its without given pair, the with_given_without_given_name_pair is set.
                           Additionally, the with given flag of the WithGiven operation is set to true.
 

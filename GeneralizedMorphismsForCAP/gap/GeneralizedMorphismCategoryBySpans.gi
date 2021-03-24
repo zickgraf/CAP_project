@@ -90,7 +90,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_GENERALIZED_MORPHISM_CATEGORY_BY_SP
           
           return GeneralizedMorphismBySpan( ReversedArrow( morphism1 ), arrow );
           
-      end, [ , HasIdentityAsReversedArrow ] ] ] );
+      end, [ IsCapCategoryMorphism, HasIdentityAsReversedArrow ] ] ] );
     
     
     ## AdditionForMorphisms

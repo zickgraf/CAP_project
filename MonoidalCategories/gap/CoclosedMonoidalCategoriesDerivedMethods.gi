@@ -17,7 +17,7 @@ AddFinalDerivation( IsomorphismFromCoDualToInternalCoHom,
                       CoclosedEvaluationForCoDualWithGivenTensorProduct,
                       MorphismFromInternalCoHomToTensorProductWithGivenObjects
                       ],
-  function( cat, object )
+  function( object )
     local category;
 
     category := CapCategory( object );
@@ -42,7 +42,7 @@ AddFinalDerivation( IsomorphismFromInternalCoHomToCoDual,
                       MorphismFromInternalCoHomToTensorProductWithGivenObjects
                       ],
 
-  function( cat, object )
+  function( object )
     local category;
 
     category := CapCategory( object );

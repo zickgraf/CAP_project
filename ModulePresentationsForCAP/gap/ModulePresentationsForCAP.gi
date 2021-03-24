@@ -541,19 +541,19 @@ InstallGlobalFunction( ADD_PRECOMPOSE_LEFT,
             
             return PresentationMorphism( Source( left_morphism ), UnderlyingMatrix( left_morphism ) * UnderlyingMatrix( right_morphism ), Range( right_morphism ) );
             
-          end, [ , ] ],
+          end, [ ] ],
         
         [ function( left_morphism, identity_morphism )
             
             return left_morphism;
             
-          end, [ , IsIdenticalToIdentityMorphism ] ],
+          end, [ IsCapCategoryMorphism, IsIdenticalToIdentityMorphism ] ],
         
         [ function( identity_morphism, right_morphism )
             
             return right_morphism;
             
-          end, [ IsIdenticalToIdentityMorphism, ] ],
+          end, [ IsIdenticalToIdentityMorphism, IsCapCategoryMorphism ] ],
         
         [ function( left_morphism, zero_morphism )
             
@@ -561,7 +561,7 @@ InstallGlobalFunction( ADD_PRECOMPOSE_LEFT,
                                          HomalgZeroMatrix( NrRows( UnderlyingMatrix( left_morphism ) ), NrColumns( UnderlyingMatrix( zero_morphism ) ), homalg_ring ),
                                          Range( zero_morphism ) );
           
-          end, [ , IsIdenticalToZeroMorphism ] ],
+          end, [ IsCapCategoryMorphism, IsIdenticalToZeroMorphism ] ],
         
         [ function( zero_morphism, right_morphism )
             
@@ -569,7 +569,7 @@ InstallGlobalFunction( ADD_PRECOMPOSE_LEFT,
                                          HomalgZeroMatrix( NrRows( UnderlyingMatrix( zero_morphism ) ), NrColumns( UnderlyingMatrix( right_morphism ) ), homalg_ring ),
                                          Range( right_morphism ) );
           
-          end, [ IsIdenticalToZeroMorphism, ] ],
+          end, [ IsIdenticalToZeroMorphism, IsCapCategoryMorphism ] ],
       ]
       
     );
@@ -592,19 +592,19 @@ InstallGlobalFunction( ADD_PRECOMPOSE_RIGHT,
           
           return PresentationMorphism( Source( left_morphism ), UnderlyingMatrix( right_morphism ) * UnderlyingMatrix( left_morphism ), Range( right_morphism ) );
           
-          end, [ , ] ],
+          end, [ ] ],
         
         [ function( left_morphism, identity_morphism )
             
             return left_morphism;
             
-          end, [ , IsIdenticalToIdentityMorphism ] ],
+          end, [ IsCapCategoryMorphism, IsIdenticalToIdentityMorphism ] ],
         
         [ function( identity_morphism, right_morphism )
             
             return right_morphism;
             
-          end, [ IsIdenticalToIdentityMorphism, ] ],
+          end, [ IsIdenticalToIdentityMorphism, IsCapCategoryMorphism ] ],
         
         
         [ function( left_morphism, zero_morphism )
@@ -613,7 +613,7 @@ InstallGlobalFunction( ADD_PRECOMPOSE_RIGHT,
                                          HomalgZeroMatrix( NrRows( UnderlyingMatrix( zero_morphism ) ), NrColumns( UnderlyingMatrix( left_morphism ) ), homalg_ring ),
                                          Range( zero_morphism ) );
           
-          end, [ , IsIdenticalToZeroMorphism ] ],
+          end, [ IsCapCategoryMorphism, IsIdenticalToZeroMorphism ] ],
         
         [ function( zero_morphism, right_morphism )
             
@@ -621,7 +621,7 @@ InstallGlobalFunction( ADD_PRECOMPOSE_RIGHT,
                                          HomalgZeroMatrix( NrRows( UnderlyingMatrix( right_morphism ) ), NrColumns( UnderlyingMatrix( zero_morphism ) ), homalg_ring ),
                                          Range( right_morphism ) );
           
-          end, [ IsIdenticalToZeroMorphism, ] ],
+          end, [ IsIdenticalToZeroMorphism, IsCapCategoryMorphism ] ],
       ]
       
     );

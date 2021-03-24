@@ -61,15 +61,7 @@ BindGlobal( "CAP_INTERNAL_FINAL_DERIVATION_SANITY_CHECK",
         
         filter_list := CAP_INTERNAL_METHOD_NAME_RECORD!.(method_name).filter_list;
         
-        if filter_list[1] <> "category" then
-            
-            number_of_proposed_arguments := Length( filter_list ) + 1;
-            
-        else
-            
-            number_of_proposed_arguments := Length( filter_list );
-            
-        fi;
+        number_of_proposed_arguments := Length( filter_list );
         
         for impl in method[2] do
             
