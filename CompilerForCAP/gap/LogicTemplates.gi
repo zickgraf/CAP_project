@@ -129,6 +129,15 @@ BindGlobal( "CAP_JIT_LOGIC_TEMPLATES", [
         ),
         returns_value := true,
     ),
+    # CertainColumns( RightDivide( <two arguments> ) ) => RightDivide( <three arguments> )
+    # TODO: filters
+    #rec(
+    #    variable_names := [ "matrixB", "matrixA", "list" ],
+    #    src_template := "CertainColumns( RightDivide( matrixB, matrixA ), list )",
+    #    dst_template := "RightDivide( matrixB, CertainRows( matrixA, list ), CertainRows( matrixA, Filtered( [ 1 .. NrRows( matrixA ) ], x -> not x in list ) ) )",
+    #    new_funcs := [ [ "x" ] ],
+    #    returns_value := true,
+    #),
 ] );
 
 InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
