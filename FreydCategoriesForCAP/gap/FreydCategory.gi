@@ -910,7 +910,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
         end;
     
     ##
-    if (false or (IsAdditiveClosureCategory( underlying_category ) and IsRingAsCategory( UnderlyingCategory( underlying_category ) ) and HasIsCommutative( UnderlyingRing( UnderlyingCategory( underlying_category ) ) ) and IsCommutative( UnderlyingRing( UnderlyingCategory( underlying_category ) ) )))
+    if (true or (IsAdditiveClosureCategory( underlying_category ) and IsRingAsCategory( UnderlyingCategory( underlying_category ) ) and HasIsCommutative( UnderlyingRing( UnderlyingCategory( underlying_category ) ) ) and IsCommutative( UnderlyingRing( UnderlyingCategory( underlying_category ) ) )))
         and is_possible_to_install( "Lift, Colift",
                                [ "SolveLinearSystemInAbCategory" ] ) then
         
@@ -1366,7 +1366,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
             #
             #return nuinv( Source( alpha_freyd ), Source( gamma_freyd ), solution );
             
-        end, 100 );
+        end, 10000 );
         
         ##
         AddColift( category,
