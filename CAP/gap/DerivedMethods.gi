@@ -2567,7 +2567,7 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
                       [ HomomorphismStructureOnMorphismsWithGivenObjects, 1 ],
                       [ HomomorphismStructureOnObjects, 1 ],
                       [ InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism, 1 ] ],
-  function( left_coefficients, right_coefficients, right_side )
+  function( cat, left_coefficients, right_coefficients, right_side )
     local m, n, category, new_rhs, new_right_coeffs, new_left_coeffs, sol;
     
     Display( "SolveLinearSystemInAbCategory in ");
