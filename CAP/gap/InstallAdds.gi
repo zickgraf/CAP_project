@@ -453,7 +453,19 @@ InstallGlobalFunction( CapInternalInstallAdd,
                         
                         if not IsBound( category!.compiled_functions.( function_name )[ index ] ) then
                             
+                            Display( "\nnow compiling" );
+                            Display( function_name );
+                            Display( "in" );
+                            Display( category );
+                            Display( arg );
+                            
                             category!.compiled_functions.( function_name )[ index ] := cap_jit_compiled_function( func_to_install, arg );
+
+                            Display( "" );
+                            Display( function_name );
+                            Display( "in" );
+                            Display( category );
+                            Display( "finished\n");
                             
                         fi;
                         
