@@ -244,7 +244,7 @@ BindGlobal( "CAP_JIT_INTERNAL_SAFE_OPERATIONS", [
 ] );
 
 InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_constructor, given_arguments, package_name, compiled_category_name )
-  local cat1, cat2, cat, obj, mor, operations, diff, output_string, package_info, parameters_string, current_string, object_name, example_input, index, compiled_func, function_string, filter_list, function_name, current_rec;
+  local cat1, cat2, cat, obj, mor, operations, diff, output_string, package_info, parameters_string, current_string, object_name, example_input, index, compiled_func, function_string, filter_list, function_name, current_rec, start_time;
     
     if IsOperation( category_constructor ) or IsKernelFunction( category_constructor ) then
         
@@ -317,6 +317,128 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
         
     fi;
     
+    #operations := operations{[ 1 .. Length( operations ) ]};
+    #operations := operations{[ 11 .. Length ]};
+
+    # Freyd( Rows );
+    if false then
+        
+    operations := Difference( operations, [
+    ] );
+    operations := Filtered( operations, op -> PositionSublist( op, "FiberProduct" ) = fail ); # long running
+    operations := Filtered( operations, op -> PositionSublist( op, "Pushout" ) = fail ); # long running
+    #operations := Filtered( operations, op -> PositionSublist( op, "Dual" ) = fail ); # morphisms not composablem, empty matrices
+    #operations := Filtered( operations, op -> PositionSublist( op, "InternalHom" ) = fail ); # morphisms not composable, empty matrices, Singular segfaults
+    #operations := Filtered( operations, op -> PositionSublist( op, "Monoidal" ) = fail ); # long running
+    #operations := Filtered( operations, op -> PositionSublist( op, "Bidual" ) = fail ); # for now
+    #operations := Filtered( operations, op -> PositionSublist( op, "Tensor" ) = fail ); # for now
+
+    #operations := [ "LambdaElimination" ];
+
+    fi;
+
+    # Rows;
+    if true then
+        
+    operations := Difference( operations, [
+    ] );
+    #operations := Filtered( operations, op -> PositionSublist( op, "Tensor" ) = fail ); # invalid input for BraidingWithGivenTensorProducts
+    #operations := Filtered( operations, op -> PositionSublist( op, "Lift" ) = fail ); # problem with fail
+    #operations := Filtered( operations, op -> PositionSublist( op, "lift" ) = fail ); # problem with fail
+    #operations := Filtered( operations, op -> PositionSublist( op, "Coimage" ) = fail ); # triggers lift
+    #operations := Filtered( operations, op -> PositionSublist( op, "Image" ) = fail ); # triggers lift
+    #operations := Filtered( operations, op -> PositionSublist( op, "Functorial" ) = fail ); # triggers lift
+    #operations := Filtered( operations, op -> PositionSublist( op, "Inverse" ) = fail ); # triggers lift
+    #operations := Filtered( operations, op -> PositionSublist( op, "Bidual" ) = fail ); # triggers lift
+    #Remove( operations, Position( operations, "PreCompose" ) );
+    #operations := Concatenation( [ "PreCompose" ], operations );
+
+    #operations := [ "InverseForMorphisms" ];
+
+    fi;
+
+    # Opposite( Rows );
+    #operations := Difference( operations, [
+    #    "LambdaElimination",
+    #    "ComponentOfMorphismFromDirectSum", # morphisms not composable
+    #    "ComponentOfMorphismIntoDirectSum", # morphisms not composable
+    #    "IsProjective", # evaluates empty matrix
+    #] );
+    #operations := Filtered( operations, op -> PositionSublist( op, "FiberProduct" ) = fail ); # long running
+    #operations := Filtered( operations, op -> PositionSublist( op, "Pushout" ) = fail ); # long running
+    #operations := Filtered( operations, op -> PositionSublist( op, "Dual" ) = fail ); # morphisms not composablem, empty matrices
+    #operations := Filtered( operations, op -> PositionSublist( op, "InternalHom" ) = fail ); # morphisms not composable, empty matrices, Singular segfaults
+    #operations := Filtered( operations, op -> PositionSublist( op, "Monoidal" ) = fail ); # long running
+    #operations := Filtered( operations, op -> PositionSublist( op, "Bidual" ) = fail ); # for now
+    #operations := Filtered( operations, op -> PositionSublist( op, "Tensor" ) = fail ); # invalid input for BraidingWithGivenTensorProducts
+    #operations := Filtered( operations, op -> PositionSublist( op, "Lift" ) = fail ); # problem with fail
+    #operations := Filtered( operations, op -> PositionSublist( op, "lift" ) = fail ); # problem with fail
+    #operations := Filtered( operations, op -> PositionSublist( op, "Functorial" ) = fail ); # triggers lift
+    #operations := Filtered( operations, op -> PositionSublist( op, "Inverse" ) = fail ); # triggers lift
+    #operations := Filtered( operations, op -> PositionSublist( op, "Bidual" ) = fail ); # triggers lift
+    #Remove( operations, Position( operations, "PreCompose" ) );
+    #operations := Concatenation( [ "PreCompose" ], operations );
+
+    #operations := [ "CoastrictionToImage" ];
+
+    Display( "number of operations:" );
+    Display( Length( operations ) );
+
+    # broken:
+    # 48, EvaluationForDualWithGivenTensorProduct: morphisms not composable
+    # 78, InternalHomToTensorProductAdjunctionMap: morphisms not composable
+    # 143, LambdaElimination: morphisms not composable
+    # 199, TensorProductToInternalHomAdjunctionMap: morphisms not composable
+    # 235, UniversalPropertyOfDual: morphisms not composable
+    
+    #operations := Set( [
+    #    "IsWellDefinedForObjects",
+    #    "IsWellDefinedForMorphisms",
+    #    "IsEqualForMorphisms",
+    #    "IsEqualForCacheForObjects",
+    #    "IsEqualForObjects",
+    #    "KernelEmbedding",
+    #    "KernelEmbeddingWithGivenKernelObject",
+    #    "LiftAlongMonomorphism",
+    #    "PreCompose",
+    #    "AdditionForMorphisms",
+    #    "AdditiveInverseForMorphisms",
+    #    "IsZeroForMorphisms",
+    #    "ZeroMorphism",
+    #    "IsCongruentForMorphisms",
+    #    "CokernelProjection",
+    #    "CokernelColiftWithGivenCokernelObject",
+    #    "DirectSum",
+    #    "ProjectionInFactorOfDirectSumWithGivenDirectSum",
+    #    "UniversalMorphismIntoDirectSumWithGivenDirectSum",
+    #    "InjectionOfCofactorOfDirectSumWithGivenDirectSum",
+    #    "UniversalMorphismFromDirectSumWithGivenDirectSum",
+    #    "ZeroObject",
+    #    "UniversalMorphismIntoZeroObjectWithGivenZeroObject",
+    #    "UniversalMorphismFromZeroObjectWithGivenZeroObject",
+    #    "IdentityMorphism",
+    #    #"AssociatorLeftToRightWithGivenTensorProducts",
+    #    #"AssociatorRightToLeftWithGivenTensorProducts",
+    #    #"LeftUnitorWithGivenTensorProduct",
+    #    #"RightUnitorWithGivenTensorProduct",
+    #    #"TensorProductOnObjects",
+    #    #"TensorProductOnMorphismsWithGivenTensorProducts",
+    #    #"TensorUnit",
+    #    #"InternalHomOnObjects",
+    #    #"InternalHomOnMorphismsWithGivenInternalHoms",
+    #    #"BraidingWithGivenTensorProducts",
+    #    #"EvaluationMorphismWithGivenSource",
+    #    #"CoevaluationMorphismWithGivenRange",
+    #    #"EpimorphismFromSomeProjectiveObject",
+    #    #"Lift",
+    #    #"Colift",
+    #    #"MultiplyWithElementOfCommutativeRingForMorphisms",
+    #] );
+
+    #operations := [ "Colift", "CokernelColiftWithGivenCokernelObject" ];
+    #SetInfoLevel( InfoCapJit, 1 );
+    #operations := [ "IsomorphismFromDirectProductToDirectSum", "DirectProduct" ];
+    
     output_string := "";
     
     package_info := First( PackageInfo( package_name ) );
@@ -349,6 +471,8 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
     );
     output_string := Concatenation( output_string, current_string );
     
+    start_time := NanosecondsSinceEpoch( );
+
     for function_name in operations do
         
         current_rec := CAP_INTERNAL_METHOD_NAME_RECORD.(function_name);
@@ -405,6 +529,8 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
                 
             end );
             
+            Display( "\n################################################" );
+            
             if current_rec.is_with_given then
                 
                 # try to use object as last argument
@@ -428,6 +554,11 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
             example_input := [ cat ];
             
         fi;
+        
+        Display( "compiling" );
+        Display( function_name );
+        Display( Position( ListInstalledOperationsOfCategory( cat ), function_name ) );
+        Display( example_input );
         
         # find the last added function with no additional filters
         index := Last( PositionsProperty( cat!.added_functions.(function_name), f -> Length( f[2] ) = 0 ) );
@@ -472,6 +603,8 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
         output_string := Concatenation( output_string, current_string );
         
     od;
+    
+    Display( Concatenation( "Compilation finished in ", String( Float( (NanosecondsSinceEpoch( ) - start_time) / 1000 / 1000 / 1000 ) ) ) );
     
     current_string := Concatenation(
         "    \n",
