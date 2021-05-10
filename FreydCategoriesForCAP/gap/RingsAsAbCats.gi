@@ -259,7 +259,7 @@ if true then
         
         SetInfoLevel( ValueGlobal( "InfoLazyCategory" ), 1000 );
 
-    if true then
+    if false then
         
         # QRows
         Qrows := CategoryOfRows( field );
