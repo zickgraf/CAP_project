@@ -1141,7 +1141,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
           function( cat, alpha_freyd, gamma_freyd )
             local data, alpha, gamma, A_freyd, B_freyd, C_freyd, rho_A, A, R_A, rho_B, B, R_B, rho_C, C, R_C, interpretation, range_projection, nu_mod_alpha, other_projection, H_rho_A_C_bar, kernel_embedding, lift_along, solution, composed_solution, reinterpretation, start_time;
 
-        if true then
+        if false or ( HasIsCommutative( UnderlyingRing( UnderlyingCategory( underlying_category ) ) ) and IsCommutative( UnderlyingRing( UnderlyingCategory( underlying_category ) ) ) ) then
             
             Display( "Lift in "); 
             Display( Name( category ) );
@@ -1184,6 +1184,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_FREYD_CATEGORY,
             interpretation := 
                 interpret_homomorphism_as_morphism_from_dinstinguished_object_to_homomorphism_structure( alpha );
             
+            Error("asd");
+                
             range_projection := CokernelProjection( homomorphism_structure_on_morphisms( IdentityMorphism( A ), rho_B ) );
 
             nu_mod_alpha := PreCompose( interpretation, range_projection );

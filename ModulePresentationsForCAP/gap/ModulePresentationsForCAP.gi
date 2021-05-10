@@ -445,23 +445,34 @@ InstallGlobalFunction( ADD_KERNEL_LEFT,
     AddKernelEmbedding( category,
       
       function( cat, morphism )
-        local kernel, embedding, source_matrix;
+        local kernel, embedding, source_matrix, start_time;
         
         Display( "SyzygiesOfRows in" );
         Display( Name( category ) );
         Display( "with matrix sizes:" );
         Display( Concatenation( String( NrRows( UnderlyingMatrix( morphism ) ) ), "x", String( NrCols( UnderlyingMatrix( morphism ) ) ) ) );
+        Display( "modulo" );
+        Display( Concatenation( String( NrRows( UnderlyingMatrix( Range( morphism ) ) ) ), "x", String( NrCols( UnderlyingMatrix( Range( morphism ) ) ) ) ) );
         
+        #Error("Syz in fpres");
+        
+        start_time := NanosecondsSinceEpoch();
+
+        #homalgIOMode( "d" );
+
         embedding := SyzygiesOfRows( UnderlyingMatrix( morphism ), UnderlyingMatrix( Range( morphism ) ) );
         #embedding := ReducedSyzygiesOfRows( UnderlyingMatrix( morphism ), UnderlyingMatrix( Range( morphism ) ) );
         
-        Display( "SyzygiesOfRows finished" );
+        Display( Concatenation( "solved in ", String( Float( ( NanosecondsSinceEpoch() - start_time) / 1000 / 1000 / 1000 ) ) ) );
+        Display( Concatenation( "embedding has ", String( NrRows( embedding ) ), " rows" ) );
         
         source_matrix := BasisOfRows( UnderlyingMatrix( Source( morphism ) ) );
         
         embedding := DecideZeroRows( embedding, source_matrix );
         
         embedding := CertainRows( embedding, NonZeroRows( embedding ) );
+        
+        Display( Concatenation( "after reducing embedding has ", String( NrRows( embedding ) ), " rows" ) );
         
         kernel := LazySyzygiesOfRows( embedding, source_matrix );
         

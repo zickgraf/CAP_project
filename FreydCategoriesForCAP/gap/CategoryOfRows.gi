@@ -725,12 +725,14 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
         
         orig_left_coeffs := left_coeffs;
         orig_right_coeffs := right_coeffs;
+
+        homalgIOMode("d");
         
         left_coeffs := List( left_coeffs, l -> List( l, coeff -> UnderlyingMatrix( coeff ) ) );
         right_coeffs := List( right_coeffs, l -> List( l, coeff -> UnderlyingMatrix( coeff ) ) );
         rhs := List( rhs, r -> UnderlyingMatrix( r ) );
 
-        #coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( TransposedMatrix( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
+        #wrong_coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( TransposedMatrix( right_coeffs[i][j] ), left_coeffs[i][j] ) ) );
 
         #mat := UnionOfRows( List( coeffs, x -> UnionOfColumns( x ) ) );
         #
@@ -745,6 +747,8 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
         #Eval( tmp_qwe );
         
         coeffs := List( [ 1 .. Length( left_coeffs ) ], i -> List( [ 1 .. Length( left_coeffs[i] ) ], j -> KroneckerMat( TransposedMatrix( left_coeffs[i][j] ), right_coeffs[i][j] ) ) );
+
+        Error("solvelinearsystem in rows");
 
         mat := UnionOfColumns( List( coeffs, x -> UnionOfRows( x ) ) );
         
