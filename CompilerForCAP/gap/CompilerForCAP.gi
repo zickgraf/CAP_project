@@ -34,10 +34,11 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
     fi;
     
     debug := false;
+    SetPrintFormattingStatus( "*stdout*", true );
     
     if debug then
         Display( func );
-        Display( "start compilation" );
+        Error( "start compilation" );
     fi;
     
     if Length( jit_args ) > 0 and IsCapCategory( jit_args[1] ) then
@@ -138,13 +139,13 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         if debug then
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
             Display( compiled_func );
-            Display( "apply rules" );
+            Error( "apply rules" );
         fi;
         
         if debug then
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
             Display( compiled_func );
-            Display( "apply CapJitAppliedLogic" );
+            Error( "apply CapJitAppliedLogic" );
         fi;
         
         tree := CapJitAppliedLogic( tree, jit_args );
@@ -152,7 +153,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         if debug then
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
             Display( compiled_func );
-            Display( "apply CapJitDroppedHandledEdgeCases" );
+            Error( "apply CapJitDroppedHandledEdgeCases" );
         fi;
         
         tree := CapJitDroppedHandledEdgeCases( tree );
@@ -160,7 +161,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         if debug then
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
             Display( compiled_func );
-            Display( "apply CapJitInlinedArguments" );
+            Error( "apply CapJitInlinedArguments" );
         fi;
         
         tree := CapJitInlinedArguments( tree );
@@ -168,7 +169,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         if debug then
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
             Display( compiled_func );
-            Display( "apply CapJitInlinedSimpleFunctionCalls" );
+            Error( "apply CapJitInlinedSimpleFunctionCalls" );
         fi;
         
         tree := CapJitInlinedSimpleFunctionCalls( tree );
@@ -176,7 +177,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         if debug then
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
             Display( compiled_func );
-            Display( "apply CapJitInlinedFunctionCalls" );
+            Error( "apply CapJitInlinedFunctionCalls" );
         fi;
         
         tree := CapJitInlinedFunctionCalls( tree );
@@ -184,7 +185,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         if debug then
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
             Display( compiled_func );
-            Display( "apply CapJitDroppedUnusedVariables" );
+            Error( "apply CapJitDroppedUnusedVariables" );
         fi;
         
         tree := CapJitDroppedUnusedVariables( tree );
@@ -192,7 +193,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         if debug then
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
             Display( compiled_func );
-            Display( "apply CapJitInlinedVariableAssignments" );
+            Error( "apply CapJitInlinedVariableAssignments" );
         fi;
         
         tree := CapJitInlinedVariableAssignments( tree );
@@ -204,7 +205,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         if debug then
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
             Display( compiled_func );
-            Display( "apply CapJitAppliedCompilerHints" );
+            Error( "apply CapJitAppliedCompilerHints" );
         fi;
         
         tree := CapJitAppliedCompilerHints( tree, jit_args[1] );
@@ -219,7 +220,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         
         #Assert( 0, CallFuncList( compiled_func, jit_args ) = CallFuncList( func, jit_args ) );
         
-        Display( "compilation finished" );
+        Error( "compilation finished" );
         
     fi;
     
