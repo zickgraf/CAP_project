@@ -124,6 +124,21 @@ CapJitAddLogicTemplate( rec(
     returns_value := false,
 ) );
 
+# TODO
+CapJitAddLogicTemplate( rec(
+    variable_names := [ "end", "index" ],
+    src_template := "[ 1 .. end ][index]",
+    dst_template := "index",
+    returns_value := true,
+) );
+
+# TODO
+CapJitAddLogicTemplate( rec(
+    variable_names := [ "end", "func" ],
+    src_template := "Length( List( [ 1 .. end ], func ) )",
+    dst_template := "end",
+    returns_value := true,
+) );
 
 # List( Concatenation( List( L1, l1 -> List( L2, f ) ) ), g )
 CapJitAddLogicTemplate( rec(

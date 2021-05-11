@@ -530,8 +530,6 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
         
         underlying_matrix_of_universal_morphism :=
           UnionOfColumns(
-            ring,
-            RankOfObject( test_object ),
             List( sink, UnderlyingMatrix )
         );
         
@@ -546,8 +544,6 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
         
         underlying_matrix_of_universal_morphism :=
           UnionOfRows(
-            ring,
-            RankOfObject( test_object ),
             List( sink, UnderlyingMatrix )
         );
         
