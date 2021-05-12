@@ -751,6 +751,91 @@ InstallGlobalFunction( CAP_INTERNAL_GET_CORRESPONDING_OUTPUT_OBJECTS,
     
 end );
 
+InstallGlobalFunction( CAP_INTERNAL_GET_CORRESPONDING_OUTPUT_OBJECTS_GETTERS,
+  
+  function( translation_list )
+    local output_list, input_list, argument_names, return_list, current_output, input_position, list_position, i;
+    
+    if not Length( translation_list ) = 2 then
+        Error( "invalid translation list" );
+    fi;
+    
+    output_list := translation_list[ 2 ];
+    
+    output_list := List( output_list, i -> SplitString( i, "_" ) );
+    
+    input_list := translation_list[ 1 ];
+    
+    argument_names := input_list;
+    
+    return_list := [ ];
+    
+    for i in [ 1 .. Length( output_list ) ] do
+        
+        current_output := output_list[ i ];
+        
+        input_position := Position( input_list, current_output[ 1 ] );
+        
+        if input_position = fail then
+            
+            return_list[ i ] := fail;
+            
+            continue;
+            
+        fi;
+        
+        if Length( current_output ) = 1 then
+            
+           return_list[ i ] := argument_names[ input_position ];
+           
+        elif Length( current_output ) = 2 then
+            
+            if LowercaseString( current_output[ 2 ] ) = "source" then
+                return_list[ i ] := Concatenation( "Source( ", argument_names[ input_position ], " )" );
+            elif LowercaseString( current_output[ 2 ] ) = "range" then
+                return_list[ i ] := Concatenation( "Range( ", argument_names[ input_position ], " )" );
+            elif Position( input_list, current_output[ 2 ] ) <> fail then
+                return_list[ i ] := Concatenation( argument_names[ input_position ], "[", argument_names[ Position( input_list, current_output[ 2 ] ) ], "]" );
+            else
+                Error( "wrong input type" );
+            fi;
+            
+        elif Length( current_output ) = 3 then
+            
+            if ForAll( current_output[ 2 ], i -> i in "0123456789" ) then
+                list_position := String( Int( current_output[ 2 ] ) );
+            else
+                list_position := Position( input_list, current_output[ 2 ] );
+                if list_position = fail then
+                    Error( "unable to find ", current_output[ 2 ], " in input_list" );
+                fi;
+                list_position := argument_names[ list_position ];
+            fi;
+            
+            if list_position = fail then
+                Error( "list index variable not found" );
+            fi;
+            
+            if LowercaseString( current_output[ 3 ] ) = "source" then
+                return_list[ i ] := Concatenation( "Source( ", argument_names[ input_position ], "[", list_position, "] )" );
+            elif LowercaseString( current_output[ 3 ] ) = "range" then
+                return_list[ i ] := Concatenation( "Range( ", argument_names[ input_position ], "[", list_position, "] )" );
+            else
+                Error( "wrong output syntax" );
+            fi;
+            
+        else
+            
+            Error( "wrong entry length" );
+            
+        fi;
+        
+    od;
+    
+    return return_list;
+    
+end );
+
 ##
 InstallGlobalFunction( ListKnownCategoricalProperties,
                       
