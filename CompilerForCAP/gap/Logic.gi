@@ -105,6 +105,46 @@ CapJitAddLogicFunction( function ( tree, jit_args )
     
 end );
 
+# List( [ a, b, ... ], func ) => [ func( a ), func( b ), ... ]
+CapJitAddLogicFunction( function ( tree, jit_args )
+  local pre_func;
+    
+    Info( InfoCapJit, 1, "####" );
+    Info( InfoCapJit, 1, "Apply logic for List( [ a, b, ... ], func )." );
+    
+    pre_func := function ( tree, additional_arguments )
+      local args, list, func;
+        
+        if CapJitIsCallToGlobalFunction( tree, "List" ) then
+            
+            args := tree.args;
+            
+            if Length( args ) = 2 and args[1].type = "EXPR_LIST" then
+                
+                list := args[1].list;
+                func := args[2];
+                
+                return rec(
+                    type := "EXPR_LIST",
+                    list := List( list, l -> rec(
+                        type := "EXPR_FUNCCALL",
+                        funcref := func,
+                        args := [ l ],
+                    ) ),
+                );
+                
+            fi;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end );
+
 # AttributeGetter( ObjectifyWithAttributes( ..., Attribute, value, ... ) ) => value
 CapJitAddLogicFunction( function ( tree, jit_args )
   local pre_func;
