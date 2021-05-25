@@ -558,11 +558,11 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
         
         underlying_matrix := List( morphism_matrix, row -> List( row, UnderlyingMatrix ) );
         
-        underlying_matrix := List( [ 1 .. Length( underlying_matrix ) ], i -> UnionOfColumns( ring, RankOfObject( source_diagram[i] ), underlying_matrix[i] ) );
+        underlying_matrix := List( [ 1 .. Length( underlying_matrix ) ], i -> UnionOfColumns( underlying_matrix[i] ) );
         
         return CategoryOfRowsMorphism(
           source,
-          UnionOfRows( ring, RankOfObject( range ), underlying_matrix ),
+          UnionOfRows( underlying_matrix ),
           range );
         
     end );
