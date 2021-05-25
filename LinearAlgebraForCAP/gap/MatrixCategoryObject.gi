@@ -24,36 +24,6 @@ InstallMethod( VectorSpaceObject,
     
 end );
 
-##
-InstallMethodForCompilerForCAP( MatrixCategoryObjectOp,
-                                [ IsMatrixCategory, IsInt ],
-               
-  function( cat, dimension )
-    local category;
-    
-    if dimension < 0 then
-        
-        Error( "the dimension must be a non-negative integer" );
-        
-    fi;
-    
-    return ObjectifyObjectForCAPWithAttributes( rec( ), cat,
-                                                Dimension, dimension,
-                                                UnderlyingFieldForHomalg, UnderlyingRing( cat ) );
-    
-end );
-
-##
-# backwards compatibility
-InstallOtherMethod( MatrixCategoryObject,
-                    [ IsFieldForHomalg, IsInt ],
-                    
-  function( homalg_field, dimension )
-    
-    return MatrixCategoryObject( MatrixCategory( homalg_field ), dimension );
-    
-end );
-
 ####################################
 ##
 ## View

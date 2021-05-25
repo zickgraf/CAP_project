@@ -36,11 +36,10 @@ DeclareCategory( "IsVectorSpaceMorphism",
 #! of matrices over $F$ whose underlying matrix is given by $M$.
 #! @Returns a morphism in $\mathrm{Hom}(S,R)$
 #! @Arguments S, M, R
-DeclareOperation( "VectorSpaceMorphism",
-                  [ IsVectorSpaceObject, IsHomalgMatrix, IsVectorSpaceObject ] );
-
-DeclareOperation( "VectorSpaceMorphism",
-                  [ IsVectorSpaceObject, IsList, IsVectorSpaceObject ] );
+# DeclareOperation( "VectorSpaceMorphism",
+#                   [ IsVectorSpaceObject, IsHomalgMatrix, IsVectorSpaceObject ] );
+# this comment stops AutoDoc from trying to parse the next line (which it can't at the moment)
+DeclareSynonym( "VectorSpaceMorphism", MorphismConstructor );
 
 DeclareAttribute( "AsVectorSpaceMorphism", IsHomalgMatrix );
 

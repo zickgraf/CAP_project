@@ -111,6 +111,63 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_MATRIX_CATEGORY,
     
     homalg_field := category!.field_for_matrix_category;
     
+    ## constructors
+    ##
+    AddObjectConstructor( category,
+      function( cat, dimension )
+        
+        if not IsInt( dimension ) or dimension < 0 then
+            
+            Error( "the object datum must be a non-negative integer" );
+            
+        fi;
+        
+        return ObjectifyObjectForCAPWithAttributes( rec( ), cat,
+                                                    Dimension, dimension,
+                                                    UnderlyingFieldForHomalg, UnderlyingRing( cat ) );
+        
+    end );
+    
+    ##
+    AddMorphismConstructor( category,
+      function( cat, source, homalg_matrix, range )
+        local homalg_field;
+        
+        if not IsHomalgMatrix( homalg_matrix ) then
+            
+            Error( "the morphism datum must be a homalg matrix " );
+            
+        fi;
+        
+        homalg_field := HomalgRing( homalg_matrix );
+        
+        if not IsIdenticalObj( homalg_field, UnderlyingFieldForHomalg( source ) ) then
+          
+          Error( "the matrix is defined over a different ring than the objects" );
+          
+        fi;
+        
+        if NrRows( homalg_matrix ) <> Dimension( source ) then
+          
+          Error( "the number of rows has to be equal to the dimension of the source" );
+          
+        fi;
+        
+        if NrColumns( homalg_matrix ) <> Dimension( range ) then
+          
+          Error( "the number of columns has to be equal to the dimension of the range" );
+          
+        fi;
+        
+        return ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes( rec( ), category,
+                                               source,
+                                               range,
+                                               UnderlyingFieldForHomalg, category!.field_for_matrix_category,
+                                               UnderlyingMatrix, homalg_matrix
+        );
+        
+    end );
+    
     ##
     AddIsEqualForCacheForObjects( category,
       { cat, obj1, obj2 } -> IsIdenticalObj( obj1, obj2 ) );

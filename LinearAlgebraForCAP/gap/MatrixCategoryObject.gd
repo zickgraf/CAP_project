@@ -45,9 +45,10 @@ DeclareOperation( "VectorSpaceObject",
 #! The output is an object in $cat$ of dimension $d$.
 #! @Returns an object
 #! @Arguments cat, d
-KeyDependentOperation( "MatrixCategoryObject",
-                       IsMatrixCategory, IsInt, ReturnTrue );
-
+# DeclareOperation( "MatrixCategoryObject",
+#                   [ IsCapCategory, IsInt ] );
+# this comment stops AutoDoc from trying to parse the next line (which it can't at the moment)
+DeclareSynonym( "MatrixCategoryObject", ObjectConstructor );
 
 ####################################
 ##
