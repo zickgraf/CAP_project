@@ -15,7 +15,7 @@ InstallMethod( CategoryOfRows,
                [ IsHomalgRing ],
                
   function( homalg_ring )
-    local overhead_option, category, to_be_finalized;
+    local overhead_option, category, object_filter, morphism_filter, to_be_finalized;
     
     overhead_option := CAP_INTERNAL_RETURN_OPTION_OR_DEFAULT( "overhead", true );
     
@@ -39,8 +39,16 @@ InstallMethod( CategoryOfRows,
     
     SetFilterObj( category, IsCategoryOfRows );
     
+    object_filter := IsCategoryOfRowsObject;
+    morphism_filter := IsCategoryOfRowsMorphism and HasUnderlyingMatrix;
+    
     if HasHasInvariantBasisProperty( homalg_ring ) and HasInvariantBasisProperty( homalg_ring ) then
+        
         SetIsSkeletalCategory( category, true );
+        
+        object_filter := object_filter and IsCellOfSkeletalCategory;
+        morphism_filter := morphism_filter and IsCellOfSkeletalCategory;
+        
     fi;
     
     SetIsAdditiveCategory( category, true );
@@ -61,17 +69,15 @@ InstallMethod( CategoryOfRows,
     
     if HasIsFieldForHomalg( homalg_ring ) and IsFieldForHomalg( homalg_ring ) then
         
-        AddObjectRepresentation( category, IsCategoryOfRowsObject and HasIsProjective and IsProjective );
-        
         SetIsAbelianCategory( category, true );
         
-    else
-        
-        AddObjectRepresentation( category, IsCategoryOfRowsObject );
+        object_filter := object_filter and HasIsProjective and IsProjective;
         
     fi;
     
-    AddMorphismRepresentation( category, IsCategoryOfRowsMorphism and HasUnderlyingMatrix );
+    AddObjectRepresentation( category, object_filter );
+    
+    AddMorphismRepresentation( category, morphism_filter );
     
     INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS( category );
     
@@ -890,11 +896,11 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
             
             rank := RankOfObject( object );
             
-            if rank = 0 then
-                
-                return ZeroMorphism( tensor_object, unit );
-                
-            fi;
+            #if rank = 0 then
+            #    
+            #    return ZeroMorphism( tensor_object, unit );
+            #    
+            #fi;
             
             id := HomalgIdentityMatrix( rank, ring );
             
@@ -912,11 +918,11 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
             
             rank := RankOfObject( object );
             
-            if rank = 0 then
-                
-                return ZeroMorphism( unit, tensor_object );
-                
-            fi;
+            #if rank = 0 then
+            #    
+            #    return ZeroMorphism( unit, tensor_object );
+            #    
+            #fi;
             
             id := HomalgIdentityMatrix( rank, ring );
             
@@ -927,7 +933,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
         end );
        
         ##
-        AddMorphismToBidualWithGivenBidual( category, { cat, obj, dual } -> IdentityMorphism( obj ) );
+        AddMorphismToBidualWithGivenBidual( category, { cat, obj, dual } -> IdentityMorphism( cat, obj ) );
         
     fi; ## commutative case
     
