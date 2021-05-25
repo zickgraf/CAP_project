@@ -11,9 +11,23 @@ InstallMethod( InternalHomOnMorphisms,
   function( morphism_1, morphism_2 )
     
     return InternalHomOnMorphismsWithGivenInternalHoms( 
-             InternalHomOnObjects( Range( morphism_1 ), Source( morphism_2 ) ),
+             InternalHomOnObjects( CapCategory( morphism_1 ), Range( morphism_1 ), Source( morphism_2 ) ),
              morphism_1, morphism_2,
-             InternalHomOnObjects( Source( morphism_1 ), Range( morphism_2 ) )
+             InternalHomOnObjects( CapCategory( morphism_1 ), Source( morphism_1 ), Range( morphism_2 ) )
+           );
+    
+end );
+
+##
+InstallOtherMethodForCompilerForCAP( InternalHomOnMorphisms,
+               [ IsCapCategory, IsCapCategoryMorphism, IsCapCategoryMorphism ],
+               
+  function( cat, morphism_1, morphism_2 )
+    
+    return InternalHomOnMorphismsWithGivenInternalHoms( cat,
+             InternalHomOnObjects( cat, Range( morphism_1 ), Source( morphism_2 ) ),
+             morphism_1, morphism_2,
+             InternalHomOnObjects( cat, Source( morphism_1 ), Range( morphism_2 ) )
            );
     
 end );
@@ -32,6 +46,18 @@ InstallMethod( EvaluationMorphism,
     return EvaluationMorphismWithGivenSource( 
              object_1, object_2,
              TensorProductOnObjects( InternalHomOnObjects( object_1, object_2 ), object_1 )
+           );
+    
+end );
+
+InstallOtherMethodForCompilerForCAP( EvaluationMorphism,
+               [ IsCapCategory, IsCapCategoryObject, IsCapCategoryObject ],
+               
+  function( cat, object_1, object_2 )
+    
+    return EvaluationMorphismWithGivenSource( cat,
+             object_1, object_2,
+             TensorProductOnObjects( cat, InternalHomOnObjects( cat, object_1, object_2 ), object_1 )
            );
     
 end );
@@ -110,6 +136,19 @@ InstallMethod( DualOnMorphisms,
     
 end );
 
+InstallOtherMethodForCompilerForCAP( DualOnMorphisms,
+               [ IsCapCategory, IsCapCategoryMorphism ],
+               
+  function( cat, morphism )
+    
+    return DualOnMorphismsWithGivenDuals( cat,
+             DualOnObjects( cat, Range( morphism ) ),
+             morphism,
+             DualOnObjects( cat, Source( morphism ) )
+           );
+    
+end );
+
 ##
 CAP_INTERNAL_CLOSED_MONOIDAL_CATEGORIES_BASIC_OPERATIONS.EvaluationForDual := 
   [ [ "EvaluationForDualWithGivenTensorProduct", 1 ],
@@ -129,6 +168,19 @@ InstallMethod( EvaluationForDual,
              TensorProductOnObjects( DualOnObjects( object ), object ),
              object,
              TensorUnit( category )
+           );
+    
+end );
+
+InstallOtherMethodForCompilerForCAP( EvaluationForDual,
+               [ IsCapCategory, IsCapCategoryObject ],
+               
+  function( cat, object )
+    
+    return EvaluationForDualWithGivenTensorProduct( cat,
+             TensorProductOnObjects( cat, DualOnObjects( cat, object ), object ),
+             object,
+             TensorUnit( cat )
            );
     
 end );

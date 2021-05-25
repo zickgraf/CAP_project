@@ -105,7 +105,7 @@ AddDerivationToCAP( RightUnitorWithGivenTensorProduct,
                     
   function( cat, object, object_tensored_unit )
     
-    return IdentityMorphism( object );
+    return IdentityMorphism( cat, object );
     
 end : CategoryFilter := IsStrictMonoidalCategory,
       Description := "RightUnitorWithGivenTensorProduct as the identity morphism" );

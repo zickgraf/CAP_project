@@ -14,6 +14,15 @@ InstallMethod( Braiding,
     
 end );
 
+InstallOtherMethodForCompilerForCAP( Braiding,
+               [ IsCapCategory, IsCapCategoryObject, IsCapCategoryObject ],
+               
+  function( cat, object_1, object_2 )
+    
+    return BraidingWithGivenTensorProducts( cat, TensorProductOnObjects( cat, object_1, object_2 ), object_1, object_2, TensorProductOnObjects( cat, object_2, object_1 ) );
+    
+end );
+
 ##
 InstallMethod( Braiding,
                [ IsCapCategoryObject and IsCellOfSkeletalCategory, IsCapCategoryObject ],

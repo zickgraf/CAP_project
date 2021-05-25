@@ -31,6 +31,19 @@ InstallMethod( TensorProductOnMorphisms,
     
 end );
 
+InstallOtherMethodForCompilerForCAP( TensorProductOnMorphisms,
+               [ IsCapCategory, IsCapCategoryMorphism, IsCapCategoryMorphism ],
+               
+  function( cat, morphism_1, morphism_2 )
+    
+    return TensorProductOnMorphismsWithGivenTensorProducts( cat,
+             TensorProductOnObjects( cat, Source( morphism_1 ), Source( morphism_2 ) ),
+             morphism_1, morphism_2,
+             TensorProductOnObjects( cat, Range( morphism_1 ), Range( morphism_2 ) )
+           );
+    
+end );
+
 ##
 CAP_INTERNAL_MONOIDAL_CATEGORIES_BASIC_OPERATIONS.AssociatorRightToLeft := 
   [ [ "AssociatorRightToLeftWithGivenTensorProducts", 1 ],
@@ -173,6 +186,16 @@ InstallMethod( RightUnitor,
     category := CapCategory( object );
     
     return RightUnitorWithGivenTensorProduct( object, TensorProductOnObjects( object, TensorUnit( category ) ) );
+    
+end );
+
+##
+InstallOtherMethodForCompilerForCAP( RightUnitor,
+               [ IsCapCategory, IsCapCategoryObject ],
+               
+  function( cat, object )
+    
+    return RightUnitorWithGivenTensorProduct( cat, object, TensorProductOnObjects( cat, object, TensorUnit( cat ) ) );
     
 end );
 
