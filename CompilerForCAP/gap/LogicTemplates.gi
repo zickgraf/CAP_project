@@ -138,6 +138,20 @@ BindGlobal( "CAP_JIT_LOGIC_TEMPLATES", [
     #    new_funcs := [ [ "x" ] ],
     #    returns_value := true,
     #),
+    # HomalgIdentityMatrix( size, ring ) * matrix -> matrix
+    rec(
+        variable_names := [ "size", "ring", "matrix" ],
+        src_template := "HomalgIdentityMatrix( size, ring ) * matrix",
+        dst_template := "matrix",
+        returns_value := true,
+    ),
+    # matrix * HomalgIdentityMatrix( size, ring ) -> matrix
+    rec(
+        variable_names := [ "size", "ring", "matrix" ],
+        src_template := "matrix * HomalgIdentityMatrix( size, ring )",
+        dst_template := "matrix",
+        returns_value := true,
+    ),
 ] );
 
 InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
