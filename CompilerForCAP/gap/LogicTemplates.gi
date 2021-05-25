@@ -574,6 +574,28 @@ CapJitAddLogicTemplate(
     )
 );
 
+# HomalgIdentityMatrix( size, ring ) * matrix -> matrix
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "size", "ring", "matrix" ],
+        src_template := "HomalgIdentityMatrix( size, ring ) * matrix",
+        dst_template := "matrix",
+        returns_value := true,
+        needed_packages := [ [ "MatricesForHomalg", ">= 2020.05.19" ] ],
+    )
+);
+
+# matrix * HomalgIdentityMatrix( size, ring ) -> matrix
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "size", "ring", "matrix" ],
+        src_template := "matrix * HomalgIdentityMatrix( size, ring )",
+        dst_template := "matrix",
+        returns_value := true,
+        needed_packages := [ [ "MatricesForHomalg", ">= 2020.05.19" ] ],
+    )
+);
+
 InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( tree, template_tree, variable_filters, debug )
   local i, variables, func_id_replacements, pre_func, result_func, additional_arguments_func, result;
     
