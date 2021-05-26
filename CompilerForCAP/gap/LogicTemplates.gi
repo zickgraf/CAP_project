@@ -19,6 +19,23 @@ BindGlobal( "CAP_JIT_LOGIC_TEMPLATES", [
         new_funcs := [ [ "x" ] ],
         returns_value := true,
     ),
+    # List( ListX( L1, L2, f ), g ) => ListX( L1, L2, {x,y} -> g( f( x, y ) ) )
+    rec(
+        variable_names := [ "list1", "list2", "outer_func", "inner_func" ],
+        src_template := "List( ListX( list1, list2, inner_func ), outer_func )",
+        dst_template := "ListX( list1, list2, {x,y} -> outer_func( inner_func( x, y ) ) )",
+        new_funcs := [ [ "x", "y" ] ],
+        returns_value := true,
+    ),
+    # test if the function in ListX is independent of the first list
+    # ListX( L1, L2, {x,y} -> result ) => List( L2, y -> result )
+    #rec(
+    #    variable_names := [ "list1", "list2", "result" ],
+    #    src_template := "ListX( list1, list2, {x,y} -> result )",
+    #    dst_template := "List( list2, y -> result )",
+    #    new_funcs := [ [ "y" ] ],
+    #    returns_value := true,
+    #),
     # List( L, f )[index] => f( L[index] )
     rec(
         variable_names := [ "list", "func", "index" ],
