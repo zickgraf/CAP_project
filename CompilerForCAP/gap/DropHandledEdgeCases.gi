@@ -44,6 +44,8 @@ InstallGlobalFunction( CapJitDroppedHandledEdgeCases, function ( tree )
     Info( InfoCapJit, 1, "####" );
     Info( InfoCapJit, 1, "Drop handled edge cases." );
     
+    orig_tree := tree;
+    
     handled_edge_cases := [ ];
 
     pre_func := function ( tree, path )
@@ -57,6 +59,8 @@ InstallGlobalFunction( CapJitDroppedHandledEdgeCases, function ( tree )
                 
                 statement := statements[i];
                 
+                Display( statement.type );
+            
                 if StartsWith( statement.type, "STAT_IF" ) then
                     
                     branches := statement.branches;
@@ -76,6 +80,14 @@ InstallGlobalFunction( CapJitDroppedHandledEdgeCases, function ( tree )
                         fi;
                         
                     od;
+                    
+                elif statement.type = "STAT_RETURN_OBJ" and statement.obj.type = "EXPR_CONDITIONAL" then
+                    
+                    # we are in the main sequence of statements of a function => we are not inside of a loop
+                    # and expr_if_true ends is a return statement
+                    # => we can only reach other code if the condition does not match
+                    if_path := Concatenation( path, [ "stats", "statements", 1, "obj", "expr_if_false" ] );
+                    Add( handled_edge_cases, rec( if_path := if_path, key := 1, condition := statement.obj.condition ) );
                     
                 fi;
                 
@@ -187,6 +199,46 @@ InstallGlobalFunction( CapJitDroppedHandledEdgeCases, function ( tree )
                     
                 fi;
 
+            elif tree.type = "EXPR_CONDITIONAL" then
+                
+                    
+                for handled_edge_case in handled_edge_cases do
+                        
+                        Display( path );
+                        Display( handled_edge_case.if_path );
+                        
+                    if PositionSublist( path, handled_edge_case.if_path ) = 1 then
+                        
+                        #if Length( path ) > Length( handled_edge_case.if_path ) then
+                        #    
+                        #    # next entry of path is "branches", then the key
+                        #    key := path[Length( handled_edge_case.if_path ) + 2];
+                        #    
+                        #else
+                        #    
+                        #    key := j;
+                        #    
+                        #fi;
+                        #
+                        #Assert( 0, IsInt( key ) );
+                        #
+                        #if key > handled_edge_case.key and
+                        
+                        if CAP_JIT_INTERNAL_CONDITION_IMPLIES_CONDITION( tree.condition, handled_edge_case.condition ) = true then
+                            
+                            Info( InfoCapJit, 1, "####" );
+                            Info( InfoCapJit, 1, "Dropped edge case." );
+                            
+                            return tree.expr_if_false;
+                            
+                        fi;
+                        
+                    fi;
+                    
+                od;
+                
+                return tree;
+                
             fi;
             
             return tree;

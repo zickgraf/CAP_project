@@ -576,11 +576,13 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_MATRIX_CATEGORY,
           
           return fail;
           
-        fi;
+        else
         
-        return VectorSpaceMorphism( cat, Source( alpha ),
-                                    right_divide,
-                                    Source( beta ) );
+          return VectorSpaceMorphism( cat, Source( alpha ),
+                                      right_divide,
+                                      Source( beta ) );
+                                      
+        fi;
         
     end );
     
@@ -640,11 +642,13 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_MATRIX_CATEGORY,
           
           return fail;
           
+        else
+          
+          return VectorSpaceMorphism( cat, Range( alpha ),
+                                      left_divide,
+                                      Range( beta ) );
+            
         fi;
-        
-        return VectorSpaceMorphism( cat, Range( alpha ),
-                                    left_divide,
-                                    Range( beta ) );
         
     end );
     

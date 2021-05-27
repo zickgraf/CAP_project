@@ -220,3 +220,35 @@ CapJitAddLogicFunction( function ( tree, jit_args )
     return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
+
+# condition ? fail : value = fail => condition
+CapJitAddLogicFunction( function ( tree, jit_args )
+  local pre_func;
+    
+    Info( InfoCapJit, 1, "####" );
+    Info( InfoCapJit, 1, "Apply logic for equality involving conditional operators." );
+    
+    pre_func := function ( tree, additional_arguments )
+        
+        if IsRecord( tree ) and tree.type = "EXPR_EQ" and tree.left.type = "EXPR_CONDITIONAL" and tree.right.type = "EXPR_REF_GVAR" then
+            
+            if tree.left.expr_if_true.type = "EXPR_REF_GVAR" and tree.left.expr_if_true.gvar = "fail" and tree.right.gvar = "fail" then
+                
+                # ObjectifyWithAttributes can never return fail
+                if CapJitIsCallToGlobalFunction( tree.left.expr_if_false, "ObjectifyWithAttributes" ) then
+                    
+                    return tree.left.condition;
+                    
+                fi;
+                
+            fi;
+            
+        fi;
+            
+        return tree;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end );
