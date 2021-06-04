@@ -139,11 +139,20 @@ InstallGlobalFunction( CapJitInlinedVariableAssignments, function ( tree )
 
         Info( InfoCapJit, 1, "Variable is unused." );
         
-    else
+    # Heuristic: Generally, only inline a variable of it is used a single time, because the size of the tree might explode if a large expression is inlined at multiple points. Exceptions:
+    #  * Simple references to global or local variables do not make the tree larger.
+    #  * The result of ObjectifyWithAttributes might be referenced at multiple points, but different attributes might be accessed.
+    #    So if we would not inline the result in that case, we would lose a lot of opportunities for optimizations.
+    #    Ideally, we would only inline attributes which are accessed a single time and keep the other ones.
+    elif is_rapid_reassigment or number_of_uses = 1 or lvar_assignment.rhs.type = "EXPR_REF_GVAR" or lvar_assignment.rhs.type = "EXPR_REF_FVAR" or CapJitIsCallToGlobalFunction( lvar_assignment.rhs, "ObjectifyWithAttributes" ) then
         
         Info( InfoCapJit, 1, "Success." );
         
         inline_tree_parent.(Last( inline_tree_path )) := modified_inline_tree;
+        
+    else
+        
+        Info( InfoCapJit, 1, "Variable is used multiple times (and does not match our heuristic which allows inlining despite this fact)." );
         
     fi;
     
