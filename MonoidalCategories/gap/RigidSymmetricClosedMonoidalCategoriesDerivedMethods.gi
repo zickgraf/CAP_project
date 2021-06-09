@@ -76,7 +76,7 @@ AddDerivationToCAP( EvaluationMorphismWithGivenSource,
                         ),
                         
                         PreCompose( cat,
-                            AssociatorLeftToRight( cat, object_2, DualOnObjects( cat, object_1 ), object_1 ),
+                            AssociatorLeftToRight( object_2, DualOnObjects( cat, object_1 ), object_1 ),
                             
                             PreCompose( cat,
                                 TensorProductOnMorphisms( cat,
