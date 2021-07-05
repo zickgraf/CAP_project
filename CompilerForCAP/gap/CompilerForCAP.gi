@@ -33,7 +33,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         
     fi;
     
-    debug := true;
+    debug := false;
     #SetPrintFormattingStatus( "*stdout*", true );
     
     if debug then
@@ -126,6 +126,12 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, jit_args )
         tree := CapJitResolvedGlobalVariables( tree );
         
     od;
+    
+    #compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
+    #if PositionSublist( String( compiled_func ), "CapJitFixpoint" ) <> fail then
+    #    Display( compiled_func );
+    #    Error("tmp");
+    #fi;
     
     # rule phase
     orig_tree := rec( );
