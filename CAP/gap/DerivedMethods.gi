@@ -2328,6 +2328,11 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     
     n := Length( left_coefficients[1] );
     
+    Display( m );
+    Display(n);
+    Display("a");
+    Display(Runtime());
+    
     ## create lift diagram
     
     distinguished_object := DistinguishedObjectOfHomomorphismStructure( cat );
@@ -2346,12 +2351,25 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     
     H_A_D := List( [ 1 .. m ], i -> HomomorphismStructureOnObjects( cat, Source( left_coefficients[i][1] ), Range( right_coefficients[i][1] ) ) );
     
+    Display("b");
+    Display(Runtime());
+    
     list :=
       List( [ 1 .. n ],
       j -> List( [ 1 .. m ], i -> HomomorphismStructureOnMorphismsWithGivenObjects( cat, H_B_C[j], left_coefficients[i][j], right_coefficients[i][j], H_A_D[i] ) ) 
     );
     
+    if IsBound( MYERROR ) then
+        #Error("asd");
+    fi;
+    
+    Display("c");
+    Display(Runtime());
+    
     H := MorphismBetweenDirectSums( range_cat, H_B_C, list, H_A_D );
+    
+    Display("d");
+    Display(Runtime());
     
     ## the actual computation of the solution
     lift := Lift( range_cat, nu, H );
