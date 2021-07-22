@@ -469,6 +469,16 @@ CapJitAddLogicTemplate(
     )
 );
 
+# Length( [ 1 .. end ] ) => end
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "end" ],
+        src_template := "Length( [ 1 .. end ] )",
+        dst_template := "end",
+        returns_value := true,
+    )
+);
+
 # List( L{poss}, f ) => List( L, f ){poss}
 CapJitAddLogicTemplate(
     rec(
