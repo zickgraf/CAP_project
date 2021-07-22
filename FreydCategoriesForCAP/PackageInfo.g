@@ -108,6 +108,8 @@ Dependencies := rec(
                            [ "GeneralizedMorphismsForCAP", ">= 2018.06.15" ]
                          ],
   SuggestedOtherPackages := [
+    [ "QPA", ">= 2.0" ],
+    [ "Algebroids", ">= 2021.07-01" ],
     [ "FinSetsForCAP", ">= 2023.07-03" ]
    ],
   ExternalConditions := [ ],
