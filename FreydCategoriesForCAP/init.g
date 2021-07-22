@@ -33,6 +33,11 @@ ReadPackage( "FreydCategoriesForCAP", "gap/CokernelImageClosure.gd" );
 
 ReadPackage( "FreydCategoriesForCAP", "gap/AdelmanCategory.gd" );
 
+if IsPackageMarkedForLoading( "QPA", ">= 2.0" ) and IsPackageMarkedForLoading( "Algebroids", ">= 2021.07-01" ) then
+    ReadPackage( "FreydCategoriesForCAP", "gap/QuiverRows.gd" );
+    ReadPackage( "FreydCategoriesForCAP", "gap/QuiverRowsAsAdditiveClosureOfAlgebroid.gd" );
+fi;
+
 ReadPackage( "FreydCategoriesForCAP", "gap/GradedModulePresentationsByFreyd/GradedModulePresentationsByFreyd.gd" );
 
 ReadPackage( "FreydCategoriesForCAP", "gap/LinearClosure.gd" );
