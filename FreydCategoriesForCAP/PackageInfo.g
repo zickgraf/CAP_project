@@ -109,7 +109,7 @@ Dependencies := rec(
                          ],
   SuggestedOtherPackages := [
     [ "QPA", ">= 2.0" ],
-    [ "Algebroids", ">= 2021.07-01" ],
+    #[ "Algebroids", ">= 2021.07-01" ],
     [ "FinSetsForCAP", ">= 2023.07-03" ]
    ],
   ExternalConditions := [ ],
