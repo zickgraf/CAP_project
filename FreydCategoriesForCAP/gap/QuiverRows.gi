@@ -1244,10 +1244,27 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
                                 
                                 coeffs_beta := CoefficientsOfPaths( basis_w_wp, beta_kl );
                                 
+                                #MYCOUNTER2 := MYCOUNTER2 + 1;
+                                
+                                #Print( alpha_ij );
+                                #Print( " " );
+                                #Print( beta_kl );
+                                #Print( "\n" );
+                                
+                                #Print( listi[1] );
+                                #Print( " " );
+                                #Print( listj[1] );
+                                #Print( " " );
+                                #Print( listk[1] );
+                                #Print( " " );
+                                #Print( listl[1] );
+                                #Print( "\n" );
+                                
+                                #Error("here");
+                                
                                 for p in [ 1 .. Size( basis_vp_v ) ] do
                                     
                                     for q in [ 1 .. Size( basis_w_wp ) ] do
-                                        
                                         entry := entry + 
                                             coeffs_alpha[p] * coeffs_beta[q] *
                                             MATRIX_FOR_ALGEBROID_HOMSTRUCTURE( v, w, vp, wp, basis_vp_v[p], basis_w_wp[q] );
@@ -1284,7 +1301,13 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
     ##
     AddHomomorphismStructureOnMorphismsWithGivenObjects( category,
       function( hom_source, alpha, beta, hom_range )
-        local listj, listk, listi, listl, listjk, listil, mat, j, k, row, i, l, row_counts, col_counts, alpham, betam, entry;
+        local start_time, listj, listk, listi, listl, listjk, listil, mat, j, k, row, i, l, row_counts, col_counts, alpham, betam, entry, asd;
+        
+        #GASMAN("collect");
+        start_time := Runtime() - TOTAL_GC_TIME();
+        
+        
+        #MYGLOBALTIME := MYGLOBALTIME - NanosecondsSinceEpoch();
         
         listi := ListOfQuiverVertices( Source( alpha ) );
         
@@ -1380,13 +1403,33 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
         
         if IsEmpty( mat ) then
             
-            return ZeroMorphism( hom_structure_range_category, hom_source, hom_range );
+            asd := ZeroMorphism( hom_structure_range_category, hom_source, hom_range );
             
         else
             
-            return MorphismConstructor( hom_structure_range_category, hom_source, HomalgMatrix( mat, ObjectDatum( hom_structure_range_category, hom_source ), ObjectDatum( hom_structure_range_category, hom_range ), ring ), hom_range );
+            asd := MorphismConstructor( hom_structure_range_category, hom_source, HomalgMatrix( mat, ObjectDatum( hom_structure_range_category, hom_source ), ObjectDatum( hom_structure_range_category, hom_range ), ring ), hom_range );
             
         fi;
+        
+        #MYGLOBALTIME := MYGLOBALTIME + NanosecondsSinceEpoch();
+        if COUNTNOW then
+            #Error("deeeeeeep down");
+            MYCOUNTER := MYCOUNTER + 1;
+        fi;
+        
+        Add( TIMES2, Runtime() - TOTAL_GC_TIME() - start_time );
+        Add( SIZES2, [ NrRows( alpha ), NrCols( alpha ), NrRows( beta ), NrCols( beta ) ] );
+        
+        #if Int( (NanosecondsSinceEpoch() - start_time) / 1000 / 1000 ) > 200 then
+            #Error("asd");
+        #fi;
+        
+        #if Length( TIMES2 ) = 1644 then
+            #Error("here QuiverRows");
+        #fi;
+        
+        
+        return asd;
         
     end );
     
