@@ -13,16 +13,16 @@ CapJitAddLogicFunction( function( tree, jit_args )
             args := tree.args;
 
             # check if ... = [ [ ... ], ... ]
-            if args[1].type = "EXPR_LIST" then
+            if args.1.type = "EXPR_LIST" then
                 
-                list := args[1].list;
+                list := args.1.list;
                 
                 func_id := Last( func_stack).id;
                 
                 # check if all elements of the matrix are multiplied by the same ring element from the left
-                if Length( list ) > 0 and ForAll( list, l -> l.type = "EXPR_PROD" and l.left = list[1].left ) then
+                if list.length > 0 and ForAll( list, l -> l.type = "EXPR_PROD" and l.left = list.1.left ) then
                     
-                    ring_element := list[1].left;
+                    ring_element := list.1.left;
                     
                     # check if ring_element is independent of local variables
                     condition_func := function( tree, path )
@@ -45,7 +45,7 @@ CapJitAddLogicFunction( function( tree, jit_args )
                             right := StructuralCopy( tree ),
                         );
                         
-                        tree.right.args[1].list := List( list, l -> l.right );
+                        tree.right.args.1.list := List( list, l -> l.right );
 
                         return tree;
                         
@@ -54,9 +54,9 @@ CapJitAddLogicFunction( function( tree, jit_args )
                 fi;
                 
                 # check if all elements of the matrix are multiplied by the same ring element from the right
-                if Length( list ) > 0 and ForAll( list, l -> l.type = "EXPR_PROD" and l.right = list[1].right ) then
+                if list.length > 0 and ForAll( list, l -> l.type = "EXPR_PROD" and l.right = list.1.right ) then
                     
-                    ring_element := list[1].right;
+                    ring_element := list.1.right;
                     
                     # check if ring_element is independent of local variables
                     condition_func := function( tree, path )
@@ -79,7 +79,7 @@ CapJitAddLogicFunction( function( tree, jit_args )
                             right := ring_element,
                         );
                         
-                        tree.left.args[1].list := List( list, l -> l.left );
+                        tree.left.args.1.list := List( list, l -> l.left );
 
                         return tree;
                         
@@ -97,7 +97,7 @@ CapJitAddLogicFunction( function( tree, jit_args )
     
     additional_arguments_func := function( tree, key, func_stack )
         
-        if IsRecord( tree ) and tree.type = "EXPR_FUNC" then
+        if tree.type = "EXPR_FUNC" then
             
             Assert( 0, IsBound( tree.id ) );
             
