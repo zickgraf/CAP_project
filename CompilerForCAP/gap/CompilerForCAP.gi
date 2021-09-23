@@ -233,9 +233,12 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
 end );
     
 InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function ( tree )
-  local debug_idempotence, func, resolving_phase_functions, orig_tree, tmp, rule_phase_functions, f;
+  local display_after_resolving_phase, debug_idempotence, func, resolving_phase_functions, orig_tree, tmp, rule_phase_functions, f;
     
     debug_idempotence := false;
+    
+    display_after_resolving_phase := ValueOption( "display_after_resolving_phase" );
+    PushOptions( rec( display_after_resolving_phase := fail ) );
     
     Assert( 0, tree.type = "EXPR_DECLARATIVE_FUNC" );
     
@@ -354,6 +357,10 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         fi;
         
     od;
+    
+    if display_after_resolving_phase = true then
+        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    fi;
     
     # rule phase
     rule_phase_functions := [
