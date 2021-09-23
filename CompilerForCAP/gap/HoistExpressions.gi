@@ -19,6 +19,12 @@ end );
 InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, function ( tree, only_hoist_bindings )
   local expressions_to_hoist, references_to_function_variables, pre_func, result_func, additional_arguments_func;
     
+    if ValueOption( "no_hoisting" ) = true then
+        
+        return tree;
+        
+    fi;
+    
     # functions and hoisted variables will be modified inline
     tree := StructuralCopy( tree );
     
