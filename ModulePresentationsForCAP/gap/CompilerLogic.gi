@@ -97,7 +97,7 @@ CapJitAddLogicFunction( function( tree, jit_args )
     
     additional_arguments_func := function( tree, key, func_stack )
         
-        if tree.type = "EXPR_FUNC" then
+        if tree.type = "EXPR_DECLARATIVE_FUNC" then
             
             Assert( 0, IsBound( tree.id ) );
             
@@ -120,7 +120,7 @@ CapJitAddLogicTemplate( rec(
     variable_names := [ "matrix", "if_value", "else_value" ],
     variable_filters := [ IsMatrixObj, IsObject, IsObject ],
     src_template := "if IsMatrixObj( matrix ) then return if_value; else return else_value; fi;",
-    dst_template := "return if_value",
+    dst_template := "return if_value;",
     returns_value := false,
 ) );
 
