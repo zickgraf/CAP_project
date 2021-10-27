@@ -2847,37 +2847,76 @@ AddFinalDerivationBundle( "IsomorphismFromTerminalObjectToZeroObject as the iden
 ## Final methods for product
 
 ##
-AddFinalDerivationBundle( "IsomorphismFromDirectSumToDirectProduct as the identity of the direct sum",
-                    [ [ DirectSum, 1 ],
+AddFinalDerivationBundle( "direct product via direct sum",
+                    [ [ DirectSum, 1 ], # TODO
                       [ IdentityMorphism, 1 ] ],
-                    [ IsomorphismFromDirectSumToDirectProduct,
+                    [
+                      IsomorphismFromDirectSumToDirectProduct,
                       IsomorphismFromDirectProductToDirectSum,
                       DirectProduct,
+                      ProjectionInFactorOfDirectProductWithGivenDirectProduct,
+                      UniversalMorphismIntoDirectProduct,
+                      UniversalMorphismIntoDirectProductWithGivenDirectProduct,
+                      DirectProductFunctorial,
                       DirectProductFunctorialWithGivenDirectProducts,
-                      ProjectionInFactorOfDirectProduct,
-#                       ProjectionInFactorOfDirectProductWithGivenDirectProduct,
-                      UniversalMorphismIntoDirectProduct ],
-#                       UniversalMorphismIntoDirectProductWithGivenDirectProduct ],
-[
-  IsomorphismFromDirectSumToDirectProduct,
-  [ [ DirectSum, 1 ],
-    [ IdentityMorphism, 1 ] ],
-  function( cat, diagram )
-    
-    return IdentityMorphism( cat, DirectSum( cat, diagram ) );
-    
-  end,
-],
-[
-  IsomorphismFromDirectProductToDirectSum,
-  [ [ DirectSum, 1 ],
-    [ IdentityMorphism, 1 ] ],
-  function( cat, diagram )
-    
-    return IdentityMorphism( cat, DirectSum( cat, diagram ) );
-    
-  end,
-] );
+                    ],
+                    
+  [
+      IsomorphismFromDirectSumToDirectProduct,
+      [ [ DirectSum, 1 ],
+        [ IdentityMorphism, 1 ] ],
+      function( cat, diagram )
+        
+        return IdentityMorphism( cat, DirectSum( cat, diagram ) );
+        
+      end,
+  ],
+  [
+      IsomorphismFromDirectProductToDirectSum,
+      [ [ DirectSum, 1 ],
+        [ IdentityMorphism, 1 ] ],
+      function( cat, diagram )
+        
+        return IdentityMorphism( cat, DirectSum( cat, diagram ) );
+        
+      end,
+  ],
+  [
+      DirectProduct,
+      [ [ DirectSum, 1 ] ],
+      { cat, diagram } -> DirectSum( cat, diagram )
+  ],
+  [
+      ProjectionInFactorOfDirectProduct,
+      [ [ ProjectionInFactorOfDirectSum, 1 ] ],
+      ProjectionInFactorOfDirectSum
+  ],
+  [
+      ProjectionInFactorOfDirectProductWithGivenDirectProduct,
+      [ [ ProjectionInFactorOfDirectSumWithGivenDirectSum, 1 ] ],
+      ProjectionInFactorOfDirectSumWithGivenDirectSum
+  ],
+  [
+      UniversalMorphismIntoDirectProduct,
+      [ [ UniversalMorphismIntoDirectSum, 1 ] ],
+      UniversalMorphismIntoDirectSum
+  ],
+  [
+      UniversalMorphismIntoDirectProductWithGivenDirectProduct,
+      [ [ UniversalMorphismIntoDirectSumWithGivenDirectSum, 1 ] ],
+      UniversalMorphismIntoDirectSumWithGivenDirectSum
+  ],
+  [
+      DirectProductFunctorial,
+      [ [ DirectSumFunctorial, 1 ] ],
+      DirectSumFunctorial
+  ],
+  [
+      DirectProductFunctorialWithGivenDirectProducts,
+      [ [ DirectSumFunctorialWithGivenDirectSums, 1 ] ],
+      DirectSumFunctorialWithGivenDirectSums
+  ]
+);
 
 ## Final methods for coproduct
 
