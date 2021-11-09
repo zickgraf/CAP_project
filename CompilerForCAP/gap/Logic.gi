@@ -420,6 +420,113 @@ CapJitAddLogicFunction( function ( tree )
     
 end );
 
+# [ a_1, ..., a_n ][i] => a_i
+#CapJitAddLogicFunction( function ( tree, jit_args )
+#  local pre_func;
+#    
+#    Info( InfoCapJit, 1, "####" );
+#    Info( InfoCapJit, 1, "Apply logic for list access." );
+#    
+#    pre_func := function ( tree, additional_arguments )
+#      local args;
+#        
+#        if tree.type = "EXPR_ELM_LIST" and tree.list.type = "EXPR_LIST" and tree.pos.type = "EXPR_INT" then
+#            
+#            return tree.list.list.(tree.pos.value);
+#            
+#        fi;
+#        
+#        return tree;
+#        
+#    end;
+#    
+#    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+#    
+#end );
+
+# Length( [ a_1, ..., a_n ] ) = n
+#CapJitAddLogicFunction( function ( tree, jit_args )
+#  local pre_func;
+#    
+#    Info( InfoCapJit, 1, "####" );
+#    Info( InfoCapJit, 1, "Apply logic for Length." );
+#    
+#    pre_func := function ( tree, additional_arguments )
+#      local args;
+#        
+#        if CapJitIsCallToGlobalFunction( tree, "Length" ) then
+#            
+#            args := tree.args;
+#            
+#            if args.1.type = "EXPR_LIST" then
+#                
+#                return rec(
+#                    type := "EXPR_INT",
+#                    value := args.1.list.length,
+#                );
+#                
+#            fi;
+#            
+#        fi;
+#        
+#        return tree;
+#        
+#    end;
+#    
+#    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+#    
+#end );
+
+# f( [ a_1, ..., a_n ][index] ) = [ f( a_1 ), ..., f( a_n ) ][index]
+#CapJitAddLogicFunction( function ( tree, jit_args )
+#  local orig_tree, pre_func, result;
+#    
+#    Info( InfoCapJit, 1, "####" );
+#    Info( InfoCapJit, 1, "Apply logic for Length." );
+#    
+#    orig_tree := tree;
+#    
+#    pre_func := function ( tree, additional_arguments )
+#      local args;
+#        
+#        if tree.type = "EXPR_FUNCCALL" and tree.args.length = 1 and tree.args.1.type = "EXPR_ELM_LIST" and tree.args.1.list.type = "EXPR_LIST" then
+#            
+#            return rec(
+#                type := "EXPR_ELM_LIST",
+#                pos := tree.args.1.pos,
+#                list := rec(
+#                    type := "EXPR_LIST",
+#                    list := List(
+#                        tree.args.1.list.list,
+#                        entry -> rec(
+#                            type := "EXPR_FUNCCALL",
+#                            funcref := CapJitCopyWithNewFunctionIDs( tree.funcref ),
+#                            args := AsSyntaxTreeList( [ entry ] ),
+#                        )
+#                    ),
+#                ),
+#            );
+#            
+#        fi;
+#        
+#        return tree;
+#        
+#    end;
+#    
+#    result := CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+#    
+#    if result <> orig_tree then
+#        
+#        #Display( "#############################" );
+#        #Display( ENHANCED_SYNTAX_TREE_CODE( orig_tree ) );
+#        #Display( ENHANCED_SYNTAX_TREE_CODE( result ) );
+#        
+#    fi;
+#    
+#    return result;
+#    
+#end );
+
 # List( [ a_1, ..., a_n ], f ) = [ f( a_1 ), ..., f( a_n ) ]
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
@@ -457,6 +564,25 @@ CapJitAddLogicFunction( function ( tree )
                 tree := new_tree;
                 
             fi;
+            
+            #if args.length = 2 and args.1.type = "EXPR_RANGE" and args.1.first.type = "EXPR_INT" and args.1.last.type = "EXPR_INT" then
+            #    
+            #    return rec(
+            #        type := "EXPR_LIST",
+            #        list := List(
+            #            AsSyntaxTreeList( [ args.1.first.value .. args.1.last.value ] ),
+            #            pos -> rec(
+            #                type := "EXPR_FUNCCALL",
+            #                funcref := CapJitCopyWithNewFunctionIDs( args.2 ),
+            #                args := AsSyntaxTreeList( [ rec(
+            #                    type := "EXPR_INT",
+            #                    value := pos,
+            #                ) ] ),
+            #            )
+            #        ),
+            #    );
+            #    
+            #fi;
             
         fi;
         
