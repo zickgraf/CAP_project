@@ -180,7 +180,7 @@ CapJitAddLogicTemplate( rec(
     needed_packages := [ [ "MatricesForHomalg", ">= 2020.05.19" ] ],
 ) );
 
-# UnionOfRows( a * B )
+# UnionOfRows( a * B ) => a * UnionOfRows( B )
 CapJitAddLogicTemplate( rec(
     variable_names := [ "homalg_ring", "nr_cols", "list", "ring_element", "matrix" ],
     variable_filters := [ IsObject, IsObject, IsObject, "IsHomalgRingElement", "IsHomalgMatrix" ],
@@ -190,7 +190,7 @@ CapJitAddLogicTemplate( rec(
     needed_packages := [ [ "MatricesForHomalg", ">= 2020.05.19" ] ],
 ) );
 
-# UnionOfRows( A * b )
+# UnionOfRows( A * b ) => UnionOfRows( A ) * b
 CapJitAddLogicTemplate( rec(
     variable_names := [ "homalg_ring", "nr_cols", "list", "matrix", "ring_element" ],
     variable_filters := [ IsObject, IsObject, IsObject, "IsHomalgMatrix", "IsHomalgRingElement" ],
@@ -200,7 +200,7 @@ CapJitAddLogicTemplate( rec(
     needed_packages := [ [ "MatricesForHomalg", ">= 2020.05.19" ] ],
 ) );
 
-# UnionOfColumns( a * B )
+# UnionOfColumns( a * B ) => a * UnionOfColumns( B )
 CapJitAddLogicTemplate( rec(
     variable_names := [ "homalg_ring", "nr_rows", "list", "ring_element", "matrix" ],
     variable_filters := [ IsObject, IsObject, IsObject, "IsHomalgRingElement", "IsHomalgMatrix" ],
@@ -210,7 +210,7 @@ CapJitAddLogicTemplate( rec(
     needed_packages := [ [ "MatricesForHomalg", ">= 2020.05.19" ] ],
 ) );
 
-# UnionOfColumns( A * b )
+# UnionOfColumns( A * b ) => UnionOfColumns( A ) * b
 CapJitAddLogicTemplate( rec(
     variable_names := [ "homalg_ring", "nr_rows", "list", "matrix", "ring_element" ],
     variable_filters := [ IsObject, IsObject, IsObject, "IsHomalgMatrix", "IsHomalgRingElement" ],
@@ -251,3 +251,45 @@ CapJitAddLogicTemplate( rec(
     returns_value := true,
     needed_packages := [ [ "MatricesForHomalg", ">= 2020.05.19" ] ],
 ) );
+
+
+# modified version of an official template
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "func", "list", "index" ],
+        variable_filters := [ IsFunction, IsList, IsPosInt ],
+        src_template := "func( list[index] )",
+        dst_template := "List( list, func )[index]",
+        returns_value := true,
+    )
+);
+
+# Length( ListWithIdenticalEntries( number, obj ) ) => number
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "number", "obj" ],
+        src_template := "Length( ListWithIdenticalEntries( number, obj ) )",
+        dst_template := "number",
+        returns_value := true,
+    )
+);
+
+# List( L, x -> x ) => L
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "list" ],
+        src_template := "List( list, x -> x )",
+        dst_template := "list",
+        returns_value := true,
+    )
+);
+
+# EntriesOfHomalgMatrixAsListList( matrix )[row][col] => matrix[row][col]
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "matrix", "row", "col" ],
+        src_template := "EntriesOfHomalgMatrixAsListList( matrix )[row][col]",
+        dst_template := "matrix[row,col]",
+        returns_value := true,
+    )
+);
