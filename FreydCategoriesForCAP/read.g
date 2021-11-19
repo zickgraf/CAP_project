@@ -25,6 +25,7 @@ ReadPackage( "FreydCategoriesForCAP", "gap/CoFreydCategory.gi" );
 ReadPackage( "FreydCategoriesForCAP", "gap/CoFreydCategoryAsOppositeOfFreydCategoryOfOpposite.gi" );
 
 ReadPackage( "FreydCategoriesForCAP", "gap/AdditiveClosure.gi" );
+ReadPackage( "FreydCategoriesForCAP", "gap/AdditiveClosureOfRingAsCategoryWithListsOfListsOfRingElements.gi" );
 
 ReadPackage( "FreydCategoriesForCAP", "gap/CokernelImageClosure.gi" );
 
