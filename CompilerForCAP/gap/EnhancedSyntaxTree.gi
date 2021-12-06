@@ -848,6 +848,15 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE, function ( func )
             
         fi;
         
+        # inline function calls without arguments with a single (return) statement
+        if tree.type = "EXPR_FUNCCALL" and tree.funcref.type = "EXPR_DECLARATIVE_FUNC" and tree.funcref.narg = 0 and tree.funcref.bindings.names = [ "RETURN_VALUE" ] then
+            
+            Assert( 0, tree.args.length = 0 );
+            
+            tree := tree.funcref.bindings.BINDING_RETURN_VALUE;
+            
+        fi;
+        
         return tree;
         
     end;
