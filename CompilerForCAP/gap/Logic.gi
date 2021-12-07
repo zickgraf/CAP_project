@@ -935,6 +935,74 @@ CapJitAddLogicFunction( function ( tree )
     
 end );
 
+# func( ..., EXPR_CASE, ... )
+#CapJitAddLogicFunction( function ( tree, jit_args )
+#  local pre_func;
+#    
+#    Info( InfoCapJit, 1, "####" );
+#    Info( InfoCapJit, 1, "Apply logic for func( ..., EXPR_CASE, ... )." );
+#    
+#    pre_func := function ( tree, additional_arguments )
+#      local pos, new_tree, i;
+#        
+#        if tree.type = "EXPR_FUNCCALL" then
+#            
+#            pos := PositionProperty( tree.args, t -> t.type = "EXPR_CASE" );
+#            
+#            if pos <> fail then
+#                
+#                new_tree := rec(
+#                    type := "EXPR_CASE",
+#                    branches := List( tree.args.(pos).branches, function ( branch )
+#                      local new_args;
+#                        
+#                        new_args := List( [ 1 .. tree.args.length ], function ( i )
+#                            
+#                            if i = pos then
+#                                
+#                                return CapJitCopyWithNewFunctionIDs( branch.value );
+#                                
+#                            else
+#                                
+#                                return CapJitCopyWithNewFunctionIDs( tree.args.(i) );
+#                                
+#                            fi;
+#                            
+#                        end );
+#                        
+#                        return rec(
+#                            type := "CASE_BRANCH",
+#                            condition := branch.condition,
+#                            value := rec(
+#                                type := "EXPR_FUNCCALL",
+#                                funcref := CapJitCopyWithNewFunctionIDs( tree.funcref ),
+#                                args := AsSyntaxTreeList( new_args ),
+#                            ),
+#                        );
+#                        
+#                    end ),
+#                );
+#                
+#                #for i in [ 1 .. new_tree.branches.length ] do
+#                #    
+#                #    new_tree.branches.(i).value.args.(pos) := CapJitCopyWithNewFunctionIDs( tree.args.(pos).branches.(i).value );
+#                #    
+#                #od;
+#                
+#                return new_tree;
+#                
+#            fi;
+#            
+#        fi;
+#        
+#        return tree;
+#        
+#    end;
+#    
+#    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+#    
+#end );
+
 # helper
 InstallGlobalFunction( CAP_JIT_INTERNAL_TELESCOPED_ITERATION, function ( tree, result_func_index, additional_funcs_indices, additional_values_indices, additional_lists_indices )
   local result_func, additional_funcs, additional_values, additional_lists, return_obj, cat, attributes_names, attributes_values, new_attributes_values, attribute_name, attribute_value, new_func, new_additional_funcs, problematic_access, arguments_references_paths, parent, object_attribute_value_getter_name, args, new_additional_values, new_additional_lists, new_args, new_tree, attribute_index, func, path, i;
