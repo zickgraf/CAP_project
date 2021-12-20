@@ -898,7 +898,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
     end );
     
     ##
-    AddIsCongruentForMorphisms( category,
+    AddIsEqualForMorphisms( category,
       function( alpha, beta )
         
         return MorphismMatrix( alpha ) = MorphismMatrix( beta );
@@ -945,7 +945,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
         
         if NrSummands( A ) = 0 or NrSummands( B ) = 0 or NrSummands( C ) = 0 then
             
-            return ZeroMorphism( A, C );
+            return QuiverRowsMorphism( A, ZERO_MATRIX_QUIVER_ROWS( NrSummands( A ), NrSummands( C ) ), C );
             
         fi;
         
@@ -1048,74 +1048,74 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
     end );
     
     ##
-    AddProjectionInFactorOfDirectSumWithGivenDirectSum( category,
-      function( list, projection_number, direct_sum_object )
-        local range, nr_cols, pre_matrix, id_matrix, post_matrix;
-        
-        range := list[projection_number];
-        
-        nr_cols := NrSummands( range );
-        
-        if NrSummands( direct_sum_object ) = 0 or nr_cols = 0 then
-            
-            return QuiverRowsMorphism( direct_sum_object, [], range );
-            
-        fi;
-        
-        pre_matrix := 
-            ZERO_MATRIX_QUIVER_ROWS( 
-                Sum( list{ [ 1 .. projection_number - 1 ] }, i -> NrSummands( i ) ),
-                nr_cols
-            );
-        
-        id_matrix := IDENTITY_MATRIX_QUIVER_ROWS( range );
-        
-        post_matrix := 
-            ZERO_MATRIX_QUIVER_ROWS( 
-                Sum( list{ [projection_number + 1 .. Size( list ) ] }, i -> NrSummands( i ) ),
-                nr_cols
-            );
-        
-        return QuiverRowsMorphism( direct_sum_object,
-                                   Concatenation( pre_matrix, id_matrix, post_matrix ),
-                                   range );
-        
-    end );
+    #AddProjectionInFactorOfDirectSumWithGivenDirectSum( category,
+    #  function( list, projection_number, direct_sum_object )
+    #    local range, nr_cols, pre_matrix, id_matrix, post_matrix;
+    #    
+    #    range := list[projection_number];
+    #    
+    #    nr_cols := NrSummands( range );
+    #    
+    #    if NrSummands( direct_sum_object ) = 0 or nr_cols = 0 then
+    #        
+    #        return QuiverRowsMorphism( direct_sum_object, [], range );
+    #        
+    #    fi;
+    #    
+    #    pre_matrix := 
+    #        ZERO_MATRIX_QUIVER_ROWS( 
+    #            Sum( list{ [ 1 .. projection_number - 1 ] }, i -> NrSummands( i ) ),
+    #            nr_cols
+    #        );
+    #    
+    #    id_matrix := IDENTITY_MATRIX_QUIVER_ROWS( range );
+    #    
+    #    post_matrix := 
+    #        ZERO_MATRIX_QUIVER_ROWS( 
+    #            Sum( list{ [projection_number + 1 .. Size( list ) ] }, i -> NrSummands( i ) ),
+    #            nr_cols
+    #        );
+    #    
+    #    return QuiverRowsMorphism( direct_sum_object,
+    #                               Concatenation( pre_matrix, id_matrix, post_matrix ),
+    #                               range );
+    #    
+    #end );
     
     ##
-    AddInjectionOfCofactorOfDirectSumWithGivenDirectSum( category,
-      function( list, injection_number, direct_sum_object )
-        local source, nr_cols, pre_matrix, id_matrix, post_matrix;
-        
-        source := list[injection_number];
-        
-        nr_cols := NrSummands( source );
-        
-        if NrSummands( direct_sum_object ) = 0 or nr_cols = 0 then
-            
-            return QuiverRowsMorphism( source, [], direct_sum_object );
-            
-        fi;
-        
-        pre_matrix := 
-            ZERO_MATRIX_QUIVER_ROWS( 
-                Sum( list{ [ 1 .. injection_number - 1 ] }, i -> NrSummands( i ) ),
-                nr_cols
-            );
-        
-        id_matrix := IDENTITY_MATRIX_QUIVER_ROWS( source );
-        
-        post_matrix := 
-            ZERO_MATRIX_QUIVER_ROWS( 
-                Sum( list{ [injection_number + 1 .. Size( list ) ] }, i -> NrSummands( i ) ),
-                nr_cols
-            );
-        
-        return QuiverRowsMorphism( source,
-                                   Transpose( Concatenation( pre_matrix, id_matrix, post_matrix ) ),
-                                   direct_sum_object );
-        
-    end );
+    #AddInjectionOfCofactorOfDirectSumWithGivenDirectSum( category,
+    #  function( list, injection_number, direct_sum_object )
+    #    local source, nr_cols, pre_matrix, id_matrix, post_matrix;
+    #    
+    #    source := list[injection_number];
+    #    
+    #    nr_cols := NrSummands( source );
+    #    
+    #    if NrSummands( direct_sum_object ) = 0 or nr_cols = 0 then
+    #        
+    #        return QuiverRowsMorphism( source, [], direct_sum_object );
+    #        
+    #    fi;
+    #    
+    #    pre_matrix := 
+    #        ZERO_MATRIX_QUIVER_ROWS( 
+    #            Sum( list{ [ 1 .. injection_number - 1 ] }, i -> NrSummands( i ) ),
+    #            nr_cols
+    #        );
+    #    
+    #    id_matrix := IDENTITY_MATRIX_QUIVER_ROWS( source );
+    #    
+    #    post_matrix := 
+    #        ZERO_MATRIX_QUIVER_ROWS( 
+    #            Sum( list{ [injection_number + 1 .. Size( list ) ] }, i -> NrSummands( i ) ),
+    #            nr_cols
+    #        );
+    #    
+    #    return QuiverRowsMorphism( source,
+    #                               Transpose( Concatenation( pre_matrix, id_matrix, post_matrix ) ),
+    #                               direct_sum_object );
+    #    
+    #end );
     
     # ##
     AddUniversalMorphismIntoDirectSumWithGivenDirectSum( category,
@@ -1124,11 +1124,11 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
         
         nr_rows := NrSummands( test_object );
         
-        if NrSummands( direct_sum ) = 0 or nr_rows = 0 then
-            
-            return QuiverRowsMorphism( test_object, [], direct_sum );
-            
-        fi;
+        #if NrSummands( direct_sum ) = 0 or nr_rows = 0 then
+        #    
+        #    return QuiverRowsMorphism( test_object, [], direct_sum );
+        #    
+        #fi;
         
         mat := List( [ 1 .. nr_rows ], i -> Concatenation( List( source, tau -> tau[i] ) ) );
         
@@ -1139,17 +1139,39 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
     ##
     AddUniversalMorphismFromDirectSumWithGivenDirectSum( category,
       function( diagram, test_object, sink, direct_sum )
-        local mat;
+        local underlying_list, mat, result;
         
-        if NrSummands( direct_sum ) = 0 or NrSummands( test_object ) = 0 then
-            
-            return QuiverRowsMorphism( direct_sum, [], test_object );
-            
-        fi;
+        #if NrSummands( direct_sum ) = 0 or NrSummands( test_object ) = 0 then
+        #    
+        #    return QuiverRowsMorphism( direct_sum, [], test_object );
+        #    
+        #fi;
         
-        mat := Concatenation( List( sink, MorphismMatrix ) );
+        #if MYGLOBAL then
+        #    StartTimer( "Quiver_underlying" );
+        #fi;
+        underlying_list := List( sink, MorphismMatrix );
+        #if MYGLOBAL then
+        #    StopTimer( "Quiver_underlying" );
+        #fi;
         
-        return QuiverRowsMorphism( direct_sum, mat, test_object );
+        #if MYGLOBAL then
+        #    StartTimer( "Quiver_Concatenation" );
+        #fi;
+        mat := Concatenation( underlying_list );
+        #if MYGLOBAL then
+        #    StopTimer( "Quiver_Concatenation" );
+        #fi;
+        
+        #if MYGLOBAL then
+        #    StartTimer( "Quiver_Objectify" );
+        #fi;
+        result := QuiverRowsMorphism( direct_sum, mat, test_object );
+        #if MYGLOBAL then
+        #    StopTimer( "Quiver_Objectify" );
+        #fi;
+        
+        return result;
         
     end );
     
@@ -1403,7 +1425,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
         
         if IsEmpty( mat ) then
             
-            asd := ZeroMorphism( hom_structure_range_category, hom_source, hom_range );
+            asd := MorphismConstructor( hom_structure_range_category, hom_source, HomalgZeroMatrix( ObjectDatum( hom_structure_range_category, hom_source ), ObjectDatum( hom_structure_range_category, hom_range ), ring ), hom_range );
             
         else
             
@@ -1478,7 +1500,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_QUIVER_ROWS,
         
         if IsEmpty( row ) then
             
-            return ZeroMorphism( hom_structure_range_category, source, range );
+            return MorphismConstructor( hom_structure_range_category, source, HomalgZeroMatrix( row, 1, 0, ring ), range );
             
         else
             
