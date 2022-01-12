@@ -207,7 +207,14 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
 end );
     
 InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function ( tree, with_or_without_post_processing, category )
-  local debug_idempotence, func, resolving_phase_functions, orig_tree, tmp, rule_phase_functions, tree_without_post_processing, changed, pre_func, domains, additional_arguments_func, f;
+  local recursive_call, debug_idempotence, func, resolving_phase_functions, orig_tree, tmp, rule_phase_functions, tree_without_post_processing, changed, pre_func, domains, additional_arguments_func, f;
+    
+    recursive_call := ValueOption( "called_from_CapJitCompiledFunctionAsEnhancedSyntaxTree" ) = true;
+    PushOptions( rec( called_from_CapJitCompiledFunctionAsEnhancedSyntaxTree := true ) );
+    
+    if recursive_call then
+        StopTimer( "CapJitResolvedOperations" );
+    fi;
     
     debug_idempotence := false;
     
@@ -258,6 +265,10 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         
     fi;
     
+    #if not recursive_call then
+        Display( "main" );
+    #fi;
+    
     # resolving phase
     resolving_phase_functions := [
         CapJitResolvedOperations,
@@ -286,6 +297,10 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         
         orig_tree := tree;
         
+        #if not recursive_call then
+            Display( "resolving phase" );
+        #fi;
+        
         for f in resolving_phase_functions do
             
             if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 2 then
@@ -298,7 +313,15 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
                 
             fi;
             
+            #if not recursive_call then
+                StartTimer( NameFunction( f ) );
+            #fi;
+            
             tree := f( tree );
+            
+            #if not recursive_call then
+                StopTimer( NameFunction( f ) );
+            #fi;
             
             if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 2 then
                 
@@ -368,6 +391,10 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         
         orig_tree := tree;
         
+        #if not recursive_call then
+            Display( "rules phase" );
+        #fi;
+        
         for f in rule_phase_functions do
             
             if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 2 then
@@ -380,7 +407,17 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
                 
             fi;
             
+            #if not recursive_call then
+                StartTimer( NameFunction( f ) );
+            #fi;
+            
+            Display( NameFunction( f ) );
+            
             tree := f( tree );
+            
+            #if not recursive_call then
+                StopTimer( NameFunction( f ) );
+            #fi;
             
             if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 2 then
                 
@@ -427,6 +464,10 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
             # COVERAGE_IGNORE_BLOCK_END
             
         fi;
+        
+        #if not recursive_call then
+            StartTimer( "post_processing" );
+        #fi;
         
         tree_without_post_processing := StructuralCopy( tree );
         
@@ -960,6 +1001,10 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
             
         fi;
         
+        #if not recursive_call then
+            StopTimer( "post_processing" );
+        #fi;
+        
     fi;
     
     if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 1 then
@@ -981,6 +1026,13 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         
         CAP_JIT_INTERNAL_COMPILATION_IN_PROGRESS := false;
         
+    fi;
+    
+    #Assert( 0, Last( OptionsStack ) = rec( called_from_CapJitCompiledFunctionAsEnhancedSyntaxTree := true ) );
+    PopOptions( );
+    
+    if recursive_call then
+        StartTimer( "CapJitResolvedOperations" );
     fi;
     
     if with_or_without_post_processing = "without_post_processing" or with_or_without_post_processing = "with_post_processing" then
