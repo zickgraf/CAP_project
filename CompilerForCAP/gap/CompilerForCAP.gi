@@ -33,8 +33,17 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, args... )
     
 end );
 
+RECURSIVE_COMPILATION := false;
+
 InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( func, args... )
-  local debug, debug_idempotence, category_as_first_argument, category, type_signature, tree, resolving_phase_functions, orig_tree, compiled_func, tmp, rule_phase_functions, f;
+  local recursive_call, debug, debug_idempotence, category_as_first_argument, category, type_signature, tree, resolving_phase_functions, orig_tree, compiled_func, tmp, rule_phase_functions, f;
+    
+    recursive_call := ValueOption( "called_from_CapJitCompiledFunctionAsEnhancedSyntaxTree" ) = true;
+    PushOptions( rec( called_from_CapJitCompiledFunctionAsEnhancedSyntaxTree := true ) );
+    
+    if recursive_call then
+        StopTimer( "CapJitResolvedOperations" );
+    fi;
     
     Info( InfoCapJit, 1, "####" );
     Info( InfoCapJit, 1, "Start compilation." );
@@ -107,6 +116,10 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         
     fi;
     
+    #if not recursive_call then
+        Display( "main" );
+    #fi;
+    
     # resolving phase
     resolving_phase_functions := [
         CapJitResolvedOperations,
@@ -120,6 +133,10 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
     while tree <> orig_tree do
         
         orig_tree := tree;
+        
+        #if not recursive_call then
+            Display( "resolving phase" );
+        #fi;
         
         Info( InfoCapJit, 1, "####" );
         Info( InfoCapJit, 1, "Start resolving." );
@@ -143,7 +160,15 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
                 # COVERAGE_IGNORE_BLOCK_END
             fi;
             
+            #if not recursive_call then
+                StartTimer( NameFunction( f ) );
+            #fi;
+            
             tree := f( tree );
+            
+            #if not recursive_call then
+                StopTimer( NameFunction( f ) );
+            #fi;
             
             if debug_idempotence then
                 
@@ -185,6 +210,10 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         Info( InfoCapJit, 1, "####" );
         Info( InfoCapJit, 1, "Apply rules." );
         
+        #if not recursive_call then
+            Display( "rules phase" );
+        #fi;
+        
         if debug then
             # COVERAGE_IGNORE_BLOCK_START
             compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );
@@ -204,7 +233,17 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
                 # COVERAGE_IGNORE_BLOCK_END
             fi;
             
+            #if not recursive_call then
+                StartTimer( NameFunction( f ) );
+            #fi;
+            
+            Display( NameFunction( f ) );
+            
             tree := f( tree );
+            
+            #if not recursive_call then
+                StopTimer( NameFunction( f ) );
+            #fi;
             
             if debug_idempotence then
                 
@@ -227,6 +266,10 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
     od;
     
     # post-processing
+    
+    #if not recursive_call then
+        StartTimer( "post_processing" );
+    #fi;
     
     if category_as_first_argument then
         
@@ -262,6 +305,10 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
     
     tree := CapJitDeduplicatedExpressions( tree );
     
+    #if not recursive_call then
+        StopTimer( "post_processing" );
+    #fi;
+    
     if debug then
         
         # COVERAGE_IGNORE_BLOCK_START
@@ -276,6 +323,13 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
     
     Info( InfoCapJit, 1, "####" );
     Info( InfoCapJit, 1, "Compilation finished." );
+    
+    #Assert( 0, Last( OptionsStack ) = rec( called_from_CapJitCompiledFunctionAsEnhancedSyntaxTree := true ) );
+    PopOptions( );
+    
+    if recursive_call then
+        StartTimer( "CapJitResolvedOperations" );
+    fi;
     
     return tree;
     
