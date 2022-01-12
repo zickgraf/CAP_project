@@ -95,6 +95,8 @@ BindGlobal( "CAP_JIT_INTERNAL_ITERATION_KEYS", rec(
     SYNTAX_TREE_VARIABLE := [ ],
 ) );
 
+GLOBAL_DEBUG := false;
+
 BindGlobal( "SYNTAX_TREE_LIST_KEYS", [ ] );
 
 InstallGlobalFunction( CapJitIterateOverTree, function ( tree, pre_func, result_func, additional_arguments_func, initial_additional_arguments )
@@ -114,7 +116,25 @@ BindGlobal( "CAP_JIT_INTERNAL_ITERATE_OVER_TREE_CACHE", rec( ) );
 InstallGlobalFunction( CAP_JIT_INTERNAL_ITERATE_OVER_TREE, function ( tree, pre_func, result_func, additional_arguments_func, additional_arguments, cache_binding_results )
   local pre_func_result, result, type, keys, cache, binding_name, key;
     
+    
+    if GLOBAL_DEBUG then
+        Display( "" );
+        Display( "" );
+        Display( "" );
+        Display( "execute pre_func for" );
+        Display( tree );
+    fi;
+    
     pre_func_result := pre_func( tree, additional_arguments );
+    
+    if GLOBAL_DEBUG then
+        Display( "with result" );
+        if tree = pre_func_result then
+            Display( "unchanged" );
+        else
+            Display( pre_func_result );
+        fi;
+    fi;
     
     # check if we should stop the iteration
     if pre_func_result = fail then
@@ -252,6 +272,25 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ITERATE_OVER_TREE, function ( tree, pre_
         
     fi;
     
-    return result_func( tree, result, keys, additional_arguments );
+    if GLOBAL_DEBUG then
+        Display( "" );
+        Display( "" );
+        Display( "" );
+        Display( "execute result_func for" );
+        Display( tree );
+    fi;
+    
+    result := result_func( tree, result, keys, additional_arguments );
+    
+    if GLOBAL_DEBUG then
+        Display( "with result" );
+        if tree = result then
+            Display( "unchanged" );
+        else
+            Display( result );
+        fi;
+    fi;
+    
+    return result;
     
 end );
