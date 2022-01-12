@@ -288,6 +288,25 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
         
     od;
     
+    DisplayTimer( "CapJitResolvedOperations" );
+    DisplayTimer( "CapJitInlinedArguments" );
+    DisplayTimer( "CapJitDroppedUnusedBindings" );
+    DisplayTimer( "CapJitInlinedBindingsToVariableReferences" );
+    DisplayTimer( "CapJitResolvedGlobalVariables" );
+    
+    DisplayTimer( "CapJitAppliedLogic" );
+    DisplayTimer( "CapJitDroppedHandledEdgeCases" );
+    DisplayTimer( "CapJitInlinedArguments" );
+    DisplayTimer( "CapJitInlinedSimpleFunctionCalls" );
+    DisplayTimer( "CapJitInlinedFunctionCalls" );
+    DisplayTimer( "CapJitDroppedUnusedBindings" );
+    DisplayTimer( "CapJitInlinedBindings" );
+    DisplayTimer( "CapJitInferredDataTypes" );
+    
+    DisplayTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
+    
+    DisplayTimer( "post_processing" );
+    
     parameters := NamesLocalVariablesFunction( category_constructor ){[ 1 .. NumberArgumentsFunction( category_constructor ) ]};
     
     current_string := Concatenation( "    ", ReplacedStringViaRecord( """
