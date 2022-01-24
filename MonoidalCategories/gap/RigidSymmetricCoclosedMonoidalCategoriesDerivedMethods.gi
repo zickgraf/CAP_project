@@ -290,26 +290,26 @@ AddDerivationToCAP( CoclosedCoevaluationMorphismWithGivenSource,
 end : CategoryFilter := IsRigidSymmetricCoclosedMonoidalCategory and IsStrictMonoidalCategory,
       Description := "CoclosedCoevaluationMorphismWithGivenSource using the rigidity of the monoidal category" );
 
-##
-AddDerivationToCAP( MorphismFromInternalCoHomToTensorProductWithGivenObjects,
-                  
-  function( cat, internal_cohom, a, b, tensor_object )
-    
-    return IsomorphismFromInternalCoHomToTensorProductWithCoDualObject( cat, a, b );
-    
-end : CategoryFilter := IsRigidSymmetricClosedMonoidalCategory,
-      Description := "MorphismFromInternalCoHomToTensorProductWithGivenObjects using IsomorphismFromInternalCoHomToTensorProductWithCoDualObject" );
-
-
-##
-AddDerivationToCAP( MorphismFromTensorProductToInternalCoHomWithGivenObjects,
-                  
-  function( cat, tensor_object, a, b, internal_hom )
-    
-    return IsomorphismFromTensorProductWithCoDualObjectToInternalCoHom( cat, a, b );
-    
-end : CategoryFilter := IsRigidSymmetricClosedMonoidalCategory,
-      Description := "MorphismFromTensorProductToInternalCoHomWithGivenObjects using IsomorphismFromTensorProductWithCoDualObjectToInternalCoHom" );
+###
+#AddDerivationToCAP( MorphismFromInternalCoHomToTensorProductWithGivenObjects,
+#                  
+#  function( cat, internal_cohom, a, b, tensor_object )
+#    
+#    return IsomorphismFromInternalCoHomToTensorProductWithCoDualObject( cat, a, b );
+#    
+#end : CategoryFilter := IsRigidSymmetricClosedMonoidalCategory,
+#      Description := "MorphismFromInternalCoHomToTensorProductWithGivenObjects using IsomorphismFromInternalCoHomToTensorProductWithCoDualObject" );
+#
+#
+###
+#AddDerivationToCAP( MorphismFromTensorProductToInternalCoHomWithGivenObjects,
+#                  
+#  function( cat, tensor_object, a, b, internal_hom )
+#    
+#    return IsomorphismFromTensorProductWithCoDualObjectToInternalCoHom( cat, a, b );
+#    
+#end : CategoryFilter := IsRigidSymmetricClosedMonoidalCategory,
+#      Description := "MorphismFromTensorProductToInternalCoHomWithGivenObjects using IsomorphismFromTensorProductWithCoDualObjectToInternalCoHom" );
 
 ##
 AddDerivationToCAP( IsomorphismFromInternalCoHomToTensorProductWithCoDualObject,

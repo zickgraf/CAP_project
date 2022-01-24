@@ -6,6 +6,8 @@
 InstallGlobalFunction( CapJitResolvedOperations, function ( tree )
   local result_func;
     
+    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
     # operations are compiled recursively, so we can use result_func instead of pre_func
     result_func := function ( tree, result, keys, additional_arguments )
       local key, operation, operation_name, info, category, resolved_tree, known_methods, known_method, similar_methods;
@@ -23,6 +25,13 @@ InstallGlobalFunction( CapJitResolvedOperations, function ( tree )
             operation := ValueGlobal( tree.funcref.gvar );
             
             operation_name := NameFunction( operation );
+            
+            # exclude "PreCompose" until it can be type checked
+            if operation_name = "PreCompose" and not (CapJitIsCallToGlobalFunction( tree.args.2, "ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes" ) and CapJitIsCallToGlobalFunction( tree.args.3, "ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes" )) then
+                
+                return false;
+                
+            fi;
             
             # check if this is a CAP operation which is not a convenience method or if we know methods for this operation
             if (IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(operation_name) ) and tree.args.length = Length( CAP_INTERNAL_METHOD_NAME_RECORD.(operation_name).filter_list )) or IsBound( CAP_JIT_INTERNAL_KNOWN_METHODS.(operation_name) ) then
@@ -68,6 +77,23 @@ InstallGlobalFunction( CapJitResolvedOperations, function ( tree )
                     
                     # check if this is a CAP operation which is not a convenience method
                     if IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(operation_name) ) and tree.args.length = Length( CAP_INTERNAL_METHOD_NAME_RECORD.(operation_name).filter_list ) then
+                        
+                        # type check "PreCompose"
+                        if operation_name = "PreCompose" then
+                            
+                            Assert( 0, CapJitIsCallToGlobalFunction( funccall_args.2, "ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes" ) and CapJitIsCallToGlobalFunction( funccall_args.3, "ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes" ) );
+                            
+                            if not CapJitIsEqualForEnhancedSyntaxTrees( funccall_args.2.args.4, funccall_args.3.args.3 ) then
+                                
+                                Display( funccall_args.2.args.4 );
+                                Display( funccall_args.3.args.3 );
+                                Display( path );
+                                
+                                Error( "morphisms (with above given Range and Source) are not composable" );
+                                
+                            fi;
+                            
+                        fi;
                         
                         Assert( 0, CanCompute( category, operation_name ) );
                         

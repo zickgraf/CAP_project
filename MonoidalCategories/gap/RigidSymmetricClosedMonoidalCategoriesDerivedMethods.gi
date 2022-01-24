@@ -291,24 +291,24 @@ end : CategoryFilter := IsRigidSymmetricClosedMonoidalCategory and IsStrictMonoi
       Description := "CoevaluationMorphismWithGivenRange using the rigidity of the monoidal category" );
 
 ##
-AddDerivationToCAP( MorphismFromTensorProductToInternalHomWithGivenObjects,
-                  
-  function( cat, tensor_object, a, b, internal_hom )
-    
-    return IsomorphismFromTensorProductWithDualObjectToInternalHom( cat, a, b );
-    
-end : CategoryFilter := IsRigidSymmetricClosedMonoidalCategory,
-      Description := "MorphismFromTensorProductToInternalHomWithGivenObjects using IsomorphismFromTensorProductWithDualObjectToInternalHom" );
+#AddDerivationToCAP( MorphismFromTensorProductToInternalHomWithGivenObjects,
+#                  
+#  function( cat, tensor_object, a, b, internal_hom )
+#    
+#    return IsomorphismFromTensorProductWithDualObjectToInternalHom( cat, a, b );
+#    
+#end : CategoryFilter := IsRigidSymmetricClosedMonoidalCategory,
+#      Description := "MorphismFromTensorProductToInternalHomWithGivenObjects using IsomorphismFromTensorProductWithDualObjectToInternalHom" );
 
 ##
-AddDerivationToCAP( MorphismFromInternalHomToTensorProductWithGivenObjects,
-                  
-  function( cat, tensor_object, a, b, internal_hom )
-    
-    return IsomorphismFromInternalHomToTensorProductWithDualObject( cat, a, b );
-    
-end : CategoryFilter := IsRigidSymmetricClosedMonoidalCategory,
-      Description := "MorphismFromInternalHomToTensorProductWithGivenObjects using IsomorphismFromInternalHomToTensorProductWithDualObject" );
+#AddDerivationToCAP( MorphismFromInternalHomToTensorProductWithGivenObjects,
+#                  
+#  function( cat, tensor_object, a, b, internal_hom )
+#    
+#    return IsomorphismFromInternalHomToTensorProductWithDualObject( cat, a, b );
+#    
+#end : CategoryFilter := IsRigidSymmetricClosedMonoidalCategory,
+#      Description := "MorphismFromInternalHomToTensorProductWithGivenObjects using IsomorphismFromInternalHomToTensorProductWithDualObject" );
 
 ##
 AddDerivationToCAP( IsomorphismFromInternalHomToTensorProductWithDualObject,

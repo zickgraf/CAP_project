@@ -10,6 +10,73 @@
 ##
 ####################################
 
+##
+AddDerivationToCAP( AssociatorLeftToRightWithGivenTensorProducts,
+                    [ [ IdentityMorphism, 1 ] ],
+                    
+  function( cat, left_associated_object, object_1, object_2, object_3, right_associated_object )
+    
+    return VectorSpaceMorphism( cat, left_associated_object, HomalgIdentityMatrix( Dimension( left_associated_object ), UnderlyingRing( cat ) ), right_associated_object );
+    
+end : CategoryFilter := IsMatrixCategory,
+      Description := "AssociatorLeftToRightWithGivenTensorProducts as the identity morphism" );
+
+##
+AddDerivationToCAP( AssociatorRightToLeftWithGivenTensorProducts,
+                    [ [ IdentityMorphism, 1 ] ],
+                    
+  function( cat, right_associated_object, object_1, object_2, object_3, left_associated_object )
+    
+    return VectorSpaceMorphism( cat, right_associated_object, HomalgIdentityMatrix( Dimension( right_associated_object ), UnderlyingRing( cat ) ), left_associated_object );
+    
+end : CategoryFilter := IsMatrixCategory,
+      Description := "AssociatorRightToLeft as the identity morphism" );
+
+##
+AddDerivationToCAP( LeftUnitorWithGivenTensorProduct,
+                    [ [ IdentityMorphism, 1 ] ],
+                    
+  function( cat, object, unit_tensored_object )
+    
+    return VectorSpaceMorphism( cat, unit_tensored_object, HomalgIdentityMatrix( Dimension( unit_tensored_object ), UnderlyingRing( cat ) ), object );
+      
+end : CategoryFilter := IsMatrixCategory,
+      Description := "LeftUnitorWithGivenTensorProduct as the identity morphism" );
+
+##
+AddDerivationToCAP( LeftUnitorInverseWithGivenTensorProduct,
+                    [ [ IdentityMorphism, 1 ] ],
+                  
+  function( cat, object, unit_tensored_object )
+    
+    return VectorSpaceMorphism( cat, object, HomalgIdentityMatrix( Dimension( object ), UnderlyingRing( cat ) ), unit_tensored_object );
+    
+end : CategoryFilter := IsMatrixCategory,
+      Description := "LeftUnitorInverseWithGivenTensorProduct as the identity morphism" );
+
+##
+AddDerivationToCAP( RightUnitorWithGivenTensorProduct,
+                    [ [ IdentityMorphism, 1 ] ],
+                    
+  function( cat, object, object_tensored_unit )
+    
+    return VectorSpaceMorphism( cat, object_tensored_unit, HomalgIdentityMatrix( Dimension( object_tensored_unit ), UnderlyingRing( cat ) ), object );
+    
+end : CategoryFilter := IsMatrixCategory,
+      Description := "RightUnitorWithGivenTensorProduct as the identity morphism" );
+
+##
+AddDerivationToCAP( RightUnitorInverseWithGivenTensorProduct,
+                    [ [ IdentityMorphism, 1 ] ],
+  function( cat, object, object_tensored_unit )
+    
+    #return IdentityMorphism( cat, object );
+    return VectorSpaceMorphism( cat, object, HomalgIdentityMatrix( Dimension( object ), UnderlyingRing( cat ) ), object_tensored_unit );
+    
+end : CategoryFilter := IsMatrixCategory,
+      Description := "RightUnitorInverseWithGivenTensorProduct as the identity morphism" );
+
+
 InstallMethod( MatrixCategory,
                [ IsFieldForHomalg ],
                
@@ -33,12 +100,12 @@ InstallGlobalFunction( MATRIX_CATEGORY,
         category_attribute_names := [
             "UnderlyingRing",
         ],
-        source_and_range_attributes_from_morphism_attribute := rec(
-            object_attribute_name := "Dimension",
-            morphism_attribute_name := "UnderlyingMatrix",
-            source_attribute_getter_name := "NumberRows",
-            range_attribute_getter_name := "NumberColumns",
-        ),
+        #source_and_range_attributes_from_morphism_attribute := rec(
+        #    object_attribute_name := "Dimension",
+        #    morphism_attribute_name := "UnderlyingMatrix",
+        #    source_attribute_getter_name := "NumberRows",
+        #    range_attribute_getter_name := "NumberColumns",
+        #),
         category_filter := IsMatrixCategory,
         object_filter := IsVectorSpaceObject,
         morphism_filter := IsVectorSpaceMorphism,
@@ -57,7 +124,7 @@ InstallGlobalFunction( MATRIX_CATEGORY,
     
     SetUnderlyingRing( category, homalg_field );
     
-    SetIsSkeletalCategory( category, true );
+    #SetIsSkeletalCategory( category, true );
     
     SetIsAbelianCategory( category, true );
     
@@ -65,11 +132,12 @@ InstallGlobalFunction( MATRIX_CATEGORY,
     
     SetIsAbelianCategoryWithEnoughInjectives( category, true );
     
+    #SetIsSymmetricClosedMonoidalCategory( category, true );
     SetIsRigidSymmetricClosedMonoidalCategory( category, true );
     
     SetIsRigidSymmetricCoclosedMonoidalCategory( category, true );
     
-    SetIsStrictMonoidalCategory( category, true );
+    #SetIsStrictMonoidalCategory( category, true );
     
     SetIsLinearCategoryOverCommutativeRing( category, true );
     
@@ -501,12 +569,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_MATRIX_CATEGORY,
     
     ## Basic Operations for an Abelian category
     ##
-    AddKernelObject( category,
-      function( cat, morphism )
-        
-        return MatrixCategoryObject( cat, Dimension( Source( morphism ) ) - RowRankOfMatrix( UnderlyingMatrix( morphism ) ) );
-        
-    end );
+    #AddKernelObject( category,
+    #  function( cat, morphism )
+    #    
+    #    return MatrixCategoryObject( cat, Dimension( Source( morphism ) ) - RowRankOfMatrix( UnderlyingMatrix( morphism ) ) );
+    #    
+    #end );
     
     ##
     AddKernelEmbedding( category,
@@ -562,12 +630,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_MATRIX_CATEGORY,
     end );
     
     ##
-    AddCokernelObject( category,
-      function( cat, morphism )
-        
-        return MatrixCategoryObject( cat, Dimension( Range( morphism ) ) - RowRankOfMatrix( UnderlyingMatrix( morphism ) ) );
-        
-    end );
+    #AddCokernelObject( category,
+    #  function( cat, morphism )
+    #    
+    #    return MatrixCategoryObject( cat, Dimension( Range( morphism ) ) - RowRankOfMatrix( UnderlyingMatrix( morphism ) ) );
+    #    
+    #end );
     
     ##
     AddCokernelProjection( category,

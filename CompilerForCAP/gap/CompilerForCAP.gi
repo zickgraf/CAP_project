@@ -306,6 +306,15 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         CapJitHoistedBindings,
         CapJitOutlinedWrappedArguments,
         CapJitInlinedBindings,
+        # type check PreCompose
+        CapJitAppliedLogic,
+        CapJitAppliedLogic,
+        CapJitAppliedLogic,
+        CapJitAppliedLogic,
+        CapJitAppliedLogic,
+        CapJitAppliedLogic,
+        CapJitAppliedLogic,
+        CapJitResolvedOperations,
     ];
     
     if type_signature = fail or not CAP_JIT_DATA_TYPE_INFERENCE_ENABLED then
