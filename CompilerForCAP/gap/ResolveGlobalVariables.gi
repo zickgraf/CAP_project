@@ -54,26 +54,30 @@ InstallGlobalFunction( "CapJitResolvedGlobalVariables", function ( tree )
                     
                     value := attribute_getter( cat );
                     
-                    global_variable_name := CapJitGetOrCreateGlobalVariable( value );
-                    
-                    if CAP_JIT_DATA_TYPE_INFERENCE_ENABLED then
+                    if IsCapCategory( value ) then
                         
-                        data_type := CAP_JIT_INTERNAL_GET_OUTPUT_TYPE_OF_GLOBAL_FUNCTION_BY_INPUT_TYPES( attribute_name, [ CapJitDataTypeOfCategory( cat ) ] );
+                        global_variable_name := CapJitGetOrCreateGlobalVariable( value );
                         
-                    else
+                        if CAP_JIT_DATA_TYPE_INFERENCE_ENABLED then
+                            
+                            data_type := CAP_JIT_INTERNAL_GET_OUTPUT_TYPE_OF_GLOBAL_FUNCTION_BY_INPUT_TYPES( attribute_name, [ CapJitDataTypeOfCategory( cat ) ] );
+                            
+                        else
+                            
+                            data_type := fail;
+                            
+                        fi;
                         
-                        data_type := fail;
+                        tree := rec(
+                            type := "EXPR_REF_GVAR",
+                            gvar := global_variable_name,
+                        );
                         
-                    fi;
-                    
-                    tree := rec(
-                        type := "EXPR_REF_GVAR",
-                        gvar := global_variable_name,
-                    );
-                    
-                    if data_type <> fail then
-                        
-                        tree.data_type := data_type;
+                        if data_type <> fail then
+                            
+                            tree.data_type := data_type;
+                            
+                        fi;
                         
                     fi;
                     

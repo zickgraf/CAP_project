@@ -207,6 +207,8 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         
         tree := ENHANCED_SYNTAX_TREE( func : globalize_hvars := true, given_arguments := [ category ] );
         
+        tree := CapJitReplacedGlobalVariablesByCategoryAttributes( tree, category : no_categories := true );
+        
     else
         
         tree := ENHANCED_SYNTAX_TREE( func : globalize_hvars := true );
@@ -354,6 +356,12 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         fi;
         
     od;
+    
+    if category_as_first_argument then
+        
+        tree := CapJitReplacedGlobalVariablesByCategoryAttributes( tree, category : no_categories := true );
+        
+    fi;
     
     # rule phase
     rule_phase_functions := [
