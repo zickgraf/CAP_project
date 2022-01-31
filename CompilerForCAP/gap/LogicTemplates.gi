@@ -495,6 +495,22 @@ CapJitAddLogicTemplate(
 # This causes some minor overhead if the index is fixed (e.g. for ProjectionInFactorOfDirectSum) because f is applied to the whole list
 # instead of only the element given by the index, but such examples are rare.
 # Additionally, this should only trigger for homogeneous lists, i.e. `func` must be applicable to all elements of `L`.
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "func1", "list", "func2", "index" ],
+#        src_template := "func1( List( list, func2 )[index] )",
+#        dst_template := "List( List( list, func2 ), func1 )[index]",
+#        returns_value := true,
+#    )
+#);
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "listlist", "func1", "func2", "row", "index1", "index2" ],
+#        src_template := "func1( List( listlist, x -> List( row, func2 ) )[index1][index2] )",
+#        dst_template := "List( listlist, x -> List( List( row, func2 ), func1 ) )[index1][index2]",
+#        returns_value := true,
+#    )
+#);
 CapJitAddLogicTemplate(
     rec(
         variable_names := [ "list", "func", "index" ],
