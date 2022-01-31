@@ -341,6 +341,12 @@ InstallGlobalFunction( CapJitReplacedGlobalVariablesByCategoryAttributes, functi
         
         if tree.type = "EXPR_REF_GVAR" then
             
+            if ValueOption( "no_categories" ) = true and IsCapCategory( ValueGlobal( tree.gvar ) ) then
+                
+                return tree;
+                
+            fi;
+            
             # try to find the value of the global variable in categories_in_tower
             pos := PositionProperty( categories_in_tower, c -> IsIdenticalObj( c, ValueGlobal( tree.gvar ) ) );
             
