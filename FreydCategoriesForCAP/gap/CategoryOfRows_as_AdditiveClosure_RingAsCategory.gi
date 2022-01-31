@@ -230,6 +230,7 @@ InstallMethod( CategoryOfRows_as_AdditiveClosure_RingAsCategory,
     SetUnderlyingRing( wrapper, homalg_ring );
     
     wrapper!.compiler_hints.category_attribute_names := [
+        "ModelingCategory",
         "UnderlyingRing",
     ];
     
