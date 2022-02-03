@@ -509,6 +509,66 @@ CapJitAddLogicFunction( function ( tree )
     
 end );
 
+# func( ..., EXPR_CASE, ... ) => EXPR_CASE
+# putting this before cancelling attributes and using pre_func instead of result_func significantly
+# improves the performance for PrecompileAdelmanCategoryOfAdditiveClosureOfAlgebroid.g
+CapJitAddLogicFunction( function ( tree )
+  local pre_func, result_func;
+    
+    Info( InfoCapJit, 1, "####" );
+    Info( InfoCapJit, 1, "Apply logic for func( ..., EXPR_CASE, ... )." );
+    
+    pre_func := function ( tree, additional_arguments )
+      local pos;
+        
+        if tree.type = "EXPR_FUNCCALL" then
+            
+            pos := PositionProperty( tree.args, a -> a.type = "EXPR_CASE" );
+            
+            if pos <> fail then
+                
+                return rec(
+                    type := "EXPR_CASE",
+                    branches := List( tree.args.(pos).branches, branch -> rec(
+                        type := "CASE_BRANCH",
+                        condition := branch.condition,
+                        value := rec(
+                            type := "EXPR_FUNCCALL",
+                            funcref := CapJitCopyWithNewFunctionIDs( tree.funcref ),
+                            args := AsSyntaxTreeList(
+                                List(
+                                    [ 1 .. tree.args.length ],
+                                    function ( i )
+                                        
+                                        if i = pos then
+                                            
+                                            return branch.value;
+                                            
+                                        else
+                                            
+                                            return CapJitCopyWithNewFunctionIDs( tree.args.(i) );
+                                            
+                                        fi;
+                                        
+                                    end
+                                )
+                            ),
+                        ),
+                    ) ),
+                );
+                
+            fi;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end );
+
 # AttributeGetter( CreateCapCategoryObject/MorphismWithAttributes( ..., Attribute, value, ... ) ) => value
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
@@ -762,42 +822,6 @@ CapJitAddLogicFunction( function ( tree )
         if tree.type = "EXPR_CASE" and tree.branches.length > 0 and ForAll( tree.branches, branch -> CapJitIsEqualForEnhancedSyntaxTrees( branch.value, tree.branches.1.value ) ) then
             
             return tree.branches.1.value;
-            
-        fi;
-        
-        return tree;
-        
-    end;
-    
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
-    
-end );
-
-# func( EXPR_CASE )
-CapJitAddLogicFunction( function ( tree )
-  local pre_func;
-    
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for func( EXPR_CASE )." );
-    
-    pre_func := function ( tree, additional_arguments )
-        
-        if tree.type = "EXPR_FUNCCALL" and tree.args.length = 1 and tree.args.1.type = "EXPR_CASE" then
-            
-            return rec(
-                type := "EXPR_CASE",
-                branches := List( tree.args.1.branches, branch -> rec(
-                    type := "CASE_BRANCH",
-                    condition := branch.condition,
-                    value := rec(
-                        type := "EXPR_FUNCCALL",
-                        funcref := CapJitCopyWithNewFunctionIDs( tree.funcref ),
-                        args := AsSyntaxTreeList( [
-                            branch.value
-                        ] ),
-                    ),
-                ) ),
-            );
             
         fi;
         

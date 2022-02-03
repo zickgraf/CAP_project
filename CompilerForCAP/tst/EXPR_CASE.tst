@@ -107,4 +107,36 @@ function ( x_1 )
 end
 
 #
+gap> func5 := function( x )
+>   local my_func, inner_func;
+>     
+>     my_func := { x, y } -> y + x;
+>     
+>     inner_func := function( )
+>       local y;
+>         if x then
+>             return 1;
+>         else
+>             y := 2;
+>             return y;
+>         fi;
+>     end;
+>     
+>     return my_func( 3, inner_func( ) );
+>     
+> end;;
+
+#
+gap> compiled_func5 := CapJitCompiledFunction( func5 );;
+gap> Display( compiled_func5 );
+function ( x_1 )
+    if x_1 then
+        return 1 + 3;
+    else
+        return 2 + 3;
+    fi;
+    return;
+end
+
+#
 gap> STOP_TEST( "EXPR_CASE" );
