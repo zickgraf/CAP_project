@@ -271,4 +271,27 @@ function (  )
 end
 
 #
+gap> func := function ( my_func )
+>  return [ my_func( 1, 1, 3 ), my_func( 1, 2, 3 ) ]; end;;
+
+gap> tree := ENHANCED_SYNTAX_TREE( func );;
+gap> tree := CapJitAppliedLogic( tree, [ ] );;
+gap> Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+function ( my_func_1 )
+    return List( [ 1, 2 ],  );
+end
+
+#
+gap> func := function ( x, my_func )
+>  if x then return my_func( 1, 1, 3 ); else return my_func( 1, 2, 3 ); fi; end;;
+
+#
+gap> tree := ENHANCED_SYNTAX_TREE( func );;
+gap> tree := CapJitAppliedLogic( tree, [ ] );;
+gap> Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+function ( my_func_1 )
+    return List( [ 1, 2 ],  );
+end
+
+#
 gap> STOP_TEST( "Logic" );
