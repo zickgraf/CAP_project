@@ -527,6 +527,213 @@ end );
 #    
 #end );
 
+# [ f( a_1 ), ..., f( a_n ) ] => List( [ a_1, ..., a_n ], f )
+CapJitAddLogicFunction( function ( tree )
+  local pre_func;
+    
+    Info( InfoCapJit, 1, "####" );
+    Info( InfoCapJit, 1, "Apply logic for literal lists." );
+    
+    pre_func := function ( tree, additional_arguments )
+      local variable_argument_position, t, i, j;
+        
+        # check if we have a non-empty literal list
+        if tree.type = "EXPR_LIST" and tree.list.length > 0 then
+            
+            # check if all entries of the list are obtained by a call to the same function with the same number of arguments
+            if ForAll( tree.list, t -> t.type = "EXPR_FUNCCALL" and CapJitIsEqualForEnhancedSyntaxTrees( t.funcref, tree.list.1.funcref ) and t.args.length = tree.list.1.args.length ) then
+                
+                # check if only a single argument varies between the function calls
+                variable_argument_position := fail;
+                
+                for i in [ 2 .. tree.list.length ] do
+                    
+                    t := tree.list.(i);
+                    
+                    for j in [ 1 .. t.args.length ] do
+                        
+                        if not CapJitIsEqualForEnhancedSyntaxTrees( t.args.(j), tree.list.1.args.(j) ) then
+                            
+                            if variable_argument_position = fail then
+                                
+                                variable_argument_position := j;
+                                
+                            else
+                                
+                                # at least two arguments vary between the function calls, this is not supported
+                                return tree;
+                                
+                            fi;
+                            
+                        fi;
+                        
+                    od;
+                    
+                od;
+                
+                if variable_argument_position = fail then
+                    
+                    # TODO
+                    return tree;
+                    
+                fi;
+                
+                tree := rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := rec(
+                        type := "EXPR_REF_GVAR",
+                        gvar := "List",
+                    ),
+                    args := AsSyntaxTreeList( [
+                        rec(
+                            type := "EXPR_LIST",
+                            list := List( tree.list, t -> t.args.(variable_argument_position) ),
+                        ),
+                        rec(
+                            type := "EXPR_DECLARATIVE_FUNC",
+                            id := CAP_JIT_INTERNAL_FUNCTION_ID,
+                            nams := [
+                                "logic_new_func_x",
+                                "RETURN_VALUE",
+                            ],
+                            narg := 1,
+                            variadic := false,
+                            bindings := rec(
+                                type := "FVAR_BINDING_SEQ",
+                                names := Set( [ "RETURN_VALUE" ] ),
+                                BINDING_RETURN_VALUE := rec(
+                                    type := "EXPR_FUNCCALL",
+                                    funcref := tree.list.1.funcref,
+                                    args := AsSyntaxTreeList( List( [ 1 .. tree.list.1.args.length ], function( j )
+                                        
+                                        if j = variable_argument_position then
+                                            
+                                            return rec(
+                                                type := "EXPR_REF_FVAR",
+                                                func_id := CAP_JIT_INTERNAL_FUNCTION_ID,
+                                                name := "logic_new_func_x",
+                                            );
+                                            
+                                        else
+                                            
+                                            return tree.list.1.args.(j);
+                                            
+                                        fi;
+                                        
+                                    end ) ),
+                                ),
+                            ),
+                        ),
+                    ] ),
+                );
+                CAP_JIT_INTERNAL_FUNCTION_ID := CAP_JIT_INTERNAL_FUNCTION_ID + 1;
+                
+                return tree;
+                
+            fi;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end );
+
+# EXPR_CASE( f( a_i )_i ) => f( EXPR_CASE )
+CapJitAddLogicFunction( function ( tree )
+  local pre_func;
+    
+    Info( InfoCapJit, 1, "####" );
+    Info( InfoCapJit, 1, "Apply logic for EXPR_CASE." );
+    
+    pre_func := function ( tree, additional_arguments )
+      local variable_argument_position, t, i, j;
+        
+        # check if we have a non-empty literal list
+        if tree.type = "EXPR_CASE" then
+            
+            Assert( 0, tree.branches.length > 0 );
+            
+            # check if all values of branches are obtained by a call to the same function with the same number of arguments
+            if ForAll( tree.branches, branch -> branch.value.type = "EXPR_FUNCCALL" and CapJitIsEqualForEnhancedSyntaxTrees( branch.value.funcref, tree.branches.1.value.funcref ) and branch.value.args.length = tree.branches.1.value.args.length ) then
+                
+                # check if only a single argument varies between the function calls
+                variable_argument_position := fail;
+                
+                for i in [ 2 .. tree.branches.length ] do
+                    
+                    value := tree.branches.(i).value;
+                    
+                    for j in [ 1 .. value.args.length ] do
+                        
+                        if not CapJitIsEqualForEnhancedSyntaxTrees( value.args.(j), tree.branches.1.value.args.(j) ) then
+                            
+                            if variable_argument_position = fail then
+                                
+                                variable_argument_position := j;
+                                
+                            else
+                                
+                                # at least two arguments vary between the function calls, this is not supported
+                                return tree;
+                                
+                            fi;
+                            
+                        fi;
+                        
+                    od;
+                    
+                od;
+                
+                if variable_argument_position = fail then
+                    
+                    # TODO
+                    return tree;
+                    
+                fi;
+                
+                return rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := tree.branches.1.value.funcref,
+                    args := AsSyntaxTreeList( List( [ 1 .. tree.branches.1.value.args.length ], function( j )
+                        
+                        if j = variable_argument_position then
+                            
+                            return rec(
+                                type := "EXPR_CASE",
+                                branches := List( tree.branches, branch -> rec(
+                                    type := "CASE_BRANCH",
+                                    condition := branch.condition,
+                                    value := branch.value.args.(j),
+                                ) ),
+                            );
+                            
+                        else
+                            
+                            return tree.branches.1.value.args.(j);
+                            
+                        fi;
+                        
+                    end ) ),
+                );
+                
+            fi;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end );
+
+
+
 # List( [ a_1, ..., a_n ], f ) = [ f( a_1 ), ..., f( a_n ) ]
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
