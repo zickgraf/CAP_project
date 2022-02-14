@@ -12,7 +12,14 @@ G := SymmetricGroup( 3 );;
 CG := GroupAsCategory( G );;
 ZZZ := HomalgRingOfIntegers( );;
 ZCG := LinearClosure( ZZZ, CG );;
-RowsG := AdditiveClosure( ZCG );;
+RowsG := AdditiveClosure( ZCG : FinalizeCategory := false );;
+
+ReadPackage( "FreydCategoriesForCAP", "gap/precompiled_categories/AdditiveClosureOfLinearClosureOverZOfGroupAsCategoryOfSymmetricGroupOf3Precompiled.gi" );
+
+#ADD_FUNCTIONS_FOR_AdditiveClosureOfLinearClosureOverZOfGroupAsCategoryOfSymmetricGroupOf3Precompiled( RowsG );
+
+Finalize( RowsG );
+
 #! #@fi
 #! @EndExample
 
@@ -49,8 +56,15 @@ mat11_12 := List( [ 1 .. 11 ], i ->
 alpha := mat10_11/RowsG;;
 beta := mat11_12/RowsG;;
 gamma := PreCompose( alpha, beta );;
-lift := Lift( gamma, beta );;
-PreCompose( lift, beta ) = gamma;
+EnableTimingStatistics( RowsG );
+StartTimer( "PrepareLift" );
+
+LoadPackage( "profiling" );
+LineByLineProfileFunction( Lift, [ gamma, beta ] );
+#lift := Lift( gamma, beta );;
+#PreCompose( lift, beta ) = gamma;
+
+DisplayTimingStatistics( RowsG );
 #! true
 #! #@fi
 #! @EndExample

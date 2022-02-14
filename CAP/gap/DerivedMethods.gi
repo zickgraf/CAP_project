@@ -2353,8 +2353,13 @@ AddDerivationToCAP( SolveLinearSystemInAbCategory,
     
     H := MorphismBetweenDirectSums( range_cat, H_B_C, list, H_A_D );
     
+    DisplayTimer( "PrepareLift" );
+    
+    return [ ZeroMorphism( cat, ZeroObject( cat ), ZeroObject( cat ) ) ];
+    StartTimer( "Lift" );
     ## the actual computation of the solution
     lift := Lift( range_cat, nu, H );
+    DisplayTimer( "Lift" );
     
     ## reinterpretation of the solution
     summands := List( [ 1 .. n ], j -> HomomorphismStructureOnObjects( cat, Range( left_coefficients[1][j] ), Source( right_coefficients[1][j] ) ) );

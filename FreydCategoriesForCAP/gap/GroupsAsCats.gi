@@ -251,6 +251,10 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_GROUP_AS_CATEGORY,
         
         RG := FinSet( FREYD_CATEGORIES_SkeletalFinSets, size );
         
+        DeclareAttribute( "GroupAsSet", IsGroupAsCategory );
+        SetGroupAsSet( category, RG );
+        Add( category!.compiler_hints.category_attribute_names, "GroupAsSet" );
+        
         ## Homomorphism structure
         AddHomomorphismStructureOnObjects( category,
           function( cat, a, b )
@@ -273,6 +277,12 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_GROUP_AS_CATEGORY,
                         List( elements, x -> -1 + Position( elements, elements[g] * x * elements[h] ) )
                     )
                 );
+            
+            MakeImmutable( HOM_PERMUTATION_ARRAY );
+            
+            DeclareAttribute( "HomPermutationArray", IsGroupAsCategory );
+            SetHomPermutationArray( category, HOM_PERMUTATION_ARRAY );
+            Add( category!.compiler_hints.category_attribute_names, "HomPermutationArray" );
             
             ## Should this function have a cache?
             ##
