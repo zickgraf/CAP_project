@@ -219,7 +219,7 @@ InstallMethod( CategoryOfRowsAsAdditiveClosureOfRingAsCategory,
     fi;
     
     wrapper := ReinterpretationOfCategory( add, rec(
-        name := Concatenation( "Rows( ", RingName( homalg_ring )," )" ),
+        name := Concatenation( "Rows( ", RingName( homalg_ring )," ) (as AdditiveClosure)" ),
         category_filter := IsCategoryOfRows,
         category_object_filter := category_object_filter,
         category_morphism_filter := IsCategoryOfRowsMorphism and HasUnderlyingMatrix,
@@ -235,6 +235,7 @@ InstallMethod( CategoryOfRowsAsAdditiveClosureOfRingAsCategory,
     ) : FinalizeCategory := false );
     
     SetUnderlyingRing( wrapper, homalg_ring );
+    SetCommutativeRingOfLinearCategory( wrapper, homalg_ring );
     
     wrapper!.compiler_hints.category_attribute_names := [
         "UnderlyingRing",
