@@ -160,6 +160,7 @@ InstallGlobalFunction( LINEAR_CLOSURE_CONSTRUCTOR,
     local rows;
     
     rows := CategoryOfRows( ring : overhead := false, FinalizeCategory := true );
+    #rows := CategoryOfRowsAsAdditiveClosureOfRingAsCategory( ring : overhead := false, FinalizeCategory := true );
     
     return CallFuncList( LINEAR_CLOSURE_CONSTRUCTOR_USING_CategoryOfRows,
                    Concatenation( [ rows, underlying_category ], arg ) );
