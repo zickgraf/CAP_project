@@ -698,13 +698,12 @@ InstallMethod( UniversalMorphismIntoDirectSum,
 end );
 
 ##
-InstallOtherMethod( UniversalMorphismIntoDirectSum,
+InstallOtherMethodForCompilerForCAP( UniversalMorphismIntoDirectSum,
                [ IsCapCategory, IsList ],
                
   function( cat, list )
-    #% CAP_JIT_RESOLVE_FUNCTION
     
-    return UniversalMorphismIntoDirectSum( cat, List( list, Range ), list );
+    return UniversalMorphismIntoDirectSum( cat, List( list, Range ), Source( list[1] ), list );
     
 end );
 
@@ -1878,11 +1877,10 @@ InstallOtherMethod( KernelLift,
         
 end );
 
-InstallOtherMethod( KernelLift,
+InstallOtherMethodForCompilerForCAP( KernelLift,
                     [ IsCapCategory, IsCapCategoryMorphism, IsCapCategoryMorphism ],
                     
     function( cat, diagram, tau )
-        #% CAP_JIT_RESOLVE_FUNCTION
         
         return KernelLift( cat, diagram, Source( tau ), tau );
         
@@ -2024,11 +2022,10 @@ InstallOtherMethod( CokernelColift,
         
 end );
 
-InstallOtherMethod( CokernelColift,
+InstallOtherMethodForCompilerForCAP( CokernelColift,
                     [ IsCapCategory, IsCapCategoryMorphism, IsCapCategoryMorphism ],
                     
     function( cat, diagram, tau )
-        #% CAP_JIT_RESOLVE_FUNCTION
         
         return CokernelColift( cat, diagram, Range( tau ), tau );
         
