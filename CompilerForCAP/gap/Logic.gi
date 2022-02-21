@@ -28,11 +28,11 @@ end );
 InstallGlobalFunction( CapJitAppliedLogic, function ( tree )
   local logic_function;
     
-    for logic_function in CAP_JIT_LOGIC_FUNCTIONS do
-        
-        tree := logic_function( tree );
-        
-    od;
+    #for logic_function in CAP_JIT_LOGIC_FUNCTIONS do
+    #    
+    #    tree := logic_function( tree );
+    #    
+    #od;
     
     tree := CapJitAppliedLogicTemplates( tree );
     
@@ -44,10 +44,10 @@ end );
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for ranges with known boundaries." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for ranges with known boundaries." );
     
-    pre_func := function ( tree, additional_arguments )
+    #pre_func := function ( tree, additional_arguments )
         
         if tree.type = "EXPR_RANGE" and tree.first.type = "EXPR_INT" and tree.last.type = "EXPR_INT" then
             
@@ -66,9 +66,9 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
@@ -76,11 +76,11 @@ end );
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for accessing elements of lists." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for accessing elements of lists." );
     
-    pre_func := function ( tree, additional_arguments )
-      local args;
+    #pre_func := function ( tree, additional_arguments )
+    #  local args;
         
         if CapJitIsCallToGlobalFunction( tree, "[]" ) and tree.args.1.type = "EXPR_LIST" and tree.args.2.type = "EXPR_INT" then
             
@@ -90,9 +90,9 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
@@ -100,11 +100,11 @@ end );
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for equality." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for equality." );
     
-    pre_func := function ( tree, additional_arguments )
-      local args;
+    #pre_func := function ( tree, additional_arguments )
+    #  local args;
         
         if tree.type = "EXPR_EQ" and tree.left.type = tree.right.type then
             
@@ -123,9 +123,9 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
@@ -133,11 +133,11 @@ end );
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for Length of literal lists." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for Length of literal lists." );
     
-    pre_func := function ( tree, additional_arguments )
-      local args;
+    #pre_func := function ( tree, additional_arguments )
+    #  local args;
         
         if CapJitIsCallToGlobalFunction( tree, "Length" ) and tree.args.length = 1 and tree.args.1.type = "EXPR_LIST" then
             
@@ -150,21 +150,21 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
 # Concatenation( [ ... ] ) => Concatenation( ... )
 # Concatenation( [ a, b, ... ], [ c, d, ... ], ... ) => [ a, b, ..., c, d, ... ]
 CapJitAddLogicFunction( function ( tree )
-  local pre_func;
+  #local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for concatenation of literal lists." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for concatenation of literal lists." );
     
-    pre_func := function ( tree, additional_arguments )
+    #pre_func := function ( tree, additional_arguments )
       local args;
         
         # Concatenation with a single argument has different semantics
@@ -206,20 +206,20 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
 # CallFuncList( func, [ a, b, ... ] ) => func( a, b, ... )
 CapJitAddLogicFunction( function ( tree )
-  local pre_func;
+  #local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for CallFuncList." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for CallFuncList." );
     
-    pre_func := function ( tree, additional_arguments )
+    #pre_func := function ( tree, additional_arguments )
       local args;
         
         if CapJitIsCallToGlobalFunction( tree, "CallFuncList" ) then
@@ -240,20 +240,20 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
 # List( [ a_1, ..., a_n ], f ) = [ f( a_1 ), ..., f( a_n ) ]
 CapJitAddLogicFunction( function ( tree )
-  local pre_func;
+  #local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for List applied to a literal list." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for List applied to a literal list." );
     
-    pre_func := function ( tree, additional_arguments )
+    #pre_func := function ( tree, additional_arguments )
       local args;
         
         if CapJitIsCallToGlobalFunction( tree, "List" ) then
@@ -280,9 +280,9 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
@@ -329,12 +329,12 @@ end );
 
 # AttributeGetter( ObjectifyObject/MorphismForCAPWithAttributes( ..., Attribute, value, ... ) ) => value
 CapJitAddLogicFunction( function ( tree )
-  local pre_func;
+  #local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for attribute getters." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for attribute getters." );
     
-    pre_func := function ( tree, additional_arguments )
+    #pre_func := function ( tree, additional_arguments )
       local attribute_name, args, object, list, pos;
         
         # attribute getters can also be applied to more than one argument, but we are not interested in that case
@@ -400,20 +400,20 @@ CapJitAddLogicFunction( function ( tree )
             
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
 # EXPR_CASE with all branches having the same value
 CapJitAddLogicFunction( function ( tree )
-  local pre_func;
+  #local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for EXPR_CASE with all branches having the same value." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for EXPR_CASE with all branches having the same value." );
     
-    pre_func := function ( tree, additional_arguments )
+    #pre_func := function ( tree, additional_arguments )
         
         if tree.type = "EXPR_CASE" and tree.branches.length > 0 and ForAll( tree.branches, branch -> CapJitIsEqualForEnhancedSyntaxTrees( branch.value, tree.branches.1.value ) ) then
             
@@ -423,9 +423,9 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
@@ -433,10 +433,10 @@ end );
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for func( EXPR_CASE )." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for func( EXPR_CASE )." );
     
-    pre_func := function ( tree, additional_arguments )
+    #pre_func := function ( tree, additional_arguments )
         
         if tree.type = "EXPR_FUNCCALL" and tree.args.length = 1 and tree.args.1.type = "EXPR_CASE" then
             
@@ -459,9 +459,9 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
 
@@ -745,7 +745,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TELESCOPED_ITERATION, function ( tree, r
                                             # the record
                                             return_obj.args.1,
                                             # the category
-                                            return_obj.args.2,
+                                            StructuralCopy( return_obj.args.2 ),
                                             # the source
                                             rec(
                                                 type := "EXPR_FUNCCALL",
@@ -760,7 +760,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TELESCOPED_ITERATION, function ( tree, r
                                                         keyvalue := AsSyntaxTreeList( [ ] ),
                                                     ),
                                                     # the category
-                                                    return_obj.args.2,
+                                                    StructuralCopy( return_obj.args.2 ),
                                                     # the object attribute
                                                     rec(
                                                         type := "EXPR_REF_GVAR",
@@ -797,7 +797,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TELESCOPED_ITERATION, function ( tree, r
                                                         keyvalue := AsSyntaxTreeList( [ ] ),
                                                     ),
                                                     # the category
-                                                    return_obj.args.2,
+                                                    StructuralCopy( return_obj.args.2 ),
                                                     # the object attribute
                                                     rec(
                                                         type := "EXPR_REF_GVAR",
@@ -864,14 +864,14 @@ end );
 
 # CapFixpoint
 CapJitAddLogicFunction( function ( tree )
-  local orig_tree, pre_func;
+  #local orig_tree, pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for CapFixpoint." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for CapFixpoint." );
     
-    orig_tree := tree;
+    #orig_tree := tree;
     
-    pre_func := function ( tree, additional_arguments )
+    #pre_func := function ( tree, additional_arguments )
       local args, predicate, func, initial_value, return_obj, cat, attribute_name, variable_references_paths, new_func, parent, new_predicate, new_initial_value, new_tree, path;
         
         if CapJitIsCallToGlobalFunction( tree, "CapFixpoint" ) then
@@ -886,24 +886,24 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    tree := CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #tree := CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
-    return tree;
+    #return tree;
     
 end );
 
 # Iterated
 CapJitAddLogicFunction( function ( tree )
-  local orig_tree, pre_func;
+  #local orig_tree, pre_func;
     
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for Iterated." );
+    #Info( InfoCapJit, 1, "####" );
+    #Info( InfoCapJit, 1, "Apply logic for Iterated." );
     
-    orig_tree := tree;
+    #orig_tree := tree;
     
-    pre_func := function ( tree, additional_arguments )
+    #pre_func := function ( tree, additional_arguments )
       local args, list, func, return_obj, cat, attribute_name, variable_references_paths, new_func, parent, new_list, new_tree, path, i;
         
         if CapJitIsCallToGlobalFunction( tree, "Iterated" ) then
@@ -946,10 +946,10 @@ CapJitAddLogicFunction( function ( tree )
         
         return tree;
         
-    end;
+    #end;
     
-    tree := CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    #tree := CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
-    return tree;
+    #return tree;
     
 end );

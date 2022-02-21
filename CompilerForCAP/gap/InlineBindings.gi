@@ -95,6 +95,21 @@ InstallGlobalFunction( CapJitInlinedBindings, function ( tree )
             
         fi;
         
+        if not IsIdenticalObj( orig_tree, tree ) then
+            
+            Assert( 0, orig_tree.type = "EXPR_REF_FVAR" );
+            
+            Info( InfoCapJit, 1, "####" );
+            Info( InfoCapJit, 1, "Inline reference to binding with name ", orig_tree.name, "." );
+            
+            return CapJitCopyWithNewFunctionIDs( tree );
+            
+        else
+            
+            return orig_tree;
+            
+        fi;
+        
         # Try to cancel Attribute( Objectify( ... ) ) immediately for performance.
         # Doing this would be easy in result_func but that would defeat the purpose of cancellation BEFORE inlining.
         while true do

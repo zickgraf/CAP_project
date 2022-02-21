@@ -205,18 +205,23 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
     DisplayTimer( "CapJitInlinedBindingsToVariableReferences" );
     DisplayTimer( "CapJitResolvedGlobalVariables" );
     
-    DisplayTimer( "CapJitAppliedLogic" );
-    DisplayTimer( "CapJitDroppedHandledEdgeCases" );
-    DisplayTimer( "CapJitInlinedArguments" );
-    DisplayTimer( "CapJitInlinedSimpleFunctionCalls" );
-    DisplayTimer( "CapJitInlinedFunctionCalls" );
-    DisplayTimer( "CapJitDroppedUnusedBindings" );
-    DisplayTimer( "CapJitInlinedBindings" );
-    DisplayTimer( "CapJitInferredDataTypes" );
+    #DisplayTimer( "CapJitAppliedLogicTemplates" );
+    #DisplayTimer( "CapJitDroppedHandledEdgeCases" );
+    #DisplayTimer( "CapJitInlinedArguments" );
+    #DisplayTimer( "CapJitInlinedSimpleFunctionCalls" );
+    #DisplayTimer( "CapJitInlinedFunctionCalls" );
+    #DisplayTimer( "CapJitDroppedUnusedBindings" );
+    #DisplayTimer( "CapJitInlinedBindings" );
+    #DisplayTimer( "CapJitInferredDataTypes" );
     
     DisplayTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
     
     DisplayTimer( "post_processing" );
+    
+    Display( "NUMBER_NODES_BEFORE_POST_PROCESSING: " );
+    Display( NUMBER_NODES_BEFORE_POST_PROCESSING );
+    Display( "NUMBER_NODES_AFTER_POST_PROCESSING: " );
+    Display( NUMBER_NODES_AFTER_POST_PROCESSING );
     
     current_string := Concatenation(
         "    \n",

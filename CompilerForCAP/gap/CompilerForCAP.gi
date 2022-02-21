@@ -4,6 +4,10 @@
 # Implementations
 #
 
+NUMBER_NODES_BEFORE_POST_PROCESSING := 0;
+NUMBER_NODES_AFTER_POST_PROCESSING := 0;
+IN_HERE := false;
+
 InstallGlobalFunction( StopCompilationAtCategory, function ( category )
     
     Assert( 0, IsCapCategory( category ) );
@@ -190,16 +194,30 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         
     od;
     
+    tree := CapJitInlinedArguments( tree );
+    tree := CapJitInlinedSimpleFunctionCalls( tree );
+    tree := CapJitInlinedFunctionCalls( tree );
+    tree := CapJitDroppedUnusedBindings( tree );
+    tree := CapJitAppliedLogicTemplates( tree );
+    tree := CapJitInlinedBindings( tree );
+    tree := CapJitDeduplicatedExpressions( tree );
+    
+    IN_HERE := true;
+    tree := CapJitAppliedLogicTemplates( tree );
+    IN_HERE := false;
+    
+    #tree := CapJitInlinedBindings( tree );
+    
     # rule phase
     rule_phase_functions := [
-        CapJitInferredDataTypes,
-        CapJitAppliedLogic,
-        CapJitDroppedHandledEdgeCases,
-        CapJitInlinedArguments,
-        CapJitInlinedSimpleFunctionCalls,
-        CapJitInlinedFunctionCalls,
-        CapJitDroppedUnusedBindings,
-        CapJitInlinedBindings,
+        #CapJitInferredDataTypes,
+        #CapJitAppliedLogicTemplates,
+        #CapJitDroppedHandledEdgeCases,
+        #CapJitInlinedArguments,
+        #CapJitInlinedSimpleFunctionCalls,
+        #CapJitInlinedFunctionCalls,
+        #CapJitDroppedUnusedBindings,
+        #CapJitInlinedBindings,
     ];
     
     orig_tree := rec( );
@@ -265,6 +283,17 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         
     od;
     
+    pre_func := function ( tree, additional_arguments )
+        
+        NUMBER_NODES_BEFORE_POST_PROCESSING := NUMBER_NODES_BEFORE_POST_PROCESSING + 1;
+        
+        return tree;
+        
+    end;
+    
+    CapJitIterateOverTree( tree, pre_func, ReturnFail, ReturnTrue, true );
+    
+    
     # post-processing
     
     #if not recursive_call then
@@ -308,6 +337,16 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
     #if not recursive_call then
         StopTimer( "post_processing" );
     #fi;
+    
+    pre_func := function ( tree, additional_arguments )
+        
+        NUMBER_NODES_AFTER_POST_PROCESSING := NUMBER_NODES_AFTER_POST_PROCESSING + 1;
+        
+        return tree;
+        
+    end;
+    
+    CapJitIterateOverTree( tree, pre_func, ReturnFail, ReturnTrue, true );
     
     if debug then
         
