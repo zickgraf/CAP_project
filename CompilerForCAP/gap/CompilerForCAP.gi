@@ -34,7 +34,7 @@ InstallGlobalFunction( CapJitCompiledFunction, function ( func, args... )
 end );
 
 InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( func, args... )
-  local debug, debug_idempotence, category_as_first_argument, category, type_signature, tree, resolving_phase_functions, orig_tree, compiled_func, tmp, rule_phase_functions, f;
+  local debug, debug_idempotence, category_as_first_argument, category, type_signature, tree, resolving_phase_functions, orig_tree, compiled_func, tmp, rule_phase_functions, pre_func, f;
     
     Info( InfoCapJit, 1, "####" );
     Info( InfoCapJit, 1, "Start compilation." );
@@ -116,6 +116,8 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         CapJitResolvedGlobalVariables,
     ];
     
+    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
     orig_tree := rec( );
     while tree <> orig_tree do
         
@@ -145,6 +147,8 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
             
             tree := f( tree );
             
+            Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+            
             if debug_idempotence then
                 
                 # COVERAGE_IGNORE_BLOCK_START
@@ -165,16 +169,22 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         
     od;
     
+    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
+    tree := CapJitDeduplicatedExpressions( tree );
+    
+    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
     # rule phase
     rule_phase_functions := [
         CapJitInferredDataTypes,
+        CapJitInlinedBindings,
         CapJitAppliedLogic,
         CapJitDroppedHandledEdgeCases,
         CapJitInlinedArguments,
         CapJitInlinedSimpleFunctionCalls,
         CapJitInlinedFunctionCalls,
         CapJitDroppedUnusedBindings,
-        CapJitInlinedBindings,
     ];
     
     orig_tree := rec( );
@@ -206,6 +216,8 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
             
             tree := f( tree );
             
+            Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+            
             if debug_idempotence then
                 
                 # COVERAGE_IGNORE_BLOCK_START
@@ -224,9 +236,22 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
             
         od;
         
+        pre_func := function ( tree, additional_arguments )
+            
+            Unbind( tree.resolved_value );
+            
+            return tree;
+            
+        end;
+        
+        CapJitIterateOverTree( tree, pre_func, ReturnFail, ReturnTrue, true );
+        
     od;
     
     # post-processing
+    
+    tree := CapJitInlinedBindingsActually( tree );
+    tree := CapJitDroppedUnusedBindings( tree );
     
     if category_as_first_argument then
         
@@ -273,6 +298,8 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         # COVERAGE_IGNORE_BLOCK_END
         
     fi;
+    
+    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
     
     Info( InfoCapJit, 1, "####" );
     Info( InfoCapJit, 1, "Compilation finished." );

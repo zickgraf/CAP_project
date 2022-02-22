@@ -3,6 +3,18 @@
 #
 # Implementations
 #
+BindGlobal( "ResolvedValue", function ( tree )
+    
+    if tree.type = "EXPR_REF_FVAR" and IsBound( tree.resolved_value ) then
+        
+        return tree.resolved_value;
+        
+    fi;
+    
+    return tree;
+    
+end );
+
 BindGlobal( "CAP_JIT_LOGIC_FUNCTIONS", [ ] );
 
 InstallGlobalFunction( CapJitAddLogicFunction, function ( func )
@@ -32,9 +44,13 @@ InstallGlobalFunction( CapJitAppliedLogic, function ( tree )
         
         tree := logic_function( tree );
         
+        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+        
     od;
     
     tree := CapJitAppliedLogicTemplates( tree );
+    
+    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
     
     return tree;
     
@@ -82,9 +98,9 @@ CapJitAddLogicFunction( function ( tree )
     pre_func := function ( tree, additional_arguments )
       local args;
         
-        if CapJitIsCallToGlobalFunction( tree, "[]" ) and tree.args.1.type = "EXPR_LIST" and tree.args.2.type = "EXPR_INT" then
+        if CapJitIsCallToGlobalFunction( tree, "[]" ) and ResolvedValue( tree.args.1 ).type = "EXPR_LIST" and ResolvedValue( tree.args.2 ).type = "EXPR_INT" then
             
-            return tree.args.1.list.(tree.args.2.value);
+            return CapJitCopyWithNewFunctionIDs( ResolvedValue( tree.args.1 ).list.(ResolvedValue( tree.args.2 ).value) );
             
         fi;
         
@@ -98,7 +114,9 @@ end );
 
 # a = b?
 CapJitAddLogicFunction( function ( tree )
-  local pre_func;
+  local orig_tree, pre_func;
+  
+    orig_tree := tree;
     
     Info( InfoCapJit, 1, "####" );
     Info( InfoCapJit, 1, "Apply logic for equality." );
@@ -106,14 +124,21 @@ CapJitAddLogicFunction( function ( tree )
     pre_func := function ( tree, additional_arguments )
       local args;
         
-        if tree.type = "EXPR_EQ" and tree.left.type = tree.right.type then
+        if tree.type = "EXPR_EQ" and ResolvedValue( tree.left ).type = ResolvedValue( tree.right ).type then
             
-            if CapJitIsEqualForEnhancedSyntaxTrees( tree.left, tree.right ) then
+            if CapJitIsCallToGlobalFunction( tree.left, "Dimension" ) and tree.left.args.1.type = "EXPR_REF_FVAR" and tree.left.args.1.name = "inline_43_deduped_3" then #.type = "EXPR_REF_FVAR" then #and tree.left.name = "deduped_2" then
+                
+                Display( ENHANCED_SYNTAX_TREE_CODE( orig_tree ) );
+                Error("asd");
+                
+            fi;
+                
+            if CapJitIsEqualForEnhancedSyntaxTrees( ResolvedValue( tree.left ), ResolvedValue( tree.right ) ) then
                 
                 return rec( type := "EXPR_TRUE" );
                 
             # for integers, strings, and chars we can also decide inequality
-            elif tree.left.type = "EXPR_INT" or tree.left.type = "EXPR_STRING" or tree.left.type = "EXPR_CHAR" then
+            elif ResolvedValue( tree.left ).type = "EXPR_INT" or ResolvedValue( tree.left ).type = "EXPR_STRING" or ResolvedValue( tree.left ).type = "EXPR_CHAR" then
                 
                 return rec( type := "EXPR_FALSE" );
                 
@@ -260,19 +285,19 @@ CapJitAddLogicFunction( function ( tree )
             
             args := tree.args;
             
-            if args.length = 2 and args.1.type = "EXPR_LIST" then
+            if args.length = 2 and ResolvedValue( args.1 ).type = "EXPR_LIST" then
                 
-                return rec(
+                return CapJitCopyWithNewFunctionIDs( rec(
                     type := "EXPR_LIST",
                     list := List(
-                        args.1.list,
+                        ResolvedValue( args.1 ).list,
                         entry -> rec(
                             type := "EXPR_FUNCCALL",
                             funcref := CapJitCopyWithNewFunctionIDs( args.2 ),
                             args := AsSyntaxTreeList( [ entry ] ),
                         )
                     ),
-                );
+                ) );
                 
             fi;
             
@@ -346,6 +371,13 @@ CapJitAddLogicFunction( function ( tree )
             
             object := args.1;
             
+            if object.type = "EXPR_REF_FVAR" and IsBound( object.resolved_value ) then
+                
+                object := object.resolved_value;
+                
+            fi;
+        
+            
             list := fail;
             
             if CapJitIsCallToGlobalFunction( object, "ObjectifyObjectForCAPWithAttributes" ) then
@@ -353,7 +385,7 @@ CapJitAddLogicFunction( function ( tree )
                 # special case
                 if attribute_name = "CapCategory" then
                     
-                    return object.args.2;
+                    return CapJitCopyWithNewFunctionIDs( object.args.2 );
                     
                 fi;
                 
@@ -366,15 +398,15 @@ CapJitAddLogicFunction( function ( tree )
                 # special cases
                 if attribute_name = "CapCategory" then
                     
-                    return object.args.2;
+                    return CapJitCopyWithNewFunctionIDs( object.args.2 );
                     
                 elif attribute_name = "Source" then
                     
-                    return object.args.3;
+                    return CapJitCopyWithNewFunctionIDs( object.args.3 );
                     
                 elif attribute_name = "Range" then
                     
-                    return object.args.4;
+                    return CapJitCopyWithNewFunctionIDs( object.args.4 );
                     
                 fi;
                 
@@ -390,7 +422,7 @@ CapJitAddLogicFunction( function ( tree )
                     
                     Assert( 0, IsBound( list.(pos + 1) ) );
                     
-                    return list.(pos + 1);
+                    return CapJitCopyWithNewFunctionIDs( list.(pos + 1) );
                     
                 fi;
                 
@@ -438,22 +470,22 @@ CapJitAddLogicFunction( function ( tree )
     
     pre_func := function ( tree, additional_arguments )
         
-        if tree.type = "EXPR_FUNCCALL" and tree.args.length = 1 and tree.args.1.type = "EXPR_CASE" then
+        if tree.type = "EXPR_FUNCCALL" and tree.args.length = 1 and ResolvedValue( tree.args.1 ).type = "EXPR_CASE" then
             
-            return rec(
+            return CapJitCopyWithNewFunctionIDs( rec(
                 type := "EXPR_CASE",
-                branches := List( tree.args.1.branches, branch -> rec(
+                branches := List( ResolvedValue( tree.args.1 ).branches, branch -> rec(
                     type := "CASE_BRANCH",
                     condition := branch.condition,
                     value := rec(
                         type := "EXPR_FUNCCALL",
-                        funcref := CapJitCopyWithNewFunctionIDs( tree.funcref ),
+                        funcref := tree.funcref,
                         args := AsSyntaxTreeList( [
                             branch.value
                         ] ),
                     ),
                 ) ),
-            );
+            ) );
             
         fi;
         

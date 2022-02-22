@@ -318,7 +318,7 @@ CapJitAddLogicTemplate(
     )
 );
 
-InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( tree, template_tree, variable_filters, debug )
+InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( tree, template_tree, variable_filters, collect_func_id_replacements, debug )
   local i, variables, func_id_replacements, pre_func, result_func, additional_arguments_func, result;
     
     # bail out early if type mismatches
@@ -329,49 +329,61 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
     fi;
     
     # after inlining, most syntax tree nodes are of type EXPR_FUNCCALL -> we can bail out early for some frequent conditions (i.e. check the type of funcref and args)
-    if template_tree.type = "EXPR_FUNCCALL" then
-        
-        # by the check above, tree.type = template_tree.type = "EXPR_FUNCCALL"
-        
-        if template_tree.funcref.type <> "SYNTAX_TREE_VARIABLE" then
-            
-            if tree.funcref.type <> template_tree.funcref.type then
-                
-                return fail;
-                
-            fi;
-            
-            if template_tree.funcref.type = "EXPR_REF_GVAR" and not IsIdenticalObj( ValueGlobal( tree.funcref.gvar ), ValueGlobal( template_tree.funcref.gvar ) ) then
-                
-                return fail;
-                
-            fi;
-            
-        fi;
-        
-        if tree.args.length <> template_tree.args.length then
-            
-            return fail;
-            
-        fi;
-        
-        for i in [ 1 .. template_tree.args.length ] do
-            
-            if template_tree.args.(i).type <> "SYNTAX_TREE_VARIABLE" and tree.args.(i).type <> template_tree.args.(i).type then
-                
-                return fail;
-                
-            fi;
-            
-        od;
-        
-    fi;
+    #if template_tree.type = "EXPR_FUNCCALL" then
+    #    
+    #    # by the check above, tree.type = template_tree.type = "EXPR_FUNCCALL"
+    #    
+    #    if template_tree.funcref.type <> "SYNTAX_TREE_VARIABLE" then
+    #        
+    #        if tree.funcref.type <> template_tree.funcref.type then
+    #            
+    #            return fail;
+    #            
+    #        fi;
+    #        
+    #        if template_tree.funcref.type = "EXPR_REF_GVAR" and not IsIdenticalObj( ValueGlobal( tree.funcref.gvar ), ValueGlobal( template_tree.funcref.gvar ) ) then
+    #            
+    #            return fail;
+    #            
+    #        fi;
+    #        
+    #    fi;
+    #    
+    #    if tree.args.length <> template_tree.args.length then
+    #        
+    #        return fail;
+    #        
+    #    fi;
+    #    
+    #    for i in [ 1 .. template_tree.args.length ] do
+    #        
+    #        if template_tree.args.(i).type <> "SYNTAX_TREE_VARIABLE" and tree.args.(i).type <> template_tree.args.(i).type then
+    #            
+    #            return fail;
+    #            
+    #        fi;
+    #        
+    #    od;
+    #    
+    #fi;
     
     variables := [ ];
     func_id_replacements := rec( );
     
     pre_func := function ( template_tree, tree )
       local new_template_tree;
+        
+        if template_tree.type = "EXPR_REF_FVAR" and IsBound( template_tree.resolved_value ) then
+            
+            template_tree := template_tree.resolved_value;
+            
+        fi;
+        
+        if tree.type = "EXPR_REF_FVAR" and IsBound( tree.resolved_value ) then
+            
+            tree := tree.resolved_value;
+            
+        fi;
         
         if template_tree.type <> "SYNTAX_TREE_VARIABLE" and tree.type <> template_tree.type then
             
@@ -392,13 +404,17 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
             # b) there are no local variables (i.e. only a single return statement), but the argument names might differ
             if template_tree.narg = tree.narg and template_tree.variadic = tree.variadic and ((template_tree.nams = tree.nams and template_tree.bindings.names = tree.bindings.names) or (Length( template_tree.nams ) = template_tree.narg + 1 and Length( tree.nams ) = tree.narg + 1 )) then
                 
-                Assert( 0, not IsBound( func_id_replacements.(template_tree.id) ) );
-                
-                # map from template function to actual function
-                func_id_replacements.(template_tree.id) := rec(
-                    func_id := tree.id,
-                    nams := tree.nams,
-                );
+                if collect_func_id_replacements then
+                    
+                    Assert( 0, not IsBound( func_id_replacements.(template_tree.id) ) );
+                    
+                    # map from template function to actual function
+                    func_id_replacements.(template_tree.id) := rec(
+                        func_id := tree.id,
+                        nams := tree.nams,
+                    );
+                    
+                fi;
                 
                 template_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( template_tree, tree.id, tree.nams );
                 
@@ -416,6 +432,18 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
     
     result_func := function ( template_tree, result, keys, tree )
       local var_number, filter, key;
+        
+        if template_tree.type = "EXPR_REF_FVAR" and IsBound( template_tree.resolved_value ) then
+            
+            template_tree := template_tree.resolved_value;
+            
+        fi;
+        
+        if tree.type = "EXPR_REF_FVAR" and IsBound( tree.resolved_value ) then
+            
+            tree := tree.resolved_value;
+            
+        fi;
         
         if debug then
             # COVERAGE_IGNORE_BLOCK_START
@@ -493,7 +521,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
             fi;
             
             # ignore these keys
-            if key = "data_type" or key = "CAP_JIT_NOT_RESOLVABLE" then
+            if key = "data_type" or key = "CAP_JIT_NOT_RESOLVABLE" or key = "resolved_value" then
                 
                 continue;
                 
@@ -584,6 +612,12 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
     
     additional_arguments_func := function ( template_tree, key, tree )
         
+        if tree.type = "EXPR_REF_FVAR" and IsBound( tree.resolved_value ) then
+            
+            tree := tree.resolved_value;
+            
+        fi;
+        
         return tree.(key);
         
     end;
@@ -662,7 +696,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
                     
                 fi;
                 
-                matching_info := CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree, template.src_template_tree, template.variable_filters, IsBound( template.debug_path ) and template.debug_path = additional_arguments[2] );
+                matching_info := CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree, template.src_template_tree, template.variable_filters, true, IsBound( template.debug_path ) and template.debug_path = additional_arguments[2] );
                 
                 if matching_info = fail then
                     
