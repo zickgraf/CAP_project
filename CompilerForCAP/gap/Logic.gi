@@ -49,6 +49,12 @@ CapJitAddLogicFunction( function ( tree )
     
     pre_func := function ( tree, additional_arguments )
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         if tree.type = "EXPR_RANGE" and tree.first.type = "EXPR_INT" and tree.last.type = "EXPR_INT" then
             
             return rec(
@@ -82,6 +88,12 @@ CapJitAddLogicFunction( function ( tree )
     pre_func := function ( tree, additional_arguments )
       local args;
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         if CapJitIsCallToGlobalFunction( tree, "[]" ) and tree.args.1.type = "EXPR_LIST" and tree.args.2.type = "EXPR_INT" then
             
             return tree.args.1.list.(tree.args.2.value);
@@ -105,6 +117,12 @@ CapJitAddLogicFunction( function ( tree )
     
     pre_func := function ( tree, additional_arguments )
       local args;
+        
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
         
         if tree.type = "EXPR_EQ" and tree.left.type = tree.right.type then
             
@@ -139,6 +157,12 @@ CapJitAddLogicFunction( function ( tree )
     pre_func := function ( tree, additional_arguments )
       local args;
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         if CapJitIsCallToGlobalFunction( tree, "Length" ) and tree.args.length = 1 and tree.args.1.type = "EXPR_LIST" then
             
             return rec(
@@ -166,6 +190,12 @@ CapJitAddLogicFunction( function ( tree )
     
     pre_func := function ( tree, additional_arguments )
       local args;
+        
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
         
         # Concatenation with a single argument has different semantics
         # -> convert to version with multiple arguments
@@ -222,6 +252,12 @@ CapJitAddLogicFunction( function ( tree )
     pre_func := function ( tree, additional_arguments )
       local args;
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         if CapJitIsCallToGlobalFunction( tree, "CallFuncList" ) then
             
             args := tree.args;
@@ -256,6 +292,12 @@ CapJitAddLogicFunction( function ( tree )
     pre_func := function ( tree, additional_arguments )
       local args;
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         if CapJitIsCallToGlobalFunction( tree, "List" ) then
             
             args := tree.args;
@@ -268,7 +310,7 @@ CapJitAddLogicFunction( function ( tree )
                         args.1.list,
                         entry -> rec(
                             type := "EXPR_FUNCCALL",
-                            funcref := CapJitCopyWithNewFunctionIDs( args.2 ),
+                            funcref := args.2,
                             args := AsSyntaxTreeList( [ entry ] ),
                         )
                     ),
@@ -337,6 +379,12 @@ CapJitAddLogicFunction( function ( tree )
     pre_func := function ( tree, additional_arguments )
       local attribute_name, args, object, list, pos;
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         # attribute getters can also be applied to more than one argument, but we are not interested in that case
         if CapJitIsCallToGlobalFunction( tree, gvar -> IsAttribute( ValueGlobal( gvar ) ) ) and tree.args.length = 1 then
             
@@ -353,6 +401,7 @@ CapJitAddLogicFunction( function ( tree )
                 # special case
                 if attribute_name = "CapCategory" then
                     
+                    #return CapJitCopyWithNewFunctionIDs( object.args.2 );
                     return object.args.2;
                     
                 fi;
@@ -366,14 +415,17 @@ CapJitAddLogicFunction( function ( tree )
                 # special cases
                 if attribute_name = "CapCategory" then
                     
+                    #return CapJitCopyWithNewFunctionIDs( object.args.2 );
                     return object.args.2;
                     
                 elif attribute_name = "Source" then
                     
+                    #return CapJitCopyWithNewFunctionIDs( object.args.3 );
                     return object.args.3;
                     
                 elif attribute_name = "Range" then
                     
+                    #return CapJitCopyWithNewFunctionIDs( object.args.4 );
                     return object.args.4;
                     
                 fi;
@@ -390,6 +442,7 @@ CapJitAddLogicFunction( function ( tree )
                     
                     Assert( 0, IsBound( list.(pos + 1) ) );
                     
+                    #return CapJitCopyWithNewFunctionIDs( list.(pos + 1) );
                     return list.(pos + 1);
                     
                 fi;
@@ -415,6 +468,12 @@ CapJitAddLogicFunction( function ( tree )
     
     pre_func := function ( tree, additional_arguments )
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         if tree.type = "EXPR_CASE" and tree.branches.length > 0 and ForAll( tree.branches, branch -> CapJitIsEqualForEnhancedSyntaxTrees( branch.value, tree.branches.1.value ) ) then
             
             return tree.branches.1.value;
@@ -438,6 +497,12 @@ CapJitAddLogicFunction( function ( tree )
     
     pre_func := function ( tree, additional_arguments )
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         if tree.type = "EXPR_FUNCCALL" and tree.args.length = 1 and tree.args.1.type = "EXPR_CASE" then
             
             return rec(
@@ -447,7 +512,7 @@ CapJitAddLogicFunction( function ( tree )
                     condition := branch.condition,
                     value := rec(
                         type := "EXPR_FUNCCALL",
-                        funcref := CapJitCopyWithNewFunctionIDs( tree.funcref ),
+                        funcref := tree.funcref,
                         args := AsSyntaxTreeList( [
                             branch.value
                         ] ),
@@ -688,7 +753,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TELESCOPED_ITERATION, function ( tree, r
                                         gvar := "Source",
                                     ),
                                     args := AsSyntaxTreeList( [
-                                        CapJitCopyWithNewFunctionIDs( initial_value_morphism )
+                                        initial_value_morphism
                                     ] ),
                                 ),
                                 # the range
@@ -699,7 +764,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TELESCOPED_ITERATION, function ( tree, r
                                         gvar := "Range",
                                     ),
                                     args := AsSyntaxTreeList( [
-                                        CapJitCopyWithNewFunctionIDs( initial_value_morphism )
+                                        initial_value_morphism
                                     ] ),
                                 ),
                                 # the attribute
@@ -874,6 +939,12 @@ CapJitAddLogicFunction( function ( tree )
     pre_func := function ( tree, additional_arguments )
       local args, predicate, func, initial_value, return_obj, cat, attribute_name, variable_references_paths, new_func, parent, new_predicate, new_initial_value, new_tree, path;
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         if CapJitIsCallToGlobalFunction( tree, "CapFixpoint" ) then
             
             args := tree.args;
@@ -906,6 +977,12 @@ CapJitAddLogicFunction( function ( tree )
     pre_func := function ( tree, additional_arguments )
       local args, list, func, return_obj, cat, attribute_name, variable_references_paths, new_func, parent, new_list, new_tree, path, i;
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         if CapJitIsCallToGlobalFunction( tree, "Iterated" ) then
             
             args := tree.args;
@@ -925,7 +1002,7 @@ CapJitAddLogicFunction( function ( tree )
                     
                     new_tree := rec(
                         type := "EXPR_FUNCCALL",
-                        funcref := CapJitCopyWithNewFunctionIDs( func ),
+                        funcref := func,
                         args := AsSyntaxTreeList( [
                             new_tree,
                             list.list.(i)

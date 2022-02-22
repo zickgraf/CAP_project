@@ -318,7 +318,7 @@ CapJitAddLogicTemplate(
     )
 );
 
-InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( tree, template_tree, variable_filters, debug )
+InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( tree, template_tree, variable_filters, collect_func_id_replacements, debug )
   local i, variables, func_id_replacements, pre_func, result_func, additional_arguments_func, result;
     
     # bail out early if type mismatches
@@ -392,13 +392,17 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
             # b) there are no local variables (i.e. only a single return statement), but the argument names might differ
             if template_tree.narg = tree.narg and template_tree.variadic = tree.variadic and ((template_tree.nams = tree.nams and template_tree.bindings.names = tree.bindings.names) or (Length( template_tree.nams ) = template_tree.narg + 1 and Length( tree.nams ) = tree.narg + 1 )) then
                 
-                Assert( 0, not IsBound( func_id_replacements.(template_tree.id) ) );
-                
-                # map from template function to actual function
-                func_id_replacements.(template_tree.id) := rec(
-                    func_id := tree.id,
-                    nams := tree.nams,
-                );
+                if collect_func_id_replacements then
+                    
+                    Assert( 0, not IsBound( func_id_replacements.(template_tree.id) ) );
+                    
+                    # map from template function to actual function
+                    func_id_replacements.(template_tree.id) := rec(
+                        func_id := tree.id,
+                        nams := tree.nams,
+                    );
+                    
+                fi;
                 
                 template_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( template_tree, tree.id, tree.nams );
                 
@@ -493,7 +497,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
             fi;
             
             # ignore these keys
-            if key = "data_type" or key = "CAP_JIT_NOT_RESOLVABLE" then
+            if key = "data_type" or key = "CAP_JIT_NOT_RESOLVABLE" or key = "original_ref_fvar" then
                 
                 continue;
                 
@@ -643,6 +647,12 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
     pre_func := function ( tree, additional_arguments )
       local func_id_stack, matching_info, variables, func_id_replacements, well_defined, pre_func, result_func, additional_arguments_func, dst_tree, template;
         
+        if IsBound( tree.original_ref_fvar ) then
+            
+            return fail;
+            
+        fi;
+        
         func_id_stack := additional_arguments[1];
         # path = additional_arguments[2] is only needed for debugging and only available if path debugging is enabled
         
@@ -662,7 +672,9 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
                     
                 fi;
                 
-                matching_info := CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree, template.src_template_tree, template.variable_filters, IsBound( template.debug_path ) and template.debug_path = additional_arguments[2] );
+                StartTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
+                matching_info := CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree, template.src_template_tree, template.variable_filters, true, IsBound( template.debug_path ) and template.debug_path = additional_arguments[2] );
+                StopTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
                 
                 if matching_info = fail then
                     
@@ -783,7 +795,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
                     # make sure we have new function IDs
                     # Functions from src_template_tree can appear multiple times in dst_template_tree, so in dst_template_tree the same function ID can occur multiple times.
                     # Since we require function IDs to be unique in a tree except in this special case, we now have to create a copy with new IDs.
-                    tree := CapJitCopyWithNewFunctionIDs( dst_tree );
+                    #tree := CapJitCopyWithNewFunctionIDs( dst_tree );
+                    tree := dst_tree;
                     
                     continue;
                     

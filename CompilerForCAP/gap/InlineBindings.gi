@@ -3,218 +3,59 @@
 #
 # Implementations
 #
-
-# helper
-InstallGlobalFunction( "CAP_JIT_INTERNAL_RESOLVE_EXPR_REF_FVAR_RECURSIVELY", function ( tree, func_stack )
-  local func, pos;
-    
-    while tree.type = "EXPR_REF_FVAR" do
-        
-        func := First( func_stack, func -> func.id = tree.func_id );
-        Assert( 0, func <> fail );
-        
-        pos := Position( func.nams, tree.name );
-        
-        Assert( 0, pos <> fail );
-        
-        # the fvar might be an argument, which has no binding
-        if pos <= func.narg then
-            
-            break;
-            
-        fi;
-        
-        tree := CapJitValueOfBinding( func.bindings, tree.name );
-        
-    od;
-    
-    return tree;
-    
-end );
-
 InstallGlobalFunction( CapJitInlinedBindings, function ( tree )
-  local inline_var_refs_only, pre_func, result_func, additional_arguments_func;
+  local inline_var_refs_only, actually_inline, pre_func, additional_arguments_func;
     
     inline_var_refs_only := ValueOption( "inline_var_refs_only" ) = true;
+    actually_inline := ValueOption( "actually_inline" ) = true;
+    
+    #tree := StructuralCopy( tree );
     
     pre_func := function ( tree, func_stack )
-      local new_bindings, value, orig_tree, funccall_stack, funccall, pos, name;
+      local func, value;
         
-        # drop bindings which will be inlined anyway
-        # func_stack still references the original functions with unmodified bindings
-        if tree.type = "FVAR_BINDING_SEQ" then
-            
-            # check that tree.names and the record entries are in sync
-            # otherwise we might "lose" bindings unexpectedly
-            Assert( 0, IsSortedList( tree.names ) );
-            Assert( 0, SortedList( Filtered( RecNames( tree ), name -> StartsWith( name, "BINDING_" ) ) ) = List( tree.names, name -> Concatenation( "BINDING_", name ) ) );
-            
-            new_bindings := rec(
-                type := "FVAR_BINDING_SEQ",
-                names := [ ],
-            );
-            
-            for name in tree.names do
-                
-                value := CAP_JIT_INTERNAL_RESOLVE_EXPR_REF_FVAR_RECURSIVELY( CapJitValueOfBinding( tree, name ), func_stack );
-                
-                # RETURN_VALUE and those not inlined below should be kept
-                if name = "RETURN_VALUE" or not (not inline_var_refs_only or value.type = "EXPR_REF_GVAR" or value.type = "EXPR_REF_FVAR") then
-                    
-                    CapJitAddBinding( new_bindings, name, CapJitValueOfBinding( tree, name ) );
-                    
-                fi;
-                
-            od;
-            
-            return new_bindings;
-            
-        fi;
-        
-        orig_tree := tree;
-        
-        tree := CAP_JIT_INTERNAL_RESOLVE_EXPR_REF_FVAR_RECURSIVELY( tree, func_stack );
-        
-        # do not try any cancellation (see below) if we should only inline references to variables
-        if inline_var_refs_only then
-            
-            if not IsIdenticalObj( orig_tree, tree ) and (tree.type = "EXPR_REF_GVAR" or tree.type = "EXPR_REF_FVAR") then
-                
-                Assert( 0, orig_tree.type = "EXPR_REF_FVAR" );
-                
-                Info( InfoCapJit, 1, "####" );
-                Info( InfoCapJit, 1, "Inline reference to binding with name ", orig_tree.name, "." );
-                
-                return CapJitCopyWithNewFunctionIDs( tree );
-                
-            else
-                
-                return orig_tree;
-                
-            fi;
-            
-        fi;
-        
-        # Try to cancel Attribute( Objectify( ... ) ) immediately for performance.
-        # Doing this would be easy in result_func but that would defeat the purpose of cancellation BEFORE inlining.
+        # iterate in case the inlined value is an EXPR_REF_FVAR again
         while true do
             
-            funccall_stack := [ ];
-            
-            value := tree;
-            
-            while CapJitIsCallToGlobalFunction( value, gvar -> IsAttribute( ValueGlobal( gvar ) ) ) and value.args.length = 1 do
+            if tree.type = "EXPR_REF_FVAR" then
                 
-                Add( funccall_stack, value );
+                func := First( func_stack, func -> func.id = tree.func_id );
+                Assert( 0, func <> fail );
                 
-                value := CAP_JIT_INTERNAL_RESOLVE_EXPR_REF_FVAR_RECURSIVELY( value.args.1, func_stack );
-                
-            od;
-            
-            while Length( funccall_stack ) > 0 and CapJitIsCallToGlobalFunction( value, gvar -> gvar = "ObjectifyObjectForCAPWithAttributes" or gvar = "ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes" ) do
-                
-                funccall := Remove( funccall_stack );
-                
-                if funccall.funcref.gvar = "CapCategory" then
+                # the fvar might be an argument, which has no binding
+                if Position( func.nams, tree.name ) > func.narg then
                     
-                    pos := 2;
+                    value := CapJitValueOfBinding( func.bindings, tree.name );
                     
-                elif funccall.funcref.gvar = "Source" then
-                    
-                    Assert( 0, value.funcref.gvar = "ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes" );
-                    
-                    pos := 3;
-                    
-                elif funccall.funcref.gvar = "Range" then
-                    
-                    Assert( 0, value.funcref.gvar = "ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes" );
-                    
-                    pos := 4;
-                    
-                else
-                    
-                    pos := PositionProperty( value.args, a -> a.type = "EXPR_REF_GVAR" and IsIdenticalObj( ValueGlobal( a.gvar ), ValueGlobal( funccall.funcref.gvar ) ) );
-                    
-                    if pos = fail then
+                    if actually_inline or value.type = "EXPR_REF_GVAR" or value.type = "EXPR_REF_FVAR" then
                         
-                        # COVERAGE_IGNORE_NEXT_LINE
-                        Error( "Could not find attribute" );
+                        Info( InfoCapJit, 1, "####" );
+                        Info( InfoCapJit, 1, "Inline binding with name ", tree.name, "." );
+                        
+                        tree := CapJitCopyWithNewFunctionIDs( value );
+                        continue;
+                        
+                    elif not inline_var_refs_only then
+                        
+                        #Display( Concatenation( "Inline binding with name ", tree.name, "." ) );
+                        tree.resolved_value := value;
                         
                     fi;
                     
-                    pos := pos + 1;
-                    
-                fi;
-                
-                Assert( 0, pos <= value.args.length );
-                
-                Info( InfoCapJit, 1, "####" );
-                Info( InfoCapJit, 1, "Cancel ", value.funcref.gvar, " during inlining." );
-                
-                value := CAP_JIT_INTERNAL_RESOLVE_EXPR_REF_FVAR_RECURSIVELY( value.args.(pos), func_stack );
-                
-            od;
-            
-            if Length( funccall_stack ) = 0 and not IsIdenticalObj( tree, value ) then
-                
-                tree := value;
-                
-                # value might again be a function call of an attribute -> iterate from the beginning
-                continue;
-                
-            else
-                
-                if IsIdenticalObj( orig_tree, tree ) then
-                    
-                    return orig_tree;
-                    
-                else
-                    
-                    return CapJitCopyWithNewFunctionIDs( tree );
-                    
                 fi;
                 
             fi;
             
-        od;
-        
-    end;
-    
-    result_func := function ( tree, result, keys, func_stack )
-      local new_nams, name, value, key, i;
-        
-        tree := ShallowCopy( tree );
-        
-        for key in keys do
+            #if not IsBound( tree.resolved_value ) then
+            #    
+            #    tree := ShallowCopy( tree );
+            #    tree.resolved_value := tree;
+            #    
+            #fi;
             
-            tree.(key) := result.(key);
+            return tree;
             
         od;
-        
-        # drop names of bindings which have been inlined
-        if tree.type = "EXPR_DECLARATIVE_FUNC" then
-            
-            new_nams := [ ];
-            
-            for i in [ 1 .. Length( tree.nams ) ] do
-                
-                name := tree.nams[i];
-                
-                if i <= tree.narg or name in tree.bindings.names then
-                    
-                    Add( new_nams, name );
-                    
-                fi;
-                
-            od;
-            
-            Assert( 0, "RETURN_VALUE" in new_nams );
-            
-            tree.nams := new_nams;
-            
-        fi;
-        
-        return tree;
         
     end;
     
@@ -232,7 +73,7 @@ InstallGlobalFunction( CapJitInlinedBindings, function ( tree )
         
     end;
     
-    return CapJitIterateOverTree( tree, pre_func, result_func, additional_arguments_func, [ ] );
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, additional_arguments_func, [ ] );
     
 end );
 
@@ -241,3 +82,198 @@ InstallGlobalFunction( CapJitInlinedBindingsToVariableReferences, function ( tre
     return CapJitInlinedBindings( tree : inline_var_refs_only := true );
     
 end );
+
+BindGlobal( "CapJitInlinedBindingsActually", function ( tree )
+    
+    return CapJitInlinedBindings( tree : actually_inline := true );
+    
+end );
+
+BindGlobal( "CapJitTransparentBindings", function ( tree )
+    
+    return CAP_JIT_TRANSPARENT_BINDINGS( tree, [ ] );
+    
+end );
+
+BindGlobal( "CAP_JIT_TRANSPARENT_BINDINGS", function ( tree, func_stack )
+  local pre_func, result_func;
+    
+    pre_func := function ( tree, additional_arguments )
+        
+        if tree.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            # manual iteration in result_func
+            return fail;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    result_func := function ( tree, result, keys, additional_arguments )
+      local value, func_pos, func, pos, rec_name, name, key;
+        
+        tree := ShallowCopy( tree );
+        
+        if tree.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            tree.bindings := ShallowCopy( tree.bindings );
+            
+            tree.bindings.transparent_names := [ ];
+            
+            # try to determine data type of return value
+            # this also populates the data types of other bindings (see EXPR_REF_FVAR below)
+            tree.bindings.BINDING_RETURN_VALUE := CAP_JIT_TRANSPARENT_BINDINGS( tree.bindings.BINDING_RETURN_VALUE, Concatenation( func_stack, [ tree ] ) );
+            
+            Add( tree.bindings.transparent_names, "RETURN_VALUE" );
+            
+            #for name in tree.bindings.names do
+            #    
+            #    value := CapJitValueOfBinding( tree.bindings, name );
+            #    
+            #    if not IsBound( value.is_transparent ) then
+            #        
+            #        #Error( "there are unused bindings, please drop unused bindings first" );
+            #        
+            #    fi;
+            #    
+            #    Unbind( value.is_transparent );
+            #    
+            #od;
+            
+            if Set( tree.bindings.transparent_names ) <> tree.bindings.names then
+                
+                Error( "there are unused bindings, please drop unused bindings first" );
+                
+            fi;
+            
+            Unbind( tree.bindings.transparent_names );
+            
+            return tree;
+            
+        fi;
+        
+        if tree.type = "EXPR_REF_FVAR" then
+            
+            func_pos := PositionProperty( func_stack, func -> func.id = tree.func_id );
+            Assert( 0, func_pos <> fail );
+            
+            func := func_stack[func_pos];
+            
+            pos := Position( func.nams, tree.name );
+            
+            if pos <= func.narg then
+                
+                return tree;
+                
+            else
+                
+                value := CapJitValueOfBinding( func.bindings, tree.name );
+                
+                if not tree.name in func.bindings.transparent_names then
+                    
+                    # make value transparent
+                    value := CAP_JIT_TRANSPARENT_BINDINGS( value, func_stack{[ 1 .. func_pos ]} );
+                    
+                    rec_name := Concatenation( "BINDING_", tree.name );
+                    
+                    # inplace hack to avoid making values transparent multiple times
+                    func.bindings.(rec_name) := value;
+                    
+                    Add( func.bindings.transparent_names, tree.name );
+                    
+                fi;
+                
+                value := ShallowCopy( value );
+                value.original_ref_fvar := tree;
+                
+                return value;
+                
+            fi;
+            
+        fi;
+        
+        for key in keys do
+            
+            tree.(key) := result.(key);
+            
+        od;
+        
+        return tree;
+        
+    end;
+    
+    #additional_arguments_func := function ( tree, key, func_stack )
+    #    
+    #    if tree.type = "EXPR_DECLARATIVE_FUNC" then
+    #        
+    #        return Concatenation( func_stack, [ tree ] );
+    #        
+    #    else
+    #        
+    #        return func_stack;
+    #        
+    #    fi;
+    #    
+    #end;
+    
+    return CapJitIterateOverTree( tree, pre_func, result_func, ReturnTrue, true );
+    
+end );
+
+BindGlobal( "CapJitOpaqueBindings", function ( tree )
+  local inline_var_refs_only, actually_inline, pre_func, additional_arguments_func;
+    
+    inline_var_refs_only := ValueOption( "inline_var_refs_only" ) = true;
+    actually_inline := ValueOption( "actually_inline" ) = true;
+    
+    #tree := StructuralCopy( tree );
+    
+    pre_func := function ( tree, func_stack )
+      local keys, func, value, key;
+        
+        if IsBound( tree.original_ref_fvar ) then
+            
+            #keys := CAP_JIT_INTERNAL_ITERATION_KEYS.(tree.type);
+            #
+            #func := First( func_stack, func -> func.id = tree.original_ref_fvar.func_id );
+            #Assert( 0, func <> fail );
+            #Assert( 0, Position( func.nams, tree.original_ref_fvar.name ) > func.narg );
+            #value := CapJitValueOfBinding( func.bindings, tree.original_ref_fvar.name );
+            #
+            #for key in keys do
+            #    
+            #    #Assert( 0, IsIdenticalObj( tree.(key), value.(key) ) );
+            #    #Assert( 0, tree.(key) = value.(key) );
+            #    
+            #od;
+            
+            return tree.original_ref_fvar;
+            
+        else
+            
+            return tree;
+            
+        fi;
+        
+    end;
+    
+    #additional_arguments_func := function ( tree, key, func_stack )
+    #    
+    #    if tree.type = "EXPR_DECLARATIVE_FUNC" then
+    #        
+    #        return Concatenation( func_stack, [ tree ] );
+    #        
+    #    else
+    #        
+    #        return func_stack;
+    #        
+    #    fi;
+    #    
+    #end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end );
+

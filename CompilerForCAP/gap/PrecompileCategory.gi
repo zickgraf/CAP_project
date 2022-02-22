@@ -54,6 +54,10 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
         
     fi;
     
+    #operations := operations{[ 1 .. 141 ]};
+    #Remove( operations, Position( operations, "IsWellDefinedForMorphisms" ) );
+    #Remove( operations, Position( operations, "IsWellDefinedForObjects" ) );
+    
     diff := Difference( operations, RecNames( CAP_INTERNAL_METHOD_NAME_RECORD ) );
     
     if Length( diff ) > 0 then
@@ -198,6 +202,30 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
         output_string := Concatenation( output_string, current_string );
         
     od;
+    
+    DisplayTimer( "CapJitResolvedOperations" );
+    DisplayTimer( "CapJitInlinedArguments" );
+    DisplayTimer( "CapJitDroppedUnusedBindings" );
+    DisplayTimer( "CapJitInlinedBindingsToVariableReferences" );
+    DisplayTimer( "CapJitResolvedGlobalVariables" );
+    
+    DisplayTimer( "CapJitAppliedLogic" );
+    DisplayTimer( "CapJitDroppedHandledEdgeCases" );
+    DisplayTimer( "CapJitInlinedArguments" );
+    DisplayTimer( "CapJitInlinedSimpleFunctionCalls" );
+    DisplayTimer( "CapJitInlinedFunctionCalls" );
+    DisplayTimer( "CapJitDroppedUnusedBindings" );
+    #DisplayTimer( "CapJitInlinedBindings" );
+    DisplayTimer( "CapJitTransparentBindings" );
+    DisplayTimer( "CapJitOpaqueBindings" );
+    DisplayTimer( "CapJitInferredDataTypes" );
+    DisplayTimer( "myfunc" );
+    
+    DisplayTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
+    
+    DisplayTimer( "post1" );
+    
+    DisplayTimer( "post_processing" );
     
     current_string := Concatenation(
         "    \n",

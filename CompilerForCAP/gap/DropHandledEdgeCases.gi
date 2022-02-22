@@ -129,6 +129,7 @@ InstallGlobalFunction( CapJitDroppedHandledEdgeCases, function ( tree )
                 
                 Add( new_branches, rec(
                     type := "CASE_BRANCH",
+                    data_type := "case_branch",
                     condition := branches.(i).condition,
                     value := CapJitIterateOverTree( branches.(i).value, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true ),
                 ) );
@@ -142,6 +143,7 @@ InstallGlobalFunction( CapJitDroppedHandledEdgeCases, function ( tree )
             od;
             
             tree.branches := AsSyntaxTreeList( new_branches );
+            tree.branches.data_type := "syntax_tree_list";
             
             # normalize
             if tree.branches.length = 1 then

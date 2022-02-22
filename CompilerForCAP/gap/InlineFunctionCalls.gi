@@ -67,6 +67,16 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID, function ( tree,
             
         fi;
         
+        if IsBound( tree.original_ref_fvar ) and tree.original_ref_fvar.func_id = old_func_id then
+            
+            tree.original_ref_fvar.func_id := new_func_id;
+            
+            Assert( 0, tree.original_ref_fvar.name in old_nams );
+            
+            tree.original_ref_fvar.name := new_nams[Position( old_nams, tree.original_ref_fvar.name )];
+            
+        fi;
+        
         return tree;
         
     end;

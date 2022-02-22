@@ -31,6 +31,12 @@ end );
 InstallGlobalFunction( CapJitResultFuncCombineChildren, function ( tree, result, keys, additional_arguments )
   local key;
     
+    if result = fail then
+        
+        return tree;
+        
+    fi;
+    
     # when unenhancing an enhanced syntax tree, the "list" case can still occur
     if IsList( result ) then
         
@@ -300,11 +306,18 @@ InstallGlobalFunction( CapJitPrettyPrintFunction, function ( func )
 end );
 
 InstallGlobalFunction( CapJitCopyWithNewFunctionIDs, function ( tree )
-  local pre_func;
+  local pre_func, result_func, additional_arguments_func;
     
     tree := StructuralCopy( tree );
     
     pre_func := function ( tree, additional_arguments )
+        
+        if IsBound( tree.original_ref_fvar ) then
+            
+            Error("asd");
+            return fail;
+            
+        fi;
         
         if tree.type = "EXPR_DECLARATIVE_FUNC" then
             
@@ -317,13 +330,60 @@ InstallGlobalFunction( CapJitCopyWithNewFunctionIDs, function ( tree )
         
     end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    result_func := function ( tree, result, keys, func_stack )
+      local func, value, key;
+        
+        if result = fail then
+            
+            Assert( 0, IsBound( tree.original_ref_fvar ) );
+            
+            func := First( func_stack, func -> func.id = tree.original_ref_fvar.func_id );
+            Assert( 0, func <> fail );
+            
+            Assert( 0, Position( func.nams, tree.original_ref_fvar.name ) > func.narg );
+            
+            value := CapJitValueOfBinding( func.bindings, tree.original_ref_fvar.name );
+            
+            value := ShallowCopy( value );
+            value.original_ref_fvar := tree.original_ref_fvar;
+            
+            return value;
+            
+        fi;
+        
+        tree := ShallowCopy( tree );
+        
+        for key in keys do
+            
+            tree.(key) := result.(key);
+            
+        od;
+        
+        return tree;
+        
+    end;
+    
+    additional_arguments_func := function ( tree, key, func_stack )
+        
+        if tree.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            return Concatenation( func_stack, [ tree ] );
+            
+        else
+            
+            return func_stack;
+            
+        fi;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, result_func, additional_arguments_func, [ ] );
     
 end );
 
 InstallGlobalFunction( CapJitIsEqualForEnhancedSyntaxTrees, function ( tree1, tree2 )
     
-    return CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree1, tree2, [ ], false ) <> fail;
+    return CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree1, tree2, [ ], false, false ) <> fail;
     
 end );
 
