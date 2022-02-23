@@ -375,11 +375,20 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
         
         if template_tree.type <> "SYNTAX_TREE_VARIABLE" and tree.type <> template_tree.type then
             
+            Display( "####" );
+            Display( tree.type );
+            Display( "is not" );
+            Display( template_tree.type );
             return fail;
             
         fi;
         
         if template_tree.type = "SYNTAX_TREE_LIST" and template_tree.length <> tree.length then
+            
+            Display( "####" );
+            Display( template_tree.length );
+            Display( "is not" );
+            Display( tree.length );
             
             return fail;
             
@@ -406,7 +415,22 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
                 
                 template_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( template_tree, tree.id, tree.nams );
                 
+            elif template_tree.narg = tree.narg and template_tree.variadic = tree.variadic and collect_func_id_replacements then
+                
+                Assert( 0, not IsBound( func_id_replacements[template_tree.id] ) );
+                
+                # map from template function to actual function
+                func_id_replacements[template_tree.id] := rec(
+                    func_id := tree.id,
+                    nams := tree.nams,
+                );
+                
+                template_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( template_tree, tree.id, tree.nams{[ 1 .. Length( template_tree.nams ) ]} );
+                
             else
+                
+                Display( "#### EXPR_DECLARATIVE_FUNC did not match" );
+                #Error("qwe");
                 
                 return fail;
                 
@@ -666,9 +690,15 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
                 if IsBound( template.debug ) and template.debug then
                     
                     # COVERAGE_IGNORE_BLOCK_START
-                    Display( "try to match template:" );
-                    Display( template.src_template );
+                    #Display( "try to match template:" );
+                    #Display( template.src_template );
                     # COVERAGE_IGNORE_BLOCK_END
+                    
+                fi;
+                
+                if IsBound( template.debug_path ) and template.debug_path = additional_arguments[2] then
+                    
+                    Error("asd");
                     
                 fi;
                 
