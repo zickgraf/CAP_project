@@ -662,10 +662,11 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
                 # map from template function to actual function
                 func_id_replacements.(template_tree.id) := rec(
                     func_id := tree.id,
+                    orig_nams := template_tree.nams,
                     nams := tree.nams,
                 );
                 
-                template_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( template_tree, tree.id, tree.nams );
+                #template_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( template_tree, tree.id, tree.nams );
                 
             else
                 
@@ -680,7 +681,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
     end;
     
     result_func := function ( template_tree, result, keys, tree )
-      local var_number, filter_or_data_type, key;
+      local var_number, filter_or_data_type, replacement, key;
         
         if debug then
             # COVERAGE_IGNORE_BLOCK_START
@@ -781,6 +782,27 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
                 return CapJitIsEqualForEnhancedSyntaxTrees( variables[var_number], tree );
                 
             fi;
+            
+        fi;
+        
+        if template_tree.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            Assert( 0, tree.type = "EXPR_DECLARATIVE_FUNC" );
+            Assert( 0, IsBound( func_id_replacements[template_tree.id] ) );
+            Assert( 0, func_id_replacements[template_tree.id].func_id = tree.id );
+            
+            # the other keys are already handled in pre_func
+            return result.bindings;
+            
+        fi;
+        
+        # handle EXPR_REF_FVAR according to func_id_replacements
+        if template_tree.type = "EXPR_REF_FVAR" and IsBound( func_id_replacements[template_tree.func_id] ) then
+            
+            Assert( 0, tree.type = "EXPR_REF_FVAR" );
+            replacement := func_id_replacements[template_tree.func_id];
+            
+            return tree.func_id = replacement.func_id and tree.name = replacement.nams[Position( replacement.orig_nams, template_tree.name )];
             
         fi;
         
