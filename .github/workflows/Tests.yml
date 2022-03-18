@@ -43,10 +43,10 @@ jobs:
           [ -d "homalg_project/homalg" ] && make -C "homalg_project/homalg" doc
           [ -d "homalg_project/Modules" ] && make -C "homalg_project/Modules" doc
           [ -d "Toposes" ] && make -C "Toposes" doc
-          TERM=dumb make -C CAP_project -j $(nproc) --output-sync ci-test
-          cp ./CAP_project/.codecov.yml ./
-          (cd CAP_project && LANG=C.UTF-8 python3 process_coverage_ignored_lines.py)
-          [ "${{ matrix.image }}" = "ghcr.io/homalg-project/gap-docker-master:latest" ] && ./CAP_project/upload_codecov.sh
+          #TERM=dumb make -C CAP_project -j $(nproc) --output-sync ci-test
+          #cp ./CAP_project/.codecov.yml ./
+          #(cd CAP_project && LANG=C.UTF-8 python3 process_coverage_ignored_lines.py)
+          #[ "${{ matrix.image }}" = "ghcr.io/homalg-project/gap-docker-master:latest" ] && ./CAP_project/upload_codecov.sh
           git config --global user.name "Bot"
           git config --global user.email "empty"
           cd CAP_project
@@ -58,3 +58,5 @@ jobs:
           else \
             echo "Not making a release."; \
           fi
+          # create subsplits, starting from some recent commit
+          git subtree split --prefix=Toposes --onto=67a160ec644e31b33440d496a183d8d2720f5e0b -b Toposes-split && git push https://zickgraf:${{ secrets.YOUR_SECRET_NAME }}@github.com/zickgraf/Toposes Toposes-split:master
