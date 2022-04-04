@@ -301,9 +301,15 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
     DisplayTimer( "CapJitInlinedFunctionCalls" );
     DisplayTimer( "CapJitDroppedUnusedBindings" );
     DisplayTimer( "CapJitInlinedBindings" );
+    if IsBound( TOOLS_FOR_HOMALG_INTERNAL_TIMERS.CapJitOutlinedWrappedArguments ) then
+        DisplayTimer( "CapJitOutlinedWrappedArguments" );
+    fi;
+    if IsBound( TOOLS_FOR_HOMALG_INTERNAL_TIMERS.CapJitHoistedExpressionsOnce ) then
+        DisplayTimer( "CapJitHoistedExpressionsOnce" );
+    fi;
     DisplayTimer( "CapJitInferredDataTypes" );
     
-    DisplayTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
+    #DisplayTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
     
     DisplayTimer( "post_processing" );
     

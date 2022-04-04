@@ -386,13 +386,17 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         
     fi;
     
+    # only allow digits, uppercase letters and lowercase letters
+    sanitized_name := Filtered( NameFunction( func ), c -> (IntChar( c ) >= 48 and IntChar( c ) <= 57) or (IntChar( c ) >= 65 and IntChar( c ) <= 90) or (IntChar( c ) >= 97 and IntChar( c ) <= 122) );
+    
     orig_tree := rec( );
     while tree <> orig_tree do
         
         orig_tree := tree;
         
         #if not recursive_call then
-            Display( "rules phase" );
+            Display( "rules phase for" );
+            Display( NameFunction( func ) );
         #fi;
         
         for f in rule_phase_functions do
@@ -428,6 +432,10 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
                 # COVERAGE_IGNORE_BLOCK_END
                 
             fi;
+            
+            #WriteFileForHomalg( Concatenation( "/tmp/mygap/", String( NanosecondsSinceEpoch( ) ), "_", NameFunction( f ), "_", sanitized_name ), CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( tree ) ) );
+            #WriteFileForHomalg( Concatenation( "/tmp/mygap/", String( NanosecondsSinceEpoch( ) ), "_", NameFunction( f ), "_", sanitized_name ), tree );
+            #WriteFileForHomalg( Concatenation( "/tmp/mygap/", String( NanosecondsSinceEpoch( ) ), "_", NameFunction( f ), "_", sanitized_name, "func" ), CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( tree ) ) );
             
             if debug_idempotence then
                 
@@ -465,6 +473,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
             
         fi;
         
+        Display( "post_processing" );
+        
         #if not recursive_call then
             StartTimer( "post_processing" );
         #fi;
@@ -480,6 +490,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
             # COVERAGE_IGNORE_BLOCK_END
             
         fi;
+        
+        Display( "CapJitInlinedBindingsFully" );
         
         tree := CapJitInlinedBindingsFully( tree );
         
@@ -504,6 +516,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
                 # COVERAGE_IGNORE_BLOCK_END
                 
             fi;
+            
+            Display( "CapJitAppliedCompilerHints" );
             
             tree := CapJitAppliedCompilerHints( tree, category );
             
@@ -558,6 +572,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
                 
             fi;
             
+            Display( "CapJitHoistedExpressions" );
+            
             tree := CapJitHoistedExpressions( tree );
             
             if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 2 then
@@ -581,6 +597,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
                 # COVERAGE_IGNORE_BLOCK_END
                 
             fi;
+            
+            Display( "CapJitDeduplicatedExpressions" );
             
             tree := CapJitDeduplicatedExpressions( tree );
             
@@ -606,6 +624,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
                 
             fi;
             
+            Display( "CapJitCleanedUpHoistedAndDeduplicatedExpressions" );
+            
             tree := CapJitCleanedUpHoistedAndDeduplicatedExpressions( tree );
             
             if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 2 then
@@ -617,6 +637,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
                 # COVERAGE_IGNORE_BLOCK_END
                 
             fi;
+            
+            Display( "simplify `List( list, func )[index]`" );
             
             # Generalized loop fusion: Simplify `List( list, func )[index]` to `func( list[index] )`
             # We do not want to do this during compilation because of the following situation:
@@ -1007,6 +1029,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         
     fi;
     
+    #Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
     if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 1 then
         
         # COVERAGE_IGNORE_BLOCK_START
@@ -1018,6 +1042,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         # COVERAGE_IGNORE_BLOCK_END
         
     fi;
+    
+    Display( "Compilation finished." );
     
     Info( InfoCapJit, 1, "####" );
     Info( InfoCapJit, 1, "Compilation finished." );
