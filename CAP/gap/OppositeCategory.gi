@@ -18,6 +18,51 @@
 ##
 ##################################
 
+MorphismInOppositeCategory := function( cat, source, morphism, range )
+  local opposite_morphism;
+    
+    #% CAP_JIT_DROP_NEXT_STATEMENT
+    CAP_INTERNAL_ASSERT_IS_MORPHISM_OF_CATEGORY( morphism, OppositeCategory( cat ), [ "the morphism datum given to the morphism constructor of <cat>" ] );
+    
+    if not IsEqualForObjects( OppositeCategory( cat ), Source( morphism ), Opposite( range ) ) then
+        
+        Error( "the source of the morphism datum must be equal to <Opposite( range )>" );
+        
+    fi;
+    
+    if not IsEqualForObjects( OppositeCategory( cat ), Range( morphism ), Opposite( source ) ) then
+        
+        Error( "the range of the morphism datum must be equal to <Opposite( source )>" );
+        
+    fi;
+    
+    #% CAP_JIT_DROP_NEXT_STATEMENT
+    if HasOpposite( morphism ) then
+        
+        return Opposite( morphism );
+        
+    fi;
+    
+    opposite_morphism := CreateCapCategoryMorphismWithAttributes( cat,
+                                                                  source, range,
+                                                                  UnderlyingMorphism, morphism );
+    
+    #% CAP_JIT_DROP_NEXT_STATEMENT
+    if CapCategory( morphism )!.predicate_logic then
+        
+        #= comment for Julia
+        INSTALL_TODO_LIST_ENTRIES_FOR_OPPOSITE_MORPHISM( morphism );
+        # =#
+        
+    fi;
+    
+    #% CAP_JIT_DROP_NEXT_STATEMENT
+    SetOpposite( morphism, opposite_morphism );
+    
+    return opposite_morphism;
+    
+end;
+
 ##
 InstallMethod( Opposite,
                [ IsCapCategoryObject ],
@@ -494,59 +539,13 @@ InstallMethod( Opposite,
     AddMorphismConstructor( opposite_category, function( cat, source, morphism, range )
       local opposite_morphism;
         
-        #% CAP_JIT_DROP_NEXT_STATEMENT
-        CAP_INTERNAL_ASSERT_IS_MORPHISM_OF_CATEGORY( morphism, OppositeCategory( cat ), {} -> "the morphism datum given to the morphism constructor of <cat>" );
-        
-        if not IsEqualForObjects( OppositeCategory( cat ), Source( morphism ), Opposite( range ) ) then
-            
-            Error( "the source of the morphism datum must be equal to <Opposite( range )>" );
-            
-        fi;
-        
-        if not IsEqualForObjects( OppositeCategory( cat ), Range( morphism ), Opposite( source ) ) then
-            
-            Error( "the range of the morphism datum must be equal to <Opposite( source )>" );
-            
-        fi;
-        
-        # A category might have multiple different instances of opposite categories.
-        # Only the first instance is used for attributes (of the category and its objects and morphisms).
-        #% CAP_JIT_DROP_NEXT_STATEMENT
-        if HasOpposite( morphism ) and IsIdenticalObj( Opposite( OppositeCategory( cat ) ), cat ) then
-            
-            return Opposite( morphism );
-            
-        fi;
-        
-        opposite_morphism := CreateCapCategoryMorphismWithAttributes( cat,
-                                                                      source, range,
-                                                                      Opposite, morphism );
-        
-        #% CAP_JIT_DROP_NEXT_STATEMENT
-        if CapCategory( morphism )!.predicate_logic then
-            
-            #= comment for Julia
-            INSTALL_TODO_LIST_ENTRIES_FOR_OPPOSITE_MORPHISM( morphism );
-            # =#
-            
-        fi;
-        
-        # A category might have multiple different instances of opposite categories.
-        # Only the first instance is used for attributes (of the category and its objects and morphisms).
-        #% CAP_JIT_DROP_NEXT_STATEMENT
-        if IsIdenticalObj( Opposite( OppositeCategory( cat ) ), cat ) then
-            
-            SetOpposite( morphism, opposite_morphism );
-            
-        fi;
-        
-        return opposite_morphism;
+        return MorphismInOppositeCategory( cat, source, morphism, range );
         
     end );
     
     AddMorphismDatum( opposite_category, function( cat, opposite_morphism )
         
-        return Opposite( opposite_morphism );
+        return UnderlyingMorphism( opposite_morphism );
         
     end );
     
