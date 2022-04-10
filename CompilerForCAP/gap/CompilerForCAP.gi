@@ -593,7 +593,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_POST_PROCESSED_TREE, function ( tree, ca
             
         fi;
         
-        tree := CapJitDeduplicatedExpressions( tree );
+        #tree := CapJitDeduplicatedExpressions( tree );
         
         if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 2 then
             
@@ -1023,6 +1023,8 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_POST_PROCESSED_TREE, function ( tree, ca
         # COVERAGE_IGNORE_BLOCK_END
         
     fi;
+    
+    return tree;
     
     return tree;
     
