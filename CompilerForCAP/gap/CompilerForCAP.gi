@@ -548,7 +548,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
                 
             fi;
             
-            tree := CapJitDeduplicatedExpressions( tree );
+            #tree := CapJitDeduplicatedExpressions( tree );
             
             if CAP_JIT_INTERNAL_DEBUG_LEVEL >= 2 then
                 
@@ -1004,5 +1004,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         Error( "with_or_without_post_processing must be one of \"without_post_processing\", \"with_post_processing\" or \"with_and_without_post_processing\" but is ", with_or_without_post_processing );
         
     fi;
+    
+    return tree;
     
 end );
