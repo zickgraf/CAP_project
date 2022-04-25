@@ -214,7 +214,7 @@ InstallGlobalFunction( "CapJitPrecompileCategory", function ( category_construct
     DisplayTimer( "CapJitInlinedBindings" );
     DisplayTimer( "CapJitInferredDataTypes" );
     
-    DisplayTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
+    #DisplayTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
     
     DisplayTimer( "post_processing" );
     

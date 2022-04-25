@@ -674,9 +674,9 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
                 
             fi;
             
-            StartTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
+            #StartTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
             matching_info := CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree, template.src_template_tree, template.variable_filters, IsBound( template.debug_path ) and template.debug_path = additional_arguments[2] );
-            StopTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
+            #StopTimer( "CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE" );
             
             if matching_info = fail then
                 
