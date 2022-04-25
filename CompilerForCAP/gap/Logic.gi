@@ -28,13 +28,26 @@ end );
 InstallGlobalFunction( CapJitAppliedLogic, function ( tree )
   local logic_function;
     
+    StartTimer( "LogicFunctions" );
+    
     for logic_function in CAP_JIT_LOGIC_FUNCTIONS do
         
         tree := logic_function( tree );
         
+        #ENHANCED_SYNTAX_TREE_CODE( tree );
+        
     od;
     
+    StopTimer( "LogicFunctions" );
+    
+    
+    StartTimer( "LogicTemplates");
+    
     tree := CapJitAppliedLogicTemplates( tree );
+    
+    StopTimer( "LogicTemplates" );
+    
+    #ENHANCED_SYNTAX_TREE_CODE( tree );
     
     return tree;
     
