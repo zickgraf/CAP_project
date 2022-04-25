@@ -95,9 +95,26 @@ InstallGlobalFunction( "CapJitCompiledCAPOperationAsEnhancedSyntaxTree", functio
                 
                 return rec( filter := RangeCategoryOfHomomorphismStructure( cat )!.morphism_representation, category := RangeCategoryOfHomomorphismStructure( cat ) );
                 
+            # handle matrices of morphisms until https://github.com/homalg-project/CAP_project/issues/801 is fixed
+            elif filter = IsList and operation_name in [ "MorphismBetweenDirectSums", "MorphismBetweenDirectSumsWithGivenDirectSums", "SolveLinearSystemInAbCategory", "MereExistenceOfSolutionOfLinearSystemInAbCategory" ] then
+                
+                return rec( filter := IsList, element_type := rec( filter := IsList, element_type := rec( filter := cat!.morphism_representation, category := cat ) ) );
+                
+            elif filter = IsObject and IsMatrixCategory( cat ) and operation_name = "ObjectConstructor" then
+                
+                return rec( filter := IsInt );
+                
+            elif filter = IsObject and IsMatrixCategory( cat ) and operation_name = "MorphismConstructor" then
+                
+                return rec( filter := IsHomalgMatrix );
+                
+            elif filter = IsRingElement and IsMatrixCategory( cat ) and operation_name = "MultiplyWithElementOfCommutativeRingForMorphisms" then
+                
+                return rec( filter := IsHomalgRingElement );
+                
             else
                 
-                #Error( "unhandled filter", filter );
+                Error( "unhandled filter ", filter );
                 return fail;
                 
             fi;
@@ -134,9 +151,25 @@ InstallGlobalFunction( "CapJitCompiledCAPOperationAsEnhancedSyntaxTree", functio
             
             return_data_type := rec( filter := RangeCategoryOfHomomorphismStructure( cat )!.morphism_representation, category := RangeCategoryOfHomomorphismStructure( cat ) );
             
+        elif return_type = "bool" then
+            
+            return_data_type := rec( filter := IsBool );
+            
+        elif return_type = IsList and IsMatrixCategory( cat ) and operation_name = "CoefficientsOfMorphismWithGivenBasisOfExternalHom" then
+            
+            return_data_type := rec( filter := IsList, element_type := rec( filter := IsHomalgRingElement ) );
+            
+        elif return_type = IsObject and IsMatrixCategory( cat ) and operation_name = "ObjectDatum" then
+            
+            return_data_type := rec( filter := IsInt );
+            
+        elif return_type = IsObject and IsMatrixCategory( cat ) and operation_name = "MorphismDatum" then
+            
+            return_data_type := rec( filter := IsHomalgMatrix );
+            
         else
             
-            #Error( "unhandled return_type", return_type );
+            Error( "unhandled return_type ", return_type );
             return_data_type := fail;
             
         fi;
