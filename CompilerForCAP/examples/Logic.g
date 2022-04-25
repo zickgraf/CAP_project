@@ -88,4 +88,49 @@ Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
 #!     return [ 1, 2, 3 ];
 #! end
 
+LoadPackage( "Freyd" );
+LoadPackage( "Algebroids" );
+
+func := function( logic_new_func_x_2 )
+    return (List)(
+        right_coefficients_1,
+        function ( logic_new_func_x_6 )
+            return (
+                (List)(
+                    logic_new_func_x_6,
+                    function ( logic_new_func_x_7 )
+                        return (
+                            (List)(
+                                (ObjectList)(
+                                    (Source)(
+                                        logic_new_func_x_7
+                                    )
+                                ),
+                                function ( logic_new_func_x_8 )
+                                    return (
+                                        hoisted_1_5[(VertexIndex)(
+                                            (UnderlyingVertex)(
+                                                logic_new_func_x_8
+                                            )
+                                        )]
+                                    );
+                                end
+                            )
+                        );
+                    end
+                )
+            );
+        end
+    )[1][logic_new_func_x_2];
+end;
+
+tree := ENHANCED_SYNTAX_TREE( func );;
+tree := CapJitAppliedLogic( tree );;
+
+orig_tree := tree;
+
+tree := tree.bindings.BINDING_RETURN_VALUE.args.1;
+
+Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+
 #! @EndExample
