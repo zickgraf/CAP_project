@@ -106,7 +106,7 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE, function ( func )
     fi;
     
     pre_func := function ( tree, additional_arguments )
-      local path, func_stack, new_tree, statements, i, statement, level, pos, lvars, value, to_delete, next_statement, funccall, translation, operation_name, branch, keyvalue, case_expression;
+      local path, func_stack, new_tree, statements, i, statement, level, pos, lvars, value, to_delete, next_statement, funccall, translation, operation_name, type_func, branch, keyvalue, case_expression;
         
         path := additional_arguments[1];
         func_stack := additional_arguments[2];
@@ -548,6 +548,40 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE, function ( func )
                 od;
                 
                 tree := case_expression;
+                
+            fi;
+            
+            # handle CapTypedList
+            if CapJitIsCallToGlobalFunction( tree, "CapTypedList" ) then
+                
+                if Length( given_arguments ) = 0 or not IsCapCategory( given_arguments[1] ) then
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    Error( "a CAP category must be given when using CapTypedList" );
+                    
+                fi;
+                
+                Assert( 0, Length( tree.args ) = 2 );
+                
+                type_func := SYNTAX_TREE_CODE( tree.args[2] );
+                
+                tree := ShallowCopy( tree.args[1] );
+                tree.data_type := type_func( given_arguments[1] );
+                
+                if not (tree.data_type.filter = IsList and IsBound( tree.data_type.element_type )) then
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    Error( "the second argument of CapTypedList must return a list type" );
+                    
+                fi;
+                
+            fi;
+            
+            # check for empty lists without type
+            if tree.type = "EXPR_LIST" and Length( tree.list ) = 0 and not IsBound( tree.data_type ) then
+                
+                # COVERAGE_IGNORE_NEXT_LINE
+                Error( "Found empty list without data type. Plese use CapTypedList." );
                 
             fi;
             
@@ -1358,6 +1392,18 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE_CODE, function ( tree )
                         ),
                     ),
                 );
+                
+            fi;
+            
+            # handle data types of empty lists
+            if tree.type = "EXPR_LIST" and tree.list.length = 0 then
+                
+                if not IsBound( tree.data_type ) then
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    Error( "Compilation has produced an empty list without data type." );
+                    
+                fi;
                 
             fi;
             

@@ -492,8 +492,25 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
                 # COVERAGE_IGNORE_BLOCK_END
             fi;
             
+            if key = "data_type" then
+                
+                if IsBound( tree.data_type ) and tree.data_type <> template_tree.data_type then
+                    
+                    if debug then
+                        # COVERAGE_IGNORE_NEXT_LINE
+                        Display( "data type mismatch" );
+                    fi;
+                    
+                    return false;
+                    
+                fi;
+                
+                continue;
+                
+            fi;
+            
             # ignore these keys
-            if key = "data_type" or key = "CAP_JIT_NOT_RESOLVABLE" then
+            if key = "CAP_JIT_NOT_RESOLVABLE" then
                 
                 continue;
                 

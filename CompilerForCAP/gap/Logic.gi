@@ -66,6 +66,7 @@ CapJitAddLogicFunction( function ( tree )
             
             return rec(
                 type := "EXPR_LIST",
+                data_type := rec( filter := IsList, element_type := rec( filter := IsInt ) ),
                 list := AsSyntaxTreeList( List(
                     [ tree.first.value .. tree.last.value ],
                     int -> rec(
@@ -184,21 +185,43 @@ CapJitAddLogicFunction( function ( tree )
             args := tree.args;
             
             # Concatenation with a single argument has different semantics
-            if args.length = 1 and args.1.type = "EXPR_LIST" and ForAll( args.1.list, a -> a.type = "EXPR_LIST" ) then
+            if args.length = 1 and args.1.type = "EXPR_LIST" and ForAll( args.1.list, a -> a.type = "EXPR_LIST" ) and (not ForAll( args.1.list, a -> a.list.length = 0 ) or IsBound( args.1.data_type ) ) then
                 
-                return rec(
+                tree := rec(
                     type := "EXPR_LIST",
                     list := ConcatenationForSyntaxTreeLists( AsListMut( List( args.1.list, a -> a.list ) ) ),
                 );
                 
+                if IsBound( args.1.data_type ) then
+                    
+                    Assert( 0, args.1.data_type.filter = IsList );
+                    
+                    tree.data_type := args.1.data_type.element_type;
+                    
+                fi;
+                
             fi;
             
-            if args.length > 1 and ForAll( args, a -> a.type = "EXPR_LIST" ) then
+            if args.length > 1 and ForAll( args, a -> a.type = "EXPR_LIST" ) and (not ForAll( args, a -> a.list.length = 0 ) or IsBound( args.1.data_type )) then
                 
-                return rec(
+                tree := rec(
                     type := "EXPR_LIST",
                     list := ConcatenationForSyntaxTreeLists( AsListMut( List( args, a -> a.list ) ) ),
                 );
+                
+                # TODO check that all lists are of the same type
+                
+                if IsBound( args.1.data_type ) then
+                    
+                    tree.data_type := args.1.data_type;
+                    
+                fi;
+                
+            fi;
+            
+            if tree.type = "EXPR_LIST" and tree.list.length = 0 then
+                
+                Assert( 0, IsBound( tree.data_type ) and tree.data_type.filter = IsList );
                 
             fi;
             
@@ -260,9 +283,10 @@ CapJitAddLogicFunction( function ( tree )
             
             args := tree.args;
             
-            if args.length = 2 and args.1.type = "EXPR_LIST" then
+            if args.length = 2 and args.1.type = "EXPR_LIST" and (args.1.list.length > 0 or (IsBound( args.2.data_type ) and args.2.data_type.signature[2] <> fail)) then
+            #if args.length = 2 and args.1.type = "EXPR_LIST" and args.1.list.length > 0 then
                 
-                return rec(
+                tree := rec(
                     type := "EXPR_LIST",
                     list := List(
                         args.1.list,
@@ -274,6 +298,30 @@ CapJitAddLogicFunction( function ( tree )
                     ),
                 );
                 
+                if IsBound( args.2.data_type ) and args.2.data_type.signature[2] <> fail then
+                    
+                    tree.data_type := rec( filter := IsList, element_type := args.2.data_type.signature[2] );
+                    
+                fi;
+                
+            fi;
+            
+            if tree.type = "EXPR_LIST" and tree.list.length = 0 then
+                
+                Assert( 0, IsBound( tree.data_type ) and tree.data_type.filter = IsList );
+                
+            fi;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end );
+
             fi;
             
         fi;
@@ -875,6 +923,12 @@ CapJitAddLogicFunction( function ( tree )
             func := args.2;
             
             if list.type = "EXPR_LIST" then
+                
+                if list.list.length = 0 then
+                    
+                    return tree;
+                    
+                fi;
                 
                 Assert( 0, list.list.length > 0 );
                 

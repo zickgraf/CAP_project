@@ -362,6 +362,18 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
     
     pre_func := function ( tree, additional_arguments )
         
+        # handle data types of empty lists
+        if tree.type = "EXPR_LIST" and tree.list.length = 0 then
+            
+            if not IsBound( tree.data_type ) then
+                
+                # COVERAGE_IGNORE_NEXT_LINE
+                Error( "Compilation has produced an empty list without data type." );
+                
+            fi;
+            
+        fi;
+        
         if tree.type = "EXPR_FUNCCALL" or tree.type = "EXPR_DECLARATIVE_FUNC" then
             
             # manual iteration in result_func
@@ -462,7 +474,11 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
                     
                     tree.bindings.(rec_name) := ShallowCopy( tree.bindings.(rec_name) );
                     
-                    Unbind( tree.bindings.(rec_name).data_type );
+                    if not (tree.bindings.(rec_name).type = "EXPR_LIST" and tree.bindings.(rec_name).list.length = 0) then
+                        
+                        Unbind( tree.bindings.(rec_name).data_type );
+                        
+                    fi;
                     
                 od;
                 
@@ -637,23 +653,42 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
             
             if tree.list.length = 0 then
                 
-                #Error( "cannot infer the type of empty lists" );
-                # there might already be a data type set, but we want to avoid partial typings -> unbind
-                Unbind( tree.data_type );
-                return tree;
+                if IsBound( tree.data_type ) then
+                    
+                    data_type := tree.data_type;
+                    
+                else
+                    
+                    #data_type := rec( filter := IsList, element_type := rec( filter := UnderlyingCategory( add )!.object_representation, category := UnderlyingCategory( add ) ) );
+                    
+                    Error( "Cannot infer the type of empty lists. Please use CapTypedList." );
+                    
+                fi;
+                
+            else
+                
+                if not ForAll( tree.list, element -> element.data_type = tree.list.1.data_type ) then
+                    
+                    if false and tree.list.length = 2 then
+                        
+                        tree.list := ShallowCopy( tree.list );
+                        tree.list.1 := ShallowCopy( tree.list.1 );
+                        tree.list.1.data_type := tree.list.2.data_type;
+                        
+                    else
+                        
+                        Error( "the list is not homogeneous, this is not supported" );
+                        # there might already be a data type set, but we want to avoid partial typings -> unbind
+                        Unbind( tree.data_type );
+                        return tree;
+                        
+                    fi;
+                    
+                fi;
+                
+                data_type := rec( filter := IsList, element_type := tree.list.1.data_type );
                 
             fi;
-            
-            if not ForAll( tree.list, element -> element.data_type = tree.list.1.data_type ) then
-                
-                #Error( "the list is not homogeneous, this is not supported" );
-                # there might already be a data type set, but we want to avoid partial typings -> unbind
-                Unbind( tree.data_type );
-                return tree;
-                
-            fi;
-            
-            data_type := rec( filter := IsList, element_type := tree.list.1.data_type );
             
         elif tree.type = "EXPR_REF_GVAR" then
             
