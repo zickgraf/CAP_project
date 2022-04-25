@@ -120,6 +120,12 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         Display( "main" );
     #fi;
     
+    if not IsBound( tree.data_type ) then
+        
+        Error( "the tree does not have a data_type" );
+        
+    fi;
+    
     # resolving phase
     resolving_phase_functions := [
         CapJitResolvedOperations,
@@ -243,13 +249,17 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
                 StartTimer( NameFunction( f ) );
             #fi;
             
-            Display( NameFunction( f ) );
-            
             tree := f( tree );
             
             #if not recursive_call then
                 StopTimer( NameFunction( f ) );
             #fi;
+            
+            if not IsBound( tree.data_type ) then
+                
+                Error( "the tree has lost its data_type" );
+                
+            fi;
             
             if debug_idempotence then
                 

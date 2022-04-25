@@ -95,7 +95,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_GET_DATA_TYPE_OF_VALUE", function ( val
         
         if not ForAll( element_types, type -> type = element_type ) then
             
-            #Error( "the list is not homogeneous, this is not supported" );
+            Error( "the list is not homogeneous, this is not supported" );
             return fail;
             
         fi;
@@ -227,7 +227,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_GET_OUTPUT_TYPE_OF_GLOBAL_FUNCTION_BY_I
         
         if output_type = fail then
             
-            #Error( "could not get output_type" );
+            Error( "could not get output_type" );
             return fail;
             
         fi;
@@ -251,7 +251,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES_OF_FUNCTION_BY_ARGU
         
         if output_type = fail then
             
-            #Error( "could not get output_type" );
+            Error( "could not get output_type" );
             return fail;
             
         fi;
@@ -262,7 +262,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES_OF_FUNCTION_BY_ARGU
             
             if result = fail then
                 
-                #Error( "could not get output_type" );
+                Error( "could not get output_type" );
                 return fail;
                 
             fi;
@@ -288,7 +288,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES_OF_FUNCTION_BY_ARGU
         
         if not IsBound( func.data_type ) or func.data_type.signature[2] = fail then
             
-            #Error( "could not determine data type of return value of function" );
+            Error( "could not determine data type of return value of function" );
             return fail;
             
         fi;
@@ -297,7 +297,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES_OF_FUNCTION_BY_ARGU
         
     else
         
-        #Error( "can only handle EXPR_DECLARATIVE_FUNC and EXPR_REF_GVAR" );
+        Error( "can only handle EXPR_DECLARATIVE_FUNC and EXPR_REF_GVAR" );
         return fail;
         
     fi;
@@ -313,14 +313,14 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES_OF_FUNCTION_BY_ARGU
         
         if output_type = fail then
             
-            #Error( "could not get output_type" );
+            Error( "could not get output_type" );
             return fail;
             
         fi;
         
         if IsFunction( output_type ) then
             
-            #Error( "cannot infer parametric output type by arguments types only" );
+            Error( "cannot infer parametric output type by arguments types only" );
             return fail;
             
         fi;
@@ -341,7 +341,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES_OF_FUNCTION_BY_ARGU
         
         if not IsBound( func.data_type ) or func.data_type.signature[2] = fail then
             
-            #Error( "could not determine data type of return value of function" );
+            Error( "could not determine data type of return value of function" );
             return fail;
             
         fi;
@@ -350,7 +350,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES_OF_FUNCTION_BY_ARGU
         
     else
         
-        #Error( "can only handle EXPR_DECLARATIVE_FUNC and EXPR_REF_GVAR" );
+        Error( "can only handle EXPR_DECLARATIVE_FUNC and EXPR_REF_GVAR" );
         return fail;
         
     fi;
@@ -414,7 +414,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
             
             if ForAny( tree.args, a -> not IsBound( a.data_type ) ) then
                 
-                #Error( "could not determine data_type of all arguments" );
+                Error( "could not determine data_type of all arguments" );
                 # there might already be a data type set, but we want to avoid partial typings -> unbind
                 Unbind( tree.data_type );
                 return tree;
@@ -425,7 +425,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
             
             if result = fail then
                 
-                #Error( "could not get output_type" );
+                Error( "could not get output_type" );
                 # there might already be a data type set, but we want to avoid partial typings -> unbind
                 Unbind( tree.data_type );
                 return tree;
@@ -508,7 +508,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
                     
                 else
                     
-                    #Error( "could not determine data type of return value" );
+                    Error( "could not determine data type of return value" );
                     # there might already be a data type set, but we want to avoid partial typings -> unbind
                     Unbind( tree.data_type );
                     return tree;
@@ -517,7 +517,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
                 
             else
                 
-                #Error( "EXPR_DECLARATIVE_FUNC cannot be handled without input types" );
+                Error( "EXPR_DECLARATIVE_FUNC cannot be handled without input types" );
                 # there might already be a data type set, but we want to avoid partial typings -> unbind
                 Unbind( tree.data_type );
                 return tree;
@@ -534,7 +534,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
         
         if ForAny( keys, key -> not IsBound( result.(key).data_type ) ) then
             
-            #Error( "could not determine data_type of all children" );
+            Error( "could not determine data_type of all children" );
             # there might already be a data type set, but we want to avoid partial typings -> unbind
             Unbind( tree.data_type );
             return tree;
@@ -636,7 +636,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
             
             if not ForAll( tree.branches, branch -> branch.value.data_type = tree.branches.1.value.data_type ) then
                 
-                #Error( "the branches of the case expression are of different types, this is not supported" );
+                Error( "the branches of the case expression are of different types, this is not supported" );
                 # there might already be a data type set, but we want to avoid partial typings -> unbind
                 Unbind( tree.data_type );
                 return tree;
@@ -703,6 +703,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
                     
                 fi;
                 
+                Error("asd");
                 # there might already be a data type set, but we want to avoid partial typings -> unbind
                 Unbind( tree.data_type );
                 return tree;
@@ -718,7 +719,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
             
             if func.variadic then
                 
-                #Error( "cannot handle variadic functions yet" );
+                Error( "cannot handle variadic functions yet" );
                 # there might already be a data type set, but we want to avoid partial typings -> unbind
                 Unbind( tree.data_type );
                 return tree;
@@ -727,7 +728,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
             
             if not IsBound( func.data_type ) then
                 
-                #Error( "function does not have a data type yet" );
+                Error( "function does not have a data type yet" );
                 # there might already be a data type set, but we want to avoid partial typings -> unbind
                 Unbind( tree.data_type );
                 return tree;
@@ -764,7 +765,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
                         
                     else
                         
-                        #Error( "could not compute data type of binding" );
+                        Error( "could not compute data type of binding" );
                         # there might already be a data type set, but we want to avoid partial typings -> unbind
                         Unbind( tree.data_type );
                         return tree;
@@ -777,6 +778,7 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
             
         else
             
+            Error("asd");
             Display( Concatenation( "Cannot compute data type for syntax tree type ", tree.type, " yet." ) );
             # there might already be a data type set, but we want to avoid partial typings -> unbind
             Unbind( tree.data_type );
@@ -785,6 +787,12 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
         fi;
         
         Assert( 0, IsRecord( data_type ) );
+        
+        if IsBound( tree.data_type ) and tree.data_type.filter <> IsFunction then
+            
+            Assert( 0, tree.data_type = data_type );
+            
+        fi;
         
         tree.data_type := data_type;
         
@@ -797,6 +805,8 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES", function ( tree, 
 end );
 
 InstallGlobalFunction( CapJitInferredDataTypes, function ( tree )
+    
+    #Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
     
     return CAP_JIT_INTERNAL_INFERRED_DATA_TYPES( tree, [ ] );
     
@@ -813,7 +823,7 @@ CapJitAddTypeSignature( "CapFixpoint", [ IsFunction, IsFunction, IsObject ], fun
     
     if args.1 = fail or args.2 = fail then
         
-        #Error( "could not determine output type" );
+        Error( "could not determine output type" );
         return fail;
         
     fi;
@@ -945,7 +955,7 @@ end );
 
 CapJitAddTypeSignature( "First", [ IsList, IsObject ], function ( input_types )
     
-    #Error( "cannot express Is...OrFail yet" );
+    Error( "cannot express Is...OrFail yet" );
     return fail;
     
 end );
@@ -954,7 +964,7 @@ CapJitAddTypeSignature( "Position", [ IsList, IsObject ], function ( input_types
     
     Assert( 0, input_types[1].element_type = input_types[2] );
     
-    #Error( "cannot express IsIntOrFail yet" );
+    Error( "cannot express IsIntOrFail yet" );
     return fail;
     
 end );
@@ -990,14 +1000,14 @@ CapJitAddTypeSignature( "*", [ IsInt, IsList ], function ( input_types )
     
     if element_type = fail then
         
-        #Error( "could not determine element_type" );
+        Error( "could not determine element_type" );
         return fail;
         
     fi;
     
     if IsFunction( element_type ) then
         
-        #Error( "cannot infer parametric output type by arguments types only" );
+        Error( "cannot infer parametric output type by arguments types only" );
         return fail;
         
     fi;
@@ -1030,7 +1040,7 @@ CapJitAddTypeSignature( "List", [ IsList, IsFunction ], function ( args, func_st
     
     if args.2 = fail then
         
-        #Error( "could not determine output type" );
+        Error( "could not determine output type" );
         return fail;
         
     fi;
@@ -1047,7 +1057,7 @@ CapJitAddTypeSignature( "ForAll", [ IsList, IsFunction ], function ( args, func_
     
     if args.2 = fail then
         
-        #Error( "could not determine output type" );
+        Error( "could not determine output type" );
         return fail;
         
     fi;
@@ -1066,7 +1076,7 @@ CapJitAddTypeSignature( "ForAny", [ IsList, IsFunction ], function ( args, func_
     
     if args.2 = fail then
         
-        #Error( "could not determine output type" );
+        Error( "could not determine output type" );
         return fail;
         
     fi;
@@ -1085,7 +1095,7 @@ CapJitAddTypeSignature( "Filtered", [ IsList, IsFunction ], function ( args, fun
     
     if args.2 = fail then
         
-        #Error( "could not determine output type" );
+        Error( "could not determine output type" );
         return fail;
         
     fi;
@@ -1104,7 +1114,7 @@ CapJitAddTypeSignature( "ListN", [ IsList, IsList, IsFunction ], function ( args
     
     if args.3 = fail then
         
-        #Error( "could not determine output type" );
+        Error( "could not determine output type" );
         return fail;
         
     fi;
@@ -1121,7 +1131,7 @@ CapJitAddTypeSignature( "Sum", [ IsList, IsFunction ], function ( args, func_sta
     
     if args.2 = fail then
         
-        #Error( "could not determine output type" );
+        Error( "could not determine output type" );
         return fail;
         
     fi;
@@ -1138,7 +1148,7 @@ CapJitAddTypeSignature( "Product", [ IsList, IsFunction ], function ( args, func
     
     if args.2 = fail then
         
-        #Error( "could not determine output type" );
+        Error( "could not determine output type" );
         return fail;
         
     fi;
@@ -1155,7 +1165,7 @@ CapJitAddTypeSignature( "Iterated", [ IsList, IsFunction ], function ( args, fun
     
     if args.2 = fail then
         
-        #Error( "could not determine output type" );
+        Error( "could not determine output type" );
         return fail;
         
     fi;
