@@ -117,9 +117,19 @@ InstallMethod( AsAdelmanCategoryObject,
                [ IsCapCategoryObject ],
                
   function( object )
+    
+    return AsAdelmanCategoryObject( AdelmanCategory( CapCategory( object ) ), object );
+    
+end );
+
+##
+InstallOtherMethodForCompilerForCAP( AsAdelmanCategoryObject,
+               [ IsAdelmanCategory, IsCapCategoryObject ],
+               
+  function( cat, object )
     local proj_inj_object;
     
-    proj_inj_object := AdelmanCategoryObject( UniversalMorphismFromZeroObject( object ), UniversalMorphismIntoZeroObject( object ) );
+    proj_inj_object := AdelmanCategoryObject( cat, UniversalMorphismFromZeroObject( UnderlyingCategory( cat ), object ), UniversalMorphismIntoZeroObject( UnderlyingCategory( cat ),object ) );
     
     ## TODO: IsInjective and IsProjective
     
@@ -179,10 +189,20 @@ InstallMethod( AsAdelmanCategoryMorphism,
                
   function( morphism )
     
-    return AdelmanCategoryMorphism(
-             AsAdelmanCategoryObject( Source( morphism ) ),
+    return AsAdelmanCategoryMorphism( AdelmanCategory( CapCategory( morphism ) ), morphism );
+    
+end );
+
+##
+InstallOtherMethodForCompilerForCAP( AsAdelmanCategoryMorphism,
+               [ IsAdelmanCategory, IsCapCategoryMorphism ],
+               
+  function( cat, morphism )
+    
+    return AdelmanCategoryMorphism( cat,
+             AsAdelmanCategoryObject( cat, Source( morphism ) ),
              morphism,
-             AsAdelmanCategoryObject( Range( morphism ) )
+             AsAdelmanCategoryObject( cat, Range( morphism ) )
            );
     
 end );
@@ -230,17 +250,27 @@ InstallMethod( WitnessPairForBeingCongruentToZero,
                [ IsAdelmanCategoryMorphism ],
                
   function( morphism )
+    
+    return WitnessPairForBeingCongruentToZero( CapCategory( morphism ), morphism );
+    
+end );
+
+##
+InstallOtherMethodForCompilerForCAP( WitnessPairForBeingCongruentToZero,
+                                     [ IsAdelmanCategory, IsAdelmanCategoryMorphism ],
+               
+  function( cat, morphism )
     local datum, left_coeffs, right_coeffs;
     
     datum := UnderlyingMorphism( morphism );
     
     left_coeffs :=
-        [ [ IdentityMorphism( Source( datum ) ), CorelationMorphism( Source( morphism ) ) ] ];
+        [ [ IdentityMorphism( UnderlyingCategory( cat ), Source( datum ) ), CorelationMorphism( Source( morphism ) ) ] ];
     
     right_coeffs :=
-        [ [ RelationMorphism( Range( morphism ) ), IdentityMorphism( Range( datum ) ) ] ];
+        [ [ RelationMorphism( Range( morphism ) ), IdentityMorphism( UnderlyingCategory( cat ), Range( datum ) ) ] ];
     
-    return SolveLinearSystemInAbCategory( left_coeffs, right_coeffs, [ datum ] );
+    return SolveLinearSystemInAbCategory( UnderlyingCategory( cat ), left_coeffs, right_coeffs, [ datum ] );
     
 end );
 
@@ -637,13 +667,13 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADELMAN_CATEGORY,
       function( cat, alpha, tau )
         local witness_alpha, sigma78, sigma56, witness_test, sigma12, range_alpha, b2, datum_tau, A, B, Bp, App, sigma8, sigma6, sigma5, sigma2, sigma1;
         
-        witness_alpha := WitnessPairForBeingCongruentToZero( CokernelProjection( alpha ) );
+        witness_alpha := WitnessPairForBeingCongruentToZero( cat, CokernelProjection( cat, alpha ) );
         
         sigma78 := witness_alpha[1];
         
         sigma56 := witness_alpha[2];
         
-        witness_test := WitnessPairForBeingCongruentToZero( PreCompose( KernelEmbedding( alpha ), tau ) );
+        witness_test := WitnessPairForBeingCongruentToZero( cat, PreCompose( cat, KernelEmbedding( cat, alpha ), tau ) );
         
         sigma12 := witness_test[2];
         
@@ -661,18 +691,18 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADELMAN_CATEGORY,
         
         App := Range( CorelationMorphism( Source( alpha ) ) );
         
-        sigma8 := ComponentOfMorphismIntoDirectSum( sigma78, [ Bp, A ] , 2 );
+        sigma8 := ComponentOfMorphismIntoDirectSum( UnderlyingCategory( cat ), sigma78, [ Bp, A ] , 2 );
         
-        sigma6 := ComponentOfMorphismIntoDirectSum( sigma56, [ B, App ] , 2 );
+        sigma6 := ComponentOfMorphismIntoDirectSum( UnderlyingCategory( cat ), sigma56, [ B, App ] , 2 );
         
-        sigma5 := ComponentOfMorphismIntoDirectSum( sigma56, [ B, App ] , 1 );
+        sigma5 := ComponentOfMorphismIntoDirectSum( UnderlyingCategory( cat ), sigma56, [ B, App ] , 1 );
         
-        sigma2 := ComponentOfMorphismFromDirectSum( sigma12, [ App, B ], 2 );
+        sigma2 := ComponentOfMorphismFromDirectSum( UnderlyingCategory( cat ), sigma12, [ App, B ], 2 );
         
-        sigma1 := ComponentOfMorphismFromDirectSum( sigma12, [ App, B ], 1 );
+        sigma1 := ComponentOfMorphismFromDirectSum( UnderlyingCategory( cat ), sigma12, [ App, B ], 1 );
         
         return AdelmanCategoryMorphism( cat, range_alpha,
-                                        PreCompose( sigma8, datum_tau ) + PreCompose( [ b2, sigma6, sigma1 ] ) + PreCompose( [ b2, sigma5, sigma2 ] ),
+                                        Iterated( [ PreCompose( UnderlyingCategory( cat ), sigma8, datum_tau ), PreComposeList( UnderlyingCategory( cat ), [ b2, sigma6, sigma1 ] ), PreComposeList( UnderlyingCategory( cat ), [ b2, sigma5, sigma2 ] ) ], { a, b } -> AdditionForMorphisms( UnderlyingCategory( cat ), a, b ) ),
                                         Range( tau ) );
         
     end );
@@ -703,13 +733,13 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADELMAN_CATEGORY,
         
         kernel_object :=
             AdelmanCategoryObject( cat,
-                DirectSumFunctorial( [ a, IdentityMorphism( Bp ) ] ),
-                MorphismBetweenDirectSums( [ [ ap, alpha ], [ ZeroMorphism( Bp, App ), b ] ] )
+                DirectSumFunctorial( UnderlyingCategory( cat ), [ a, IdentityMorphism( UnderlyingCategory( cat ), Bp ) ] ),
+                MorphismBetweenDirectSums( UnderlyingCategory( cat ), [ [ ap, alpha ], [ ZeroMorphism( UnderlyingCategory( cat ), Bp, App ), b ] ] )
             );
         
         return AdelmanCategoryMorphism( cat,
             kernel_object,
-            ProjectionInFactorOfDirectSum( [ A, Bp ], 1 ),
+            ProjectionInFactorOfDirectSum( UnderlyingCategory( cat ), [ A, Bp ], 1 ),
             Source( morphism )
         );
         
@@ -721,10 +751,10 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADELMAN_CATEGORY,
       function( cat, morphism, test_object, test_morphism, kernel_object )
         local witness_pair, datum;
         
-        witness_pair := WitnessPairForBeingCongruentToZero( PreCompose( test_morphism, morphism ) );
+        witness_pair := WitnessPairForBeingCongruentToZero( cat, PreCompose( cat, test_morphism, morphism ) );
         
         datum :=
-            UniversalMorphismIntoDirectSum(
+            UniversalMorphismIntoDirectSum( UnderlyingCategory( cat ),
                 [ UnderlyingMorphism( test_morphism ), -witness_pair[1] ]
             );
         

@@ -175,7 +175,17 @@ InstallMethod( AsAdditiveClosureObject,
                
   function( object )
     
-    return AdditiveClosureObject( AdditiveClosure( CapCategory( object ) ), [ object ] );
+    return AsAdditiveClosureObject( AdditiveClosure( CapCategory( object ) ), object );
+    
+end );
+
+##
+InstallOtherMethodForCompilerForCAP( AsAdditiveClosureObject,
+               [ IsAdditiveClosureCategory, IsCapCategoryObject ],
+               
+  function( cat, object )
+    
+    return AdditiveClosureObject( cat, [ object ] );
     
 end );
 
@@ -208,10 +218,20 @@ InstallMethod( AsAdditiveClosureMorphism,
                
   function( morphism )
     
-    return AdditiveClosureMorphism(
-             AsAdditiveClosureObject( Source( morphism ) ),
+    return AsAdditiveClosureMorphism( AdditiveClosure( CapCategory( morphism ) ), morphism );
+    
+end );
+
+##
+InstallOtherMethodForCompilerForCAP( AsAdditiveClosureMorphism,
+               [ IsAdditiveClosureCategory, IsCapCategoryMorphism ],
+               
+  function( cat, morphism )
+    
+    return AdditiveClosureMorphism( cat,
+             AsAdditiveClosureObject( cat, Source( morphism ) ),
              [ [ morphism ] ],
-             AsAdditiveClosureObject( Range( morphism ) )
+             AsAdditiveClosureObject( cat, Range( morphism ) )
            );
     
 end );
