@@ -110,6 +110,43 @@ CapJitAddLogicFunction( function ( tree )
     
 end );
 
+# List( L, f )[literal_integer]
+#CapJitAddLogicFunction( function ( tree )
+#  local pre_func;
+#    
+#    Info( InfoCapJit, 1, "####" );
+#    Info( InfoCapJit, 1, "Apply logic for list elements indexed by literal integers." );
+#    
+#    pre_func := function ( tree, additional_arguments )
+#      local args;
+#        
+#        if CapJitIsCallToGlobalFunction( tree, "[]" ) and CapJitIsCallToGlobalFunction( tree.args.1, "List" ) and tree.args.1.args.length = 2 and tree.args.2.type = "EXPR_INT" then
+#            
+#            return rec(
+#                type := "EXPR_FUNCCALL",
+#                funcref := tree.args.1.args.2, # f
+#                args := AsSyntaxTreeList( [
+#                    rec(
+#                        type := "EXPR_FUNCCALL",
+#                        funcref := tree.funcref, # "[]"
+#                        args := AsSyntaxTreeList( [
+#                            tree.args.1.args.1, # L
+#                            tree.args.2 # literal_integer
+#                        ] ),
+#                    ),
+#                ] ),
+#            );
+#            
+#        fi;
+#        
+#        return tree;
+#        
+#    end;
+#    
+#    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+#    
+#end );
+
 # a = b?
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
@@ -322,6 +359,45 @@ CapJitAddLogicFunction( function ( tree )
     
 end );
 
+# UnionOfRows/ColumnsListList for literal matrices
+CapJitAddLogicFunction( function ( tree )
+  local pre_func;
+    
+    Info( InfoCapJit, 1, "####" );
+    Info( InfoCapJit, 1, "Apply logic for UnionOfRows/ColumnsListList for literal matrices." );
+    
+    pre_func := function ( tree, additional_arguments )
+      local args, list_of_matrices, result_matrix, matrix_type, i;
+        
+        if CapJitIsCallToGlobalFunction( tree, "UnionOfRowsListList" ) or CapJitIsCallToGlobalFunction( tree, "UnionOfColumnsListList" ) then
+            
+            args := tree.args;
+            
+            # check if args.1 is a literal integer and if args.2 is a literal list of literal matrices
+            if IsBound( args.2.data_type ) and args.1.type = "EXPR_INT" and args.2.type = "EXPR_LIST" and ForAll( args.2.list, mat -> mat.type = "EXPR_LIST" and ForAll( mat.list, row -> row.type = "EXPR_LIST" ) ) then
+                
+                list_of_matrices := AsListMut( List( args.2.list, mat -> AsListMut( List( mat.list, row -> AsListMut( row.list ) ) ) ) );
+                
+                result_matrix := ValueGlobal( tree.funcref.gvar )( args.1.value, list_of_matrices );
+                
+                tree := rec( type := "EXPR_LIST", list := AsSyntaxTreeList( List( result_matrix, row -> rec( type := "EXPR_LIST", list := AsSyntaxTreeList( row ) ) ) ) );
+                
+                Assert( 0, args.2.data_type.filter = IsList );
+                
+                matrix_type := args.2.data_type.element_type;
+                
+                Assert( 0, matrix_type.filter = IsList and matrix_type.element_type.filter = IsList );
+                
+                for i in [ 1 .. tree.list.length ] do
+                    
+                    tree.list.(i).data_type := matrix_type.element_type;
+                    
+                od;
+                
+                tree.data_type := matrix_type;
+                
+                return tree;
+                
             fi;
             
         fi;
