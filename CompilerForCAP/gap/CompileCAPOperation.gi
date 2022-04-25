@@ -174,6 +174,14 @@ InstallGlobalFunction( "CapJitCompiledCAPOperationAsEnhancedSyntaxTree", functio
             
         fi;
         
+        if IsAdelmanCategory( cat ) and operation_name in [ "CokernelColift", "ColiftAlongEpimorphism" ] then
+            
+            Assert( 0, arguments_data_types <> fail );
+            
+            return ENHANCED_SYNTAX_TREE( function_to_compile : globalize_hvars := true, given_arguments := [ cat ], type_signature := [ arguments_data_types, return_data_type ] );
+            
+        fi;
+        
         if NamesLocalVariablesFunction( function_to_compile )[1] <> "cat_1" then
             
             Display( "precompiling" );
