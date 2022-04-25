@@ -141,6 +141,15 @@ InstallGlobalFunction( "CapJitCompiledCAPOperationAsEnhancedSyntaxTree", functio
             
         fi;
         
+        if NamesLocalVariablesFunction( function_to_compile )[1] <> "cat_1" then
+            
+            Display( "precompiling" );
+            Display( operation_name );
+            Display( "in" );
+            Display( Name( cat ) );
+            
+        fi;
+        
         if arguments_data_types <> fail then
             
             cat!.compiled_functions_trees.(operation_name)[index] := CapJitCompiledFunctionAsEnhancedSyntaxTree( function_to_compile, [ arguments_data_types, return_data_type ] );
@@ -148,6 +157,22 @@ InstallGlobalFunction( "CapJitCompiledCAPOperationAsEnhancedSyntaxTree", functio
         else
             
             cat!.compiled_functions_trees.(operation_name)[index] := CapJitCompiledFunctionAsEnhancedSyntaxTree( function_to_compile, cat );
+            
+        fi;
+        
+        if operation_name = "ComponentOfMorphismIntoDirectSum" then
+            
+            #Error("asd");
+            
+        fi;
+        
+        if NamesLocalVariablesFunction( function_to_compile )[1] <> "cat_1" then
+            
+            Display( "finished" );
+            Display( operation_name );
+            Display( "in" );
+            Display( Name( cat ) );
+            Display( "" );
             
         fi;
         
