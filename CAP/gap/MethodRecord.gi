@@ -3234,7 +3234,7 @@ HomologyObject := rec(
 ),
 
 HomologyObjectFunctorialWithGivenHomologyObjects := rec(
-  filter_list := [ "category", "object", IsList, "object" ],
+  filter_list := [ "category", "object", "list_of_morphisms", "object" ],
   io_type := [ [ "H_1", "L", "H_2" ], [ "H_1", "H_2" ] ],
   return_type := "morphism",
   pre_function := function( cat, H_1, L, H2 )
