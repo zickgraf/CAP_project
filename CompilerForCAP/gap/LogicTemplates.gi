@@ -15,6 +15,154 @@ InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
     
 end );
 
+operations := rec( );
+operations.(" ⊗_0 ") := "TensorProductOnObjects";
+operations.(" ⊗_1 ") := "TensorProductOnMorphisms";
+operations.(" ⋅ ") := "PreCompose";
+operations.(" ∼ ") := "IsCongruentForMorphisms";
+
+parse := function ( string )
+  local pointer, consume_char, consume_chars, all_chars_consumed, current_char, starts_with, inner_parse;
+    
+    pointer := 1;
+    
+    consume_char := function ( )
+        
+        pointer := pointer + 1;
+        
+    end;
+    
+    consume_chars := function ( n )
+        
+        pointer := pointer + n;
+        
+    end;
+    
+    all_chars_consumed := function ( )
+        
+        return pointer > Length( string );
+        
+    end;
+    
+    current_char := function ( )
+        
+        return string[pointer];
+        
+    end;
+    
+    starts_with := function ( prefix )
+        
+        return Length( string ) >= pointer + Length( prefix ) - 1 and ForAll( [ 1 .. Length( prefix ) ], i -> prefix[i] = string[pointer + i - 1] );
+        
+    end;
+    
+    inner_parse := function ( delimiter )
+      local output_string, undelimited_operation, post_process, first, operation_names, operation_name, second;
+        
+        #Display( "search until" );
+        #Display( delimiter );
+        
+        output_string := "";
+        
+        undelimited_operation := false;
+        
+        post_process := function ( )
+        
+            if undelimited_operation then
+                
+                second := output_string;
+                
+                output_string := "";
+                
+                Append( output_string, operations.(operation_name) );
+                Append( output_string, "( cat, " );
+                Append( output_string, first );
+                Append( output_string, ", " );
+                Append( output_string, second );
+                Append( output_string, " )" );
+                
+            fi;
+            
+        end;
+        
+        repeat
+            
+            if starts_with( "id_{" ) then
+                
+                consume_chars(4);
+                
+                Append( output_string, "IdentityMorphism( cat, " );
+                Append( output_string, inner_parse( "}" ) );
+                Append( output_string, " )" );
+                
+            elif delimiter = "}" and starts_with( "}" ) then
+                
+                consume_char( );
+                
+                post_process( );
+                
+                return output_string;
+                
+            elif starts_with( "{" ) then
+                
+                consume_char( );
+                
+                Append( output_string, inner_parse( "}" ) );
+                
+            elif ForAny( RecNames( operations ), name -> starts_with( name ) ) then
+                
+                if undelimited_operation then
+                    
+                    Error( "nested undelimited operations are not supported" );
+                    
+                fi;
+                
+                # operation without { }
+                
+                undelimited_operation := true;
+                
+                first := ShallowCopy( output_string );
+                
+                output_string := "";
+                
+                operation_names := Filtered( RecNames( operations ), name -> starts_with( name ) );
+                
+                Assert( 0, Length( operation_names ) = 1 );
+                
+                operation_name := operation_names[1];
+                
+                consume_chars( Length( operation_name ) );
+                
+            elif starts_with( "}" ) then
+                
+                Error( "Unexpected }" );
+                
+            else
+                
+                Add( output_string, current_char( ) );
+                
+                consume_char( );
+                
+            fi;
+            
+        until all_chars_consumed( );
+        
+        if delimiter <> fail then
+            
+            Error( "Expected ", delimiter );
+            
+        fi;
+        
+        post_process( );
+        
+        return output_string;
+        
+    end;
+    
+    return inner_parse( fail );
+    
+end;
+
 InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( template )
   local diff, variable_name, unbound_global_variable_names, syntax_tree_variables_ids, pre_func_identify_syntax_tree_variables, additional_arguments_func_identify_syntax_tree_variables, tmp_tree, pre_func, additional_arguments_func, i;
     
@@ -40,7 +188,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( templ
         
     fi;
     
-    diff := Difference( RecNames( template ), [ "variable_names", "variable_filters", "src_template", "src_template_tree", "dst_template", "dst_template_tree", "new_funcs", "number_of_applications", "apply_in_proof_assistant_mode", "debug", "debug_path" ] );
+    diff := Difference( RecNames( template ), [ "variable_names", "variable_filters", "src_template", "src_template_tree", "dst_template", "dst_template_tree", "new_funcs", "number_of_applications", "apply_in_proof_assistant_mode", "debug", "debug_path", "enhanced_syntax" ] );
     
     if not IsEmpty( diff ) then
         
@@ -144,6 +292,17 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( templ
         
         # COVERAGE_IGNORE_NEXT_LINE
         Error( "apply_in_proof_assistant_mode must be \"yes\", \"no\", or \"only\"" );
+        
+    fi;
+    
+    # parse enhanced syntax
+    if IsBound( template.enhanced_syntax ) and template.enhanced_syntax = true then
+        
+        template.src_template := parse( template.src_template );
+        template.dst_template := parse( template.dst_template );
+        
+        Display( template.src_template );
+        Display( template.dst_template );
         
     fi;
     
