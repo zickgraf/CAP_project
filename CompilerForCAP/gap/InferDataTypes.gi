@@ -253,6 +253,33 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES_OF_FUNCTION_BY_ARGU
         
         return rec( funcref := func, args := args, output_type := func.data_type.signature[2] );
         
+    elif funcref.type = "EXPR_FUNCCALL" then
+        
+        funcref := CAP_JIT_INTERNAL_INFERRED_DATA_TYPES( funcref, func_stack );
+        
+        if not IsBound( funcref.data_type ) then
+            
+            Error( "could not determine data type of funcref" );
+            return fail;
+            
+        fi;
+        
+        if not funcref.data_type.filter = IsFunction then
+            
+            # COVERAGE_IGNORE_NEXT_LINE
+            Error( "the funcref is not a function" );
+            
+        fi;
+        
+        if funcref.data_type.signature[2] = fail then
+            
+            Error( "could not determine data type of return value of function" );
+            return fail;
+            
+        fi;
+        
+        return rec( funcref := funcref, args := args, output_type := funcref.data_type.signature[2] );
+        
     else
         
         #Error( "can only handle EXPR_DECLARATIVE_FUNC and EXPR_REF_GVAR" );
