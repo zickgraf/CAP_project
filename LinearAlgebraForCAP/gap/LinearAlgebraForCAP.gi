@@ -75,8 +75,6 @@ InstallGlobalFunction( MATRIX_CATEGORY,
     
     SetCommutativeRingOfLinearCategory( category, homalg_field );
     
-    SetRangeCategoryOfHomomorphismStructure( category, category );
-    
     INSTALL_FUNCTIONS_FOR_MATRIX_CATEGORY( category );
     
     if category!.overhead then
@@ -92,11 +90,19 @@ InstallGlobalFunction( MATRIX_CATEGORY,
     
     if ValueOption( "no_precompiled_code" ) <> true then
         
+        # In the case `no_precompiled_code = true`,
+        # SetRangeCategoryOfHomomorphismStructure will be called by the final derivation which
+        # derives the homomorphism structure from the closed monoidal structure.
+        # We ensure consistency by the assert below.
+        SetRangeCategoryOfHomomorphismStructure( category, category );
+        
         ADD_FUNCTIONS_FOR_MatrixCategoryPrecompiled( category );
         
     fi;
     
     Finalize( category );
+    
+    #Assert( 0, IsIdenticalObj( category, RangeCategoryOfHomomorphismStructure( category ) ) );
     
     return category;
     
@@ -657,6 +663,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_MATRIX_CATEGORY,
     end );
     
     ## Basic Operations for Monoidal Categories
+    ## The homomorphism structure will be derived from the closed monoidal structure
     ##
     AddTensorProductOnObjects( category,
       [ 
@@ -728,7 +735,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_MATRIX_CATEGORY,
         
     end );
 
-    ## Operations related to the tensor-hom adjunction
+    ## Operations related to duals
     
     ##
     AddDualOnObjects( category, { cat, space } -> space );
@@ -836,74 +843,6 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_MATRIX_CATEGORY,
         return VectorSpaceMorphism( cat, cobidual_of_object,
                                     HomalgIdentityMatrix( Dimension( object ), homalg_field ),
                                     object );
-        
-    end );
-    
-    ## Homomorphism structure
-    
-    ##
-    AddHomomorphismStructureOnObjects( category,
-      function( cat, object_1, object_2 )
-        
-        return MatrixCategoryObject( cat, Dimension( object_1 ) * Dimension( object_2 ) );
-        
-    end );
-    
-    ##
-    AddHomomorphismStructureOnMorphismsWithGivenObjects( category,
-      function( cat, hom_source, alpha, beta, hom_range )
-        
-        return VectorSpaceMorphism( cat, 
-          hom_source,
-          KroneckerMat( TransposedMatrix( UnderlyingMatrix( alpha ) ), UnderlyingMatrix( beta ) ),
-          hom_range
-        );
-        
-    end );
-    
-    ##
-    AddDistinguishedObjectOfHomomorphismStructure( category,
-      function( cat )
-        
-        return MatrixCategoryObject( cat, 1 );
-      
-    end );
-    
-    ##
-    AddInterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructureWithGivenObjects( category,
-      function( cat, distinguished_object, alpha, r )
-        local matrix, new_matrix;
-        
-        matrix := UnderlyingMatrix( alpha );
-        
-        new_matrix := ConvertMatrixToRow( matrix );
-        
-        return VectorSpaceMorphism( cat,
-          distinguished_object,
-          new_matrix,
-          r
-        );
-        
-    end );
-    
-    ##
-    AddInterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( category,
-      function( cat, source, range, alpha )
-        local matrix, m, n, new_matrix;
-        
-        matrix := UnderlyingMatrix( alpha );
-        
-        m := Dimension( source );
-        
-        n := Dimension( range );
-        
-        new_matrix := ConvertRowToMatrix( matrix, m, n );
-        
-        return VectorSpaceMorphism( cat,
-          source,
-          new_matrix,
-          range
-        );
         
     end );
     

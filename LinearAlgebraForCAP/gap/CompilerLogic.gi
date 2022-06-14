@@ -43,3 +43,13 @@ CapJitAddLogicTemplate(
         needed_packages := [ [ "MatricesForHomalg", ">= 2020.05.19" ] ],
     )
 );
+
+# KroneckerMat( M, HomalgIdentityMatrix( 1 ) ) -> M
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "matrix", "ring" ],
+        src_template := "KroneckerMat( matrix, HomalgIdentityMatrix( 1, ring ) )",
+        dst_template := "matrix",
+        needed_packages := [ [ "MatricesForHomalg", ">= 2020.05.19" ] ],
+    )
+);
