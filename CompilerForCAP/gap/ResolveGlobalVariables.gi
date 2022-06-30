@@ -37,26 +37,47 @@ InstallGlobalFunction( "CapJitResolvedGlobalVariables", function ( tree )
                 
                 value := ValueGlobal( tree.funcref.gvar )( ValueGlobal( tree.args.1.gvar ) );
                 
-                global_variable_name := CapJitGetOrCreateGlobalVariable( value );
-                
-                if CAP_JIT_DATA_TYPE_INFERENCE_ENABLED then
+                if IsList( value ) then
                     
-                    data_type := CAP_JIT_INTERNAL_GET_OUTPUT_TYPE_OF_GLOBAL_FUNCTION_BY_INPUT_TYPES( NameFunction( ValueGlobal( tree.funcref.gvar ) ), [ CapJitDataTypeOfCategory( ValueGlobal( tree.args.1.gvar ) ) ] );
+                    tree := rec(
+                        type := "EXPR_LIST",
+                        list := AsSyntaxTreeList(
+                            List(
+                                value,
+                                x -> rec(
+                                    type := "EXPR_REF_GVAR",
+                                    gvar := CapJitGetOrCreateGlobalVariable( x ),
+                                )
+                            )
+                        ),
+                    );
+                    
+                    # TODO: data type
                     
                 else
                     
-                    data_type := fail;
+                    global_variable_name := CapJitGetOrCreateGlobalVariable( value );
                     
-                fi;
-                
-                tree := rec(
-                    type := "EXPR_REF_GVAR",
-                    gvar := global_variable_name,
-                );
-                
-                if data_type <> fail then
+                    if CAP_JIT_DATA_TYPE_INFERENCE_ENABLED then
+                        
+                        data_type := CAP_JIT_INTERNAL_GET_OUTPUT_TYPE_OF_GLOBAL_FUNCTION_BY_INPUT_TYPES( NameFunction( ValueGlobal( tree.funcref.gvar ) ), [ CapJitDataTypeOfCategory( ValueGlobal( tree.args.1.gvar ) ) ] );
+                        
+                    else
+                        
+                        data_type := fail;
+                        
+                    fi;
                     
-                    tree.data_type := data_type;
+                    tree := rec(
+                        type := "EXPR_REF_GVAR",
+                        gvar := global_variable_name,
+                    );
+                    
+                    if data_type <> fail then
+                        
+                        tree.data_type := data_type;
+                        
+                    fi;
                     
                 fi;
                 
