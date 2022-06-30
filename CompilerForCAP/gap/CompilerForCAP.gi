@@ -306,6 +306,7 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
         CapJitHoistedBindings,
         CapJitOutlinedWrappedArguments,
         CapJitInlinedBindings,
+        CapJitResolvedGlobalVariables,
     ];
     
     if type_signature = fail or not CAP_JIT_DATA_TYPE_INFERENCE_ENABLED then
@@ -400,7 +401,7 @@ InstallGlobalFunction( CapJitCompiledFunctionAsEnhancedSyntaxTree, function ( fu
                 # COVERAGE_IGNORE_BLOCK_END
             fi;
             
-            tree := CapJitAppliedCompilerHints( tree, category );
+            #tree := CapJitAppliedCompilerHints( tree, category );
             
         fi;
         
