@@ -93,6 +93,7 @@ BindGlobal( "CAP_JIT_INTERNAL_ITERATION_KEYS", rec(
     EXPR_CASE := [ "branches" ],
     CASE_BRANCH := [ "condition", "value" ],
     SYNTAX_TREE_VARIABLE := [ ],
+    SYNTAX_TREE_SUBLIST_VARIABLE := [ ],
 ) );
 
 BindGlobal( "SYNTAX_TREE_LIST_KEYS", [ ] );
