@@ -387,38 +387,38 @@ CapJitAddLogicFunction( function ( tree )
 end );
 
 # CallFuncList( func, [ a, b, ... ] ) => func( a, b, ... )
-CapJitAddLogicFunction( function ( tree )
-  local pre_func;
-    
-    Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for CallFuncList." );
-    
-    pre_func := function ( tree, additional_arguments )
-      local args;
-        
-        if CapJitIsCallToGlobalFunction( tree, "CallFuncList" ) then
-            
-            args := tree.args;
-            
-            if args.2.type = "EXPR_LIST" then
-                
-                return rec(
-                    type := "EXPR_FUNCCALL",
-                    funcref := args.1,
-                    args := args.2.list,
-                );
-                
-            fi;
-            
-        fi;
-        
-        return tree;
-        
-    end;
-    
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
-    
-end );
+#CapJitAddLogicFunction( function ( tree )
+#  local pre_func;
+#    
+#    Info( InfoCapJit, 1, "####" );
+#    Info( InfoCapJit, 1, "Apply logic for CallFuncList." );
+#    
+#    pre_func := function ( tree, additional_arguments )
+#      local args;
+#        
+#        if CapJitIsCallToGlobalFunction( tree, "CallFuncList" ) then
+#            
+#            args := tree.args;
+#            
+#            if args.2.type = "EXPR_LIST" then
+#                
+#                return rec(
+#                    type := "EXPR_FUNCCALL",
+#                    funcref := args.1,
+#                    args := args.2.list,
+#                );
+#                
+#            fi;
+#            
+#        fi;
+#        
+#        return tree;
+#        
+#    end;
+#    
+#    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+#    
+#end );
 
 # List( [ a_1, ..., a_n ], f ) = [ f( a_1 ), ..., f( a_n ) ]
 CapJitAddLogicFunction( function ( tree )
