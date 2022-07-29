@@ -16,7 +16,7 @@ InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
 end );
 
 InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( template )
-  local diff, variable_name, unbound_global_variable_names, syntax_tree_variables_ids, pre_func_identify_syntax_tree_variables, additional_arguments_func_identify_syntax_tree_variables, tmp_tree, pre_func, additional_arguments_func, i;
+  local diff, unbound_global_variable_names, syntax_tree_variables_ids, syntax_tree_sublist_variables_ids, pre_func_identify_syntax_tree_variables, additional_arguments_func_identify_syntax_tree_variables, src_template, dst_template, name, variable_names, tmp_tree, pre_func, additional_arguments_func, i;
     
     if IsBound( template.is_fully_enhanced ) and template.is_fully_enhanced = true then
         
@@ -40,7 +40,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( templ
         
     fi;
     
-    diff := Difference( RecNames( template ), [ "variable_names", "variable_filters", "src_template", "src_template_tree", "dst_template", "dst_template_tree", "new_funcs", "number_of_applications", "apply_in_proof_assistant_mode", "debug", "debug_path" ] );
+    diff := Difference( RecNames( template ), [ "variable_names", "variable_filters", "sublist_variable_names", "src_template", "src_template_tree", "dst_template", "dst_template_tree", "new_funcs", "number_of_applications", "apply_in_proof_assistant_mode", "debug", "debug_path" ] );
     
     if not IsEmpty( diff ) then
         
@@ -48,17 +48,6 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( templ
         Error( "a logic template has unknown components: ", diff );
         
     fi;
-    
-    for variable_name in template.variable_names do
-        
-        if variable_name in GAPInfo.Keywords then
-            
-            # COVERAGE_IGNORE_NEXT_LINE
-            Error( "\"", variable_name, "\" (contained in variable_names) is a keyword. This is not supported." );
-            
-        fi;
-        
-    od;
     
     if Last( NormalizedWhitespace( template.src_template ) ) = ';' then
         
@@ -109,6 +98,13 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( templ
         
         # COVERAGE_IGNORE_NEXT_LINE
         Error( "the entries of variable_filters must be filters or records" );
+        
+    fi;
+    
+    # default sublist variables: none
+    if not IsBound( template.sublist_variable_names ) then
+        
+        template.sublist_variable_names := [ ];
         
     fi;
     
@@ -169,14 +165,34 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( templ
                 
             fi;
             
-            id := SafeUniquePosition( template.variable_names, tree.name );
-            
-            AddSet( syntax_tree_variables_ids, id );
-            
-            return rec(
-                type := "SYNTAX_TREE_VARIABLE",
-                id := id,
-            );
+            if tree.name in template.variable_names then
+                
+                id := SafeUniquePosition( template.variable_names, tree.name );
+                
+                AddSet( syntax_tree_variables_ids, id );
+                
+                return rec(
+                    type := "SYNTAX_TREE_VARIABLE",
+                    id := id,
+                );
+                
+            elif tree.name in template.sublist_variable_names then
+                
+                id := SafeUniquePosition( template.sublist_variable_names, tree.name );
+                
+                AddSet( syntax_tree_sublist_variables_ids, id );
+                
+                return rec(
+                    type := "SYNTAX_TREE_SUBLIST_VARIABLE",
+                    id := id,
+                );
+                
+            else
+                
+                # COVERAGE_IGNORE_NEXT_LINE
+                Error( "this should never happen" );
+                
+            fi;
             
         fi;
         
@@ -190,17 +206,42 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( templ
         
     end;
     
+    src_template := template.src_template;
+    dst_template := template.dst_template;
+    
+    # replace "..." following sublist variables
+    for name in template.sublist_variable_names do
+        
+        src_template := ReplacedString( src_template, Concatenation( name, "..." ), name );
+        dst_template := ReplacedString( dst_template, Concatenation( name, "..." ), name );
+        
+    od;
+    
+    variable_names := Concatenation( template.variable_names, template.sublist_variable_names );
+    
+    for name in variable_names do
+        
+        if name in GAPInfo.Keywords then
+            
+            # COVERAGE_IGNORE_NEXT_LINE
+            Error( "\"", name, "\" (contained in variable_names) is a keyword. This is not supported." );
+            
+        fi;
+        
+    od;
+    
     # get src_template_tree from src_template
     if not IsBound( template.src_template_tree ) then
         
         # to get a syntax tree we have to wrap the template in a function
-        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( template.variable_names, ", " ), " } -> ", template.src_template ) ) );
+        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( variable_names, ", " ), " } -> ", src_template ) ) );
         
         Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
         
         unbound_global_variable_names := [ ];
         
         syntax_tree_variables_ids := [ ];
+        syntax_tree_sublist_variables_ids := [ ];
         
         template.src_template_tree := CapJitIterateOverTree( CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" ), pre_func_identify_syntax_tree_variables, CapJitResultFuncCombineChildren, additional_arguments_func_identify_syntax_tree_variables, tmp_tree.id );
         
@@ -220,13 +261,22 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( templ
             
         fi;
         
+        Assert( 0, IsSubset( [ 1 .. Length( template.sublist_variable_names ) ], syntax_tree_sublist_variables_ids ) );
+        
+        if Length( syntax_tree_sublist_variables_ids ) < Length( template.sublist_variable_names ) then
+            
+            # COVERAGE_IGNORE_NEXT_LINE
+            Error( "The following sublist variable names do not appear in src_template: ", template.sublist_variable_names{Difference( [ 1 .. Length( template.sublist_variable_names ) ], syntax_tree_sublist_variables_ids )}, ". This is not supported." );
+            
+        fi;
+        
     fi;
     
     # get dst_template_tree from dst_template
     if not IsBound( template.dst_template_tree ) then
         
         # to get a syntax tree we have to wrap the template in a function
-        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( template.variable_names, ", " ), " } -> ", template.dst_template ) ) );
+        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( variable_names, ", " ), " } -> ", dst_template ) ) );
         
         Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
         
@@ -391,6 +441,16 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( templ
     template.is_fully_enhanced := true;
     
 end );
+
+# CallFuncList( func, [ a, b, ... ] ) => func( a, b, ... )
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "func" ],
+        sublist_variable_names := [ "arguments" ],
+        src_template := "CallFuncList( func, [ arguments... ] )",
+        dst_template := "func( arguments... )",
+    )
+);
 
 # x -> x => ID_FUNC
 CapJitAddLogicTemplate(
@@ -574,13 +634,13 @@ CapJitAddLogicTemplate(
     )
 );
 
-InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( tree, template_tree, variable_filters, debug )
-  local i, variables, func_id_replacements, pre_func, result_func, additional_arguments_func, result;
+InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( tree, template_tree, variables, variable_filters, sublist_variables, func_id_replacements, debug )
+  local i, pre_func, result_func, additional_arguments_func;
     
     # bail out early if type mismatches
     if template_tree.type <> "SYNTAX_TREE_VARIABLE" and tree.type <> template_tree.type then
         
-        return fail;
+        return false;
         
     fi;
     
@@ -593,7 +653,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
             
             if tree.funcref.type <> template_tree.funcref.type then
                 
-                return fail;
+                return false;
                 
             fi;
             
@@ -604,7 +664,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
                     not (template_tree.funcref.gvar in [ "Range", "Target" ] and tree.funcref.gvar in [ "Range", "Target" ] and IsBound( tree.funcref.data_type ) and IsSpecializationOfFilter( IsCapCategoryMorphism, tree.funcref.data_type.signature[1][1].filter ))
                 then
                     
-                    return fail;
+                    return false;
                     
                 fi;
                 
@@ -614,7 +674,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
         
         if tree.args.length <> template_tree.args.length then
             
-            return fail;
+            return false;
             
         fi;
         
@@ -622,7 +682,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
             
             if template_tree.args.(i).type <> "SYNTAX_TREE_VARIABLE" and tree.args.(i).type <> template_tree.args.(i).type then
                 
-                return fail;
+                return false;
                 
             fi;
             
@@ -630,11 +690,14 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
         
     fi;
     
-    variables := [ ];
-    func_id_replacements := rec( );
-    
     pre_func := function ( template_tree, tree )
       local new_template_tree;
+        
+        if template_tree.type = "SYNTAX_TREE_SUBLIST_VARIABLE" then
+            
+            Error( "unexpected occurence of a subtree variable" );
+            
+        fi;
         
         if template_tree.type <> "SYNTAX_TREE_VARIABLE" and tree.type <> template_tree.type then
             
@@ -642,9 +705,29 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
             
         fi;
         
-        if template_tree.type = "SYNTAX_TREE_LIST" and template_tree.length <> tree.length then
+        if template_tree.type = "SYNTAX_TREE_LIST" then
             
-            return fail;
+            if template_tree.length > 0 and template_tree.1.type = "SYNTAX_TREE_SUBLIST_VARIABLE" then
+                
+                if Last( template_tree ).type <> "SYNTAX_TREE_SUBLIST_VARIABLE" then
+                    
+                    Error( "the first part of this list is a sublist variable, but the last part is not" );
+                    
+                fi;
+                
+                if ForAny( [ 2 .. template_tree.length - 1 ], i -> template_tree.(i).type = "SYNTAX_TREE_SUBLIST_VARIABLE" ) then
+                    
+                    Error( "sublist variables may only occur at the beginning or the end of a list" );
+                    
+                fi;
+                
+                return fail;
+                
+            elif template_tree.length <> tree.length then
+                
+                return fail;
+                
+            fi;
             
         fi;
         
@@ -680,7 +763,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
     end;
     
     result_func := function ( template_tree, result, keys, tree )
-      local var_number, filter_or_data_type, key;
+      local elements, template_elements, found_match, new_variables, new_sublist_variables, new_func_id_replacements, pre_id, post_id, var_number, filter_or_data_type, i, j, k, key;
         
         if debug then
             # COVERAGE_IGNORE_BLOCK_START
@@ -689,6 +772,110 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
             Display( "result" );
             Display( result );
             # COVERAGE_IGNORE_BLOCK_END
+        fi;
+        
+        # handle sublist variables
+        if template_tree.type = "SYNTAX_TREE_LIST" and tree.type = "SYNTAX_TREE_LIST" and template_tree.length > 0 and template_tree.1.type = "SYNTAX_TREE_SUBLIST_VARIABLE" then
+            
+            # checked in pre_func
+            Assert( 0, ForAll( [ 2 .. template_tree.length - 1 ], i -> template_tree.(i).type <> "SYNTAX_TREE_SUBLIST_VARIABLE" ) and Last( template_tree ).type = "SYNTAX_TREE_SUBLIST_VARIABLE" );
+            
+            elements := AsListMut( tree );
+            template_elements := AsListMut( template_tree ){[ 2 .. template_tree.length - 1 ]};
+            
+            # search for a matching position
+            # `i` is the length of the non-matching prefix
+            for i in [ 0 .. Length( elements ) - Length( template_elements ) ] do
+                
+                found_match := true;
+                new_variables := ShallowCopy( variables );
+                new_sublist_variables := ShallowCopy( sublist_variables );
+                new_func_id_replacements := ShallowCopy( func_id_replacements );
+                
+                for j in [ 1 .. Length( template_elements ) ] do
+                    
+                    if not CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( elements[i + j], template_elements[j], new_variables, variable_filters, new_sublist_variables, new_func_id_replacements, debug ) then
+                        
+                        found_match := false;
+                        break;
+                        
+                    fi;
+                    
+                od;
+                
+                if found_match then
+                    
+                    # populate sublist_variables
+                    pre_id := template_tree.1.id;
+                    post_id := Last( template_tree ).id;
+                    
+                    if IsBound( new_sublist_variables[pre_id] ) or IsBound( new_sublist_variables[post_id] ) or (template_tree.length >= 2 and pre_id = post_id) then
+                        
+                        Error( "sublist variables may only occur once in src_template" );
+                        
+                    fi;
+                    
+                    if pre_id = post_id then
+                        
+                        Assert( 0, template_tree.length = 1 and i = 0 );
+                        
+                    fi;
+                    
+                    # this also works in the case `pre_id` = `post_id`, which implies `template_tree.length` = 1 and `i` = 0
+                    sublist_variables[pre_id] := Sublist( tree, [ 1 .. i ] );
+                    sublist_variables[post_id] := Sublist( tree, [ i + Length( template_elements ) + 1 .. tree.length ] );
+                    
+                    # copy new data
+                    for k in PositionsBound( new_variables ) do
+                        
+                        if IsBound( variables[k] ) then
+                            
+                            Assert( 0, IsIdenticalObj( variables[k], new_variables[k] ) );
+                            
+                        else
+                            
+                            variables[k] := new_variables[k];
+                            
+                        fi;
+                        
+                    od;
+                    
+                    for k in PositionsBound( new_sublist_variables ) do
+                        
+                        if IsBound( sublist_variables[k] ) then
+                            
+                            Assert( 0, IsIdenticalObj( sublist_variables[k], new_sublist_variables[k] ) );
+                            
+                        else
+                            
+                            sublist_variables[k] := new_sublist_variables[k];
+                            
+                        fi;
+                        
+                    od;
+                    
+                    for k in RecNames( new_func_id_replacements ) do
+                        
+                        if IsBound( func_id_replacements.(k) ) then
+                            
+                            Assert( 0, IsIdenticalObj( func_id_replacements.(k), new_func_id_replacements.(k) ) );
+                            
+                        else
+                            
+                            func_id_replacements.(k) := new_func_id_replacements.(k);
+                            
+                        fi;
+                        
+                    od;
+                    
+                    return true;
+                    
+                fi;
+                
+            od;
+            
+            return false;
+            
         fi;
         
         # check if we already bailed out in pre_func
@@ -916,17 +1103,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
         
     end;
     
-    result := CapJitIterateOverTree( template_tree, pre_func, result_func, additional_arguments_func, tree );
-    
-    if result then
-        
-        return rec( variables := variables, func_id_replacements := func_id_replacements );
-        
-    else
-        
-        return fail;
-        
-    fi;
+    return CapJitIterateOverTree( template_tree, pre_func, result_func, additional_arguments_func, tree );
     
 end );
 
@@ -959,7 +1136,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
     path_debugging_enabled := ForAny( templates, template -> IsBound( template.debug_path ) );
     
     pre_func := function ( tree, additional_arguments )
-      local func_id_stack, matching_info, variables, func_id_replacements, well_defined, pre_func, result_func, additional_arguments_func, dst_tree, template;
+      local func_id_stack, variables, sublist_variables, func_id_replacements, well_defined, pre_func, result_func, additional_arguments_func, dst_tree, template;
         
         func_id_stack := additional_arguments[1];
         # path = additional_arguments[2] is only needed for debugging and only available if path debugging is enabled
@@ -993,9 +1170,12 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
                     
                 fi;
                 
-                matching_info := CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree, template.src_template_tree, template.variable_filters, path_debugging_enabled and IsBound( template.debug_path ) and template.debug_path = additional_arguments[2] );
+                # populated in-place
+                variables := [ ];
+                sublist_variables := [ ];
+                func_id_replacements := rec( );
                 
-                if matching_info = fail then
+                if not CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree, template.src_template_tree, variables, template.variable_filters, sublist_variables, func_id_replacements, path_debugging_enabled and IsBound( template.debug_path ) and template.debug_path = additional_arguments[2] ) then
                     
                     break;
                     
@@ -1008,13 +1188,17 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
                     
                 fi;
                 
-                variables := matching_info.variables;
-                func_id_replacements := matching_info.func_id_replacements;
-                
                 if not IsDenseList( variables ) or Length( variables ) <> Length( template.variable_names ) then
                     
                     # COVERAGE_IGNORE_NEXT_LINE
                     Error( "the following variables where not matched: ", template.variable_names{Difference( [ 1 .. Length( template.variable_names ) ], PositionsBound( variables ) )} );
+                    
+                fi;
+                
+                if not IsDenseList( sublist_variables ) or Length( sublist_variables ) <> Length( template.sublist_variable_names ) then
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    Error( "the following sublist variables where not matched: ", template.sublist_variable_names{Difference( [ 1 .. Length( template.sublist_variable_names ) ], PositionsBound( sublist_variables ) )} );
                     
                 fi;
                 
@@ -1102,7 +1286,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
                 end;
                 
                 result_func := function ( tree, result, keys, func_id_stack )
-                  local key;
+                  local key, pre_id, post_id;
                     
                     if not well_defined then
                         
@@ -1141,6 +1325,47 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES, function ( tree
                         tree.(key) := result.(key);
                         
                     od;
+                    
+                    if tree.type = "SYNTAX_TREE_LIST" and tree.length > 0 and tree.1.type = "SYNTAX_TREE_SUBLIST_VARIABLE" then
+                        
+                        # checked in CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE
+                        Assert( 0, ForAll( [ 2 .. tree.length - 1 ], i -> tree.(i).type <> "SYNTAX_TREE_SUBLIST_VARIABLE" ) and Last( tree ).type = "SYNTAX_TREE_SUBLIST_VARIABLE" );
+                        
+                        pre_id := tree.1.id;
+                        post_id := Last( tree ).id;
+                        
+                        # check if the resulting tree would be well-defined
+                        if CapJitContainsRefToFVAROutsideOfFuncStack( sublist_variables[pre_id], func_id_stack ) or CapJitContainsRefToFVAROutsideOfFuncStack( sublist_variables[post_id], func_id_stack ) then
+                            
+                            well_defined := false;
+                            
+                            if IsBound( template.debug ) and template.debug then
+                                
+                                # COVERAGE_IGNORE_NEXT_LINE
+                                Error( "sublist variable contains fvar outside of func stack" );
+                                
+                            fi;
+                            
+                            # abort iteration
+                            return fail;
+                            
+                        fi;
+                        
+                        if pre_id = post_id then
+                            
+                            Assert( 0, tree.length = 1 );
+                            
+                            # new function IDs will be set below
+                            return StructuralCopy( sublist_variables[pre_id] );
+                            
+                        else
+                            
+                            # new function IDs will be set below
+                            return ConcatenationForSyntaxTreeLists( StructuralCopy( sublist_variables[pre_id] ), Sublist( tree, [ 2 .. tree.length - 1 ] ), StructuralCopy( sublist_variables[post_id] ) );
+                            
+                        fi;
+                        
+                    fi;
                     
                     return tree;
                     

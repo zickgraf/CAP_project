@@ -987,6 +987,19 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE_CODE, function ( tree )
             
         fi;
         
+        if tree.type = "SYNTAX_TREE_SUBLIST_VARIABLE" then
+            
+            # COVERAGE_IGNORE_BLOCK_START
+            Display( "WARNING: you should only codify an enhanced syntax tree with sublist variables for debugging purposes" );
+            
+            tree := rec(
+                type := "EXPR_REF_GVAR",
+                gvar := Concatenation( "CAP_INTERNAL_JIT_TEMPLATE_SUBLIST_VAR_", String( tree.id ) ),
+            );
+            # COVERAGE_IGNORE_BLOCK_END
+            
+        fi;
+        
         if tree.type = "SYNTAX_TREE_LIST" then
             
             tree := List( [ 1 .. tree.length ], i -> tree.(i) );
