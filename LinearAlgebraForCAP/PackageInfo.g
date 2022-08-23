@@ -114,6 +114,10 @@ Extensions := [
     needed := [ [ "FreydCategoriesForCAP", ">= 2024.01-04" ] ],
     filename := "gap/MatrixCategoryAsCategoryOfRows.gi",
   ),
+  rec(
+    needed := [ [ "FreydCategoriesForCAP", ">= 2024.01-04" ] ],
+    filename := "gap/MatrixCategoryAsFreydCategoryOfMatrixCategory.gi",
+  ),
 ],
 
 AvailabilityTest := function()
