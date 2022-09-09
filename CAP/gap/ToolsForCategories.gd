@@ -300,3 +300,21 @@ DeclareGlobalFunction( "HandlePrecompiledTowers" );
 #!   Simply returns <A>value</A>. Used to signify that the argument is not fully run through all logic functions/templates by CompilerForCAP.
 #! @Arguments value
 DeclareGlobalFunction( "CAP_JIT_INCOMPLETE_LOGIC" );
+
+#! @Description
+#!   Same as `List( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "ListWithKeys" );
+
+#! @Description
+#!   Same as `Sum( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "SumWithKeys" );
+
+#! @Description
+#!   Same as `Product( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "ProductWithKeys" );
