@@ -821,9 +821,13 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE_CODE, function ( tree )
                 obj := tree,
             );
             
-        else
+        elif StartsWith( tree.type, "STAT" ) then
             
             stat := tree;
+            
+        else
+            
+            Error( "cannot wrap tree of type ", tree.type );
             
         fi;
         

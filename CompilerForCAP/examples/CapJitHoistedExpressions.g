@@ -8,6 +8,40 @@ LoadPackage( "CompilerForCAP" );
 #! true
 
 ##
+# TODO hoisting
+
+func :=  function ( cat_1, objects_1, T_1, tau_1, P_1 )
+     local hoisted_1_1, hoisted_2_1;
+     hoisted_2_1 := List( objects_1, function ( x_2 )
+             return Length( x_2 );
+         end );
+     hoisted_1_1 := List( tau_1, function ( x_2 )
+             return AsList( x_2 );
+         end );
+     return ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes( rec(
+            ), cat_1, T_1, P_1, AsList, List( [ 1 .. Length( T_1 ) ], function ( i_2 )
+               return Sum( [ 1 .. Length( objects_1 ) ], function ( j_3 )
+                       return hoisted_1_1[j_3][i_2] * Product( hoisted_2_1{[ 1 .. (j_3 - 1) ]} );
+                   end );
+           end ) );
+ end;
+
+#tree := ENHANCED_SYNTAX_TREE( func );;
+#tree := CapJitHoistedExpressions( tree );;
+#compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );;
+compiled_func := CapJitCompiledFunction( func );
+Display( compiled_func );
+#! function ( x_1 )
+#!     local hoisted_1_1;
+#!     hoisted_1_1 := x_1 + 1;
+#!     return List( [ 1 .. 9 ], function ( y_2 )
+#!             return y_2 + hoisted_1_1 + (y_2 + hoisted_1_1);
+#!         end );
+#! end
+
+Error("asd");
+
+##
 # hoisting with deduplication
 func := function( x )
     return List( [ 1 .. 9 ], y -> (y + (x + 1)) + (y + (x + 1)) ); end;;

@@ -1493,3 +1493,80 @@ InstallGlobalFunction( HandlePrecompiledTowers, function ( category, underlying_
     fi;
     
 end );
+
+##
+InstallGlobalFunction( ListWithKeys, function ( list, func )
+  local res, i;
+    
+    # see implementation of `List`
+    
+    res := EmptyPlist( Length( list ) );
+    
+    # hack to save type adjustments and conversions (e.g. to blist)
+    if Length( list ) > 0 then
+        
+        res[Length( list )] := 1;
+        
+    fi;
+    
+    for i in [ 1 .. Length( list ) ] do
+        
+        res[i] := func( i, list[i] );
+        
+    od;
+    
+    return res;
+    
+end );
+
+##
+InstallGlobalFunction( SumWithKeys, function ( list, func )
+  local sum, i;
+    
+    # see implementation of `Sum`
+    
+    if IsEmpty( list ) then
+        
+        sum := 0;
+        
+    else
+        
+        sum := func( 1, list[1] );
+        
+        for i in [ 2 .. Length( list ) ] do
+            
+            sum := sum + func( i, list[i] );
+            
+        od;
+        
+    fi;
+    
+    return sum;
+    
+end );
+
+##
+InstallGlobalFunction( ProductWithKeys, function ( list, func )
+  local product, i;
+    
+    # adapted implementation of `Product`
+    
+    if IsEmpty( list ) then
+        
+        product := 0;
+        
+    else
+        
+        product := func( 1, list[1] );
+        
+        for i in [ 2 .. Length( list ) ] do
+            
+            product := product * func( i, list[i] );
+            
+        od;
+        
+    fi;
+    
+    return product;
+    
+end );

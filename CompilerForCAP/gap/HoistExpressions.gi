@@ -6,11 +6,17 @@
 
 InstallGlobalFunction( CapJitHoistedExpressions, function ( tree )
     
+    #Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
     return CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS( tree, false );
     
 end );
 
 InstallGlobalFunction( CapJitHoistedBindings, function ( tree )
+    
+    #Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    #Display( "in bindings" );
+    Display( "bindings" );
     
     return CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS( tree, true );
     
@@ -27,6 +33,12 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
     
     pre_func := function ( tree, additional_arguments )
         
+        if tree.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            expressions_to_hoist.(tree.id) := [ ];
+            
+        fi;
+        
         if CapJitIsCallToGlobalFunction( tree, gvar -> gvar in [ "ObjectifyObjectForCAPWithAttributes", "ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes" ] ) then
             
             # special case: the first argument of Objectify*WithAttributes is affected by side effects and thus must not be hoisted
@@ -34,14 +46,76 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
             
         fi;
         
+        #if not only_hoist_bindings and CapJitIsCallToGlobalFunction( tree, gvar -> gvar in [ "List", "Sum", "Product" ] ) and tree.args.length = 2 and tree.args.2.type = "EXPR_DECLARATIVE_FUNC" then
+        #    
+        #    tree := ShallowCopy( tree );
+        #    tree.funcref := ShallowCopy( tree.funcref );
+        #    tree.funcref.gvar := Concatenation( tree.funcref.gvar, "WithKeys" );
+        #    
+        #    tree.args := ShallowCopy( tree.args );
+        #    tree.args.2 := ShallowCopy( tree.args.2 );
+        #    
+        #    Assert( 0, tree.args.2.narg = 1 );
+        #    
+        #    tree.args.2.narg := 2;
+        #    tree.args.2.nams := Concatenation( [ "key" ], tree.args.2.nams );
+        #    
+        #fi;
+        
         return tree;
         
     end;
     
     result_func := function ( tree, result, keys, func_stack )
-      local levels, level, type_matches, pos, func_id, name;
+      local levels, func, domain, expressions_needing_domain, new_level, domain_level, type_matches, pos, func_id, new_levels, max_new_level, open_levels, non_open_levels, info, name, level;
         
         levels := Union( List( keys, name -> result.(name) ) );
+        
+        #if not only_hoist_bindings and CapJitIsCallToGlobalFunction( tree, gvar -> gvar in [ "ListWithKeys", "SumWithKeys", "ProductWithKeys" ] ) and tree.args.length = 2 and tree.args.2.type = "EXPR_DECLARATIVE_FUNC" then
+        if not only_hoist_bindings and CapJitIsCallToGlobalFunction( tree, gvar -> gvar in [ "List", "Sum", "Product" ] ) and tree.args.length = 2 and tree.args.2.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            # check if tree.args.1 is hoisted
+            for domain_level in [ 1 .. Length( func_stack ) ] do
+                
+                func := func_stack[domain_level];
+                
+                if not IsEmpty( expressions_to_hoist.(func.id) ) and IsIdenticalObj( Last( expressions_to_hoist.(func.id) ).parent, tree.args ) then
+                    
+                    domain := Last( expressions_to_hoist.(func.id) );
+                    
+                    # the second argument is a function expression and thus is never hoisted
+                    Assert( 0, domain.key = "1" );
+                    
+                    # get those needing a domain
+                    expressions_needing_domain := Filtered( expressions_to_hoist.(tree.args.2.id), x -> IsBound( x.domains ) );
+                    
+                    for info in expressions_needing_domain do
+                        
+                        if Last( info.levels ) = Length( func_stack ) + 1 then
+                            info.domains[Length( info.levels )] := domain;
+                            info.funccalls[Length( info.levels )] := tree;
+                            Remove( info.levels );
+                            
+                            new_level := MaximumList( Concatenation( [ domain_level ], info.levels ), 1 );
+                            
+                            Assert( 0, StartsWith( info.func_stack, func_stack ) );
+                            
+                            Add( expressions_to_hoist.(info.func_stack[new_level].id), info );
+                            
+                        fi;
+                        
+                    od;
+                    
+                    # only keep those not needing a domain
+                    expressions_to_hoist.(tree.args.2.id) := Filtered( expressions_to_hoist.(tree.args.2.id), x -> not IsBound( x.domains ) );
+                    
+                    break;
+                    
+                fi;
+                
+            od;
+            
+        fi;
         
         if tree.type = "EXPR_REF_FVAR" then
             
@@ -66,18 +140,20 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                 
             fi;
             
+            Assert( 0, IsEmpty( levels ) );
+            
             # references to variables always restrict the scope to the corresponding function
-            Add( levels, PositionProperty( func_stack, f -> f.id = tree.func_id ) );
+            AddSet( levels, PositionProperty( func_stack, f -> f.id = tree.func_id ) );
             
         elif tree.type = "FVAR_BINDING_SEQ" then
             
             # bindings restrict the scope to the current function
-            Add( levels, Length( func_stack ) );
+            AddSet( levels, Length( func_stack ) );
             
         elif tree.type = "EXPR_DECLARATIVE_FUNC" then
             
             # a function binds its variables, so the level of the function variables can be ignored (at this point, the function stack does not yet include the current func)
-            levels := Difference( levels, [ Length( func_stack ) + 1 ] );
+            RemoveSet( levels, Length( func_stack ) + 1 );
             
         fi;
         
@@ -120,17 +196,62 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                 
                 func_id := func_stack[pos].id;
                 
-                if not IsBound( expressions_to_hoist.(func_id) ) then
-                    
-                    expressions_to_hoist.(func_id) := [ ];
-                    
-                fi;
-                
                 Add( expressions_to_hoist.(func_id), rec(
                     parent := tree,
                     key := name,
                     old_func := Last( func_stack ),
                 ) );
+                
+            elif not only_hoist_bindings and type_matches and not IsEmpty( result.(name) ) and result.(name) <> levels then
+                
+                new_levels := Difference( levels, result.(name) );
+                
+                # By construction we have result.(name) ⊆ levels.
+                # Since we are in the case result.(name) ≠ levels, we must have result.(name) ⊊ levels, i.e. levels \ result.(name) ≠ ∅.
+                Assert( 0, not IsEmpty( new_levels ) );
+                
+                if new_levels = [ 1 ] then
+                    
+                    # we have detected an expression which is independent of level 1, i.e. could be fully precomputed
+                    # we do not handle this yet -> ignore
+                    continue;
+                    
+                fi;
+                
+                max_new_level := MaximumList( new_levels );
+                
+                open_levels := Filtered( result.(name), x -> x > max_new_level );
+                
+                # We have: max_new_level = MaximumList( new_levels ) ≤ MaximumList( levels, 1 ) = level ≤ MaximumList( result.(name), 1 ) = MaximumList( result.(name) ),
+                # where the last inequality holds because we are in the else case and the last equality holds because result.(name) is non-empty and can only contain numbers ≥ 1.
+                # Since new_levels ∩ result.(name) = ∅ by construction, we cannot have equality, i.e. we have max_new_level < MaximumList( result.(name) ).
+                # This, there exists x ∈ result.(name) such that x > max_new_level, i.e. open_levels ≠ ∅.
+                Assert( 0, not IsEmpty( open_levels ) );
+                
+                if Length( open_levels ) = 1 then
+                    
+                    Assert( 0, Last( levels ) = open_levels[1] );
+                    
+                    func_id := func_stack[Last( levels )].id;
+                    
+                    Add( expressions_to_hoist.(func_id), rec(
+                        parent := tree,
+                        key := name,
+                        #old_func := Last( func_stack ),
+                        levels := result.(name),
+                        domains := [],
+                        funccalls := [],
+                        #non_open_levels := Filtered( result.(name), x -> x < max_new_level ),
+                        func_stack := func_stack,
+                    ) );
+                    
+                else
+                    
+                    #Display( tree );
+                    #Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+                    #Error( "nice opportunity, but not yet handled" );
+                    
+                fi;
                 
             fi;
             
@@ -161,7 +282,15 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
     pre_func := function ( tree, additional_arguments )
       local id, info, parent, key, expr, new_variable_name, to_delete, info2, old_variable_name, old_func, i, ref;
         
-        if tree.type = "EXPR_DECLARATIVE_FUNC" and IsBound( expressions_to_hoist.(tree.id) ) then
+        if IsBound( tree.CAP_JIT_STOP_HOISTING ) then
+            
+            Unbind( tree.CAP_JIT_STOP_HOISTING );
+            
+            return fail;
+            
+        fi;
+        
+        if tree.type = "EXPR_DECLARATIVE_FUNC" and not IsEmpty( expressions_to_hoist.(tree.id) ) then
             
             id := CapJitGetNextUnusedVariableID( tree );
             
@@ -172,6 +301,123 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                 parent := info.parent;
                 key := info.key;
                 expr := parent.(key);
+                
+                #if IsBound( info.domain ) and info.domain = fail then
+                #    
+                #    Remove( expressions_to_hoist.(tree.id), 1 );
+                #    continue;
+                #    
+                #fi;
+                
+                if IsBound( info.domains ) then
+                    
+                    if ForAny( info.domains, d -> not IsBound( d.new_func_id ) ) then
+                        
+                        Error("this should never happen123");
+                        continue;
+                        
+                    fi;
+                    
+                    # do not hoist if `expr` already is of the form `hoisted[index]`
+                    if CapJitIsCallToGlobalFunction( expr, "[]" ) and expr.args.1.type = "EXPR_REF_FVAR" and StartsWith( expr.args.1.name, "hoisted" ) then
+                        
+                        #if not expr.args.1.type = "EXPR_REF_FVAR" and StartsWith( expr.args.1.name, "hoisted" ) then
+                        
+                        
+                        #Error("here");
+                        
+                        Remove( expressions_to_hoist.(tree.id), 1 );
+                        
+                        continue;
+                        
+                    fi;
+                    
+                    new_variable_name := Concatenation( "extracted_", String( id ) );
+                    id := id + 1;
+                    
+                    tree.nams := Concatenation( tree.nams, [ new_variable_name ] );
+                    
+                    Remove( expressions_to_hoist.(tree.id), 1 );
+                    
+                    #Assert( 0, IsIdenticalObj( info.funccall.args.2, info.old_func ) );
+                    
+                    if Last( info.funccalls ).funcref.gvar in [ "List", "Sum", "Product" ] then
+                        
+                        #Error("this should never happen");
+                        Last( info.funccalls ).funcref.gvar := Concatenation( Last( info.funccalls ).funcref.gvar, "WithKeys" );
+                        
+                        Assert( 0, Last( info.funccalls ).args.2.narg = 1 );
+                        Last( info.funccalls ).args.2.narg := 2;
+                        Add( Last( info.funccalls ).args.2.nams, "key", 1 );
+                        
+                    elif Last( info.funccalls ).funcref.gvar in [ "ListWithKeys", "SumWithKeys", "ProductWithKeys" ] then
+                        
+                        # already handled
+                        
+                    else
+                        
+                        Error( "this should never happen" );
+                        
+                    fi;
+                    
+                    Assert( 0, Last( info.funccalls ).funcref.gvar in [ "ListWithKeys", "SumWithKeys", "ProductWithKeys" ] );
+                    Assert( 0, Last( info.funccalls ).args.2.narg = 2 );
+                    
+                    CapJitAddBinding( tree.bindings, new_variable_name, rec(
+                        CAP_JIT_STOP_HOISTING := true,
+                        type := "EXPR_FUNCCALL",
+                        funcref := rec(
+                            type := "EXPR_REF_GVAR",
+                            gvar := "ListWithKeys",
+                        ),
+                        args := AsSyntaxTreeList( [
+                            rec(
+                                type := "EXPR_REF_FVAR",
+                                func_id := Last( info.domains ).new_func_id,
+                                name := Last( info.domains ).new_name,
+                            ),
+                            CapJitCopyWithNewFunctionIDs( rec(
+                            #rec(
+                                type := "EXPR_DECLARATIVE_FUNC",
+                                id := Last( info.funccalls ).args.2.id,
+                                narg := 2,
+                                variadic := false,
+                                nams := [ Last( info.funccalls ).args.2.nams[1], Last( info.funccalls ).args.2.nams[2], "RETURN_VALUE" ],
+                                bindings := rec(
+                                    type := "FVAR_BINDING_SEQ",
+                                    names := [ "RETURN_VALUE" ],
+                                    BINDING_RETURN_VALUE := expr,
+                                ),
+                            #),
+                            ) ),
+                        ] ),
+                    ) );
+                    
+                    #expressions_to_hoist.(CapJitValueOfBinding( tree.bindings, new_variable_name ).args.2.id) := [ ];
+                    
+                    info.parent.(info.key) := rec(
+                        type := "EXPR_FUNCCALL",
+                        funcref := rec(
+                            type := "EXPR_REF_GVAR",
+                            gvar := "[]",
+                        ),
+                        args := AsSyntaxTreeList( [
+                            rec(
+                                type := "EXPR_REF_FVAR",
+                                func_id := tree.id,
+                                name := new_variable_name,
+                            ),
+                            rec(
+                                type := "EXPR_REF_FVAR",
+                                func_id := Last( info.funccalls ).args.2.id,
+                                name := "key",
+                            ),
+                        ] ),
+                    );
+                    
+                    continue;
+                    
+                fi;
                 
                 new_variable_name := Concatenation( "hoisted_", String( id ) );
                 id := id + 1;
@@ -224,6 +470,9 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                             
                         fi;
                         
+                        info2.new_func_id := tree.id;
+                        info2.new_name := new_variable_name;
+                        
                         Add( to_delete, i );
                         
                     fi;
@@ -242,6 +491,32 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
         
     end;
     
-    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    result_func := function ( tree, result, keys, additional_arguments )
+      local key;
+        
+        tree := ShallowCopy( tree );
+        
+        if result = fail then
+            
+            return tree;
+            
+        fi;
+        
+        for key in keys do
+            
+            tree.(key) := result.(key);
+            
+        od;
+        
+        return tree;
+        
+    end;
+    
+    #return CapJitCopyWithNewFunctionIDs( CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true ) );
+    tree := CapJitIterateOverTree( tree, pre_func, result_func, ReturnTrue, true );
+    
+    #Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
+    return tree;
     
 end );

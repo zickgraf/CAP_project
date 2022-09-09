@@ -295,3 +295,21 @@ DeclareGlobalFunction( "Triple" );
 #!   Note: Currently, there is no logic for finding the "optimal" code to install if <A>constructor_name</A> is the only entry of `remaining_constructors_in_tower` of multiple entries.
 #! @Arguments category, underlying_category, constructor_name
 DeclareGlobalFunction( "HandlePrecompiledTowers" );
+
+#! @Description
+#!   Same as `List( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "ListWithKeys" );
+
+#! @Description
+#!   Same as `Sum( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "SumWithKeys" );
+
+#! @Description
+#!   Same as `Product( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "ProductWithKeys" );
