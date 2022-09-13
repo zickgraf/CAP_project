@@ -8,29 +8,143 @@ LoadPackage( "CompilerForCAP" );
 #! true
 
 ##
-# TODO hoisting
+# TODO
 
-func :=  function ( cat_1, objects_1, T_1, tau_1, P_1 )
-     local hoisted_1_1, hoisted_2_1;
-     hoisted_2_1 := List( objects_1, function ( x_2 )
-             return Length( x_2 );
-         end );
-     hoisted_1_1 := List( tau_1, function ( x_2 )
-             return AsList( x_2 );
-         end );
-     return ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes( rec(
-            ), cat_1, T_1, P_1, AsList, List( [ 1 .. Length( T_1 ) ], function ( i_2 )
-               return Sum( [ 1 .. Length( objects_1 ) ], function ( j_3 )
-                       return hoisted_1_1[j_3][i_2] * Product( hoisted_2_1{[ 1 .. (j_3 - 1) ]} );
-                   end );
-           end ) );
- end;
+#func :=  function ( cat_1, objects_1, T_1, tau_1, P_1 )
+#     return ObjectifyMorphismWithSourceAndRangeForCAPWithAttributes(
+#        rec( ), cat_1,
+#        T_1, P_1,
+#        AsList, List( [ 1 .. Length( T_1 ) ], i_2 ->
+#            Sum( [ 1 .. Length( objects_1 ) ], j_3 ->
+#                \*(
+#                    List( tau_1, x_4 -> AsList( x_4 ) )[j_3][i_2],
+#                    Product( List( objects_1, x_4 -> Length( x_4 ) ){[ 1 .. (j_3 - 1) ]} )
+#                )
+#            )
+#        )
+#    );
+# end;
+#compiled_func := CapJitCompiledFunction( func );
+#Display( compiled_func );
 
-#tree := ENHANCED_SYNTAX_TREE( func );;
-#tree := CapJitHoistedExpressions( tree );;
-#compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );;
-compiled_func := CapJitCompiledFunction( func );
+func := x_1 ->
+    List( [ 1 .. 2 ], x_2 ->
+        List( [ 1 .. 3 ], x_3 ->
+            List( [ 1 .. 4 ], x_4 ->
+                List( [ 1 .. x_2 ], x_5 ->
+                    ((x_5 + 5) + (x_3 + 3)) + (x_4 + 4)
+                )
+            )
+        )
+    );
+
+tree := ENHANCED_SYNTAX_TREE( func );;
+tree := CapJitHoistedExpressions( tree );;
+tree := CapJitDeduplicatedExpressions( tree );;
+compiled_func := ENHANCED_SYNTAX_TREE_CODE( tree );;
 Display( compiled_func );
+#! function ( x_1 )
+#!   local domain_1_1, extracted_2_1, extracted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, deduped_8_1;
+#!     domain_1_1 := [ 1 .. 2 ];
+#!     deduped_8_1 := ListWithKeys(
+#!         domain_1_1,
+#!         function ( key_2, x_2 )
+#!             return (
+#!                 [ 1 .. x_2 ]
+#!             );
+#!         end
+#!     );
+#!     hoisted_5_1 := [ 1 .. 3 ];
+#!     hoisted_4_1 := [ 1 .. 4 ];
+#!     hoisted_7_1 := ListWithKeys(
+#!         hoisted_5_1,
+#!         function ( key_2, x_2 )
+#!             return (
+#!                 ListWithKeys(
+#!                     hoisted_4_1,
+#!                     function ( key_3, x_3 )
+#!                         return (
+#!                             x_3 + 4
+#!                         );
+#!                     end
+#!                 )
+#!             );
+#!         end
+#!     );
+#!     hoisted_6_1 := ListWithKeys(
+#!         hoisted_5_1,
+#!         function ( key_2, x_2 )
+#!             return (
+#!                 x_2 + 3
+#!             );
+#!         end
+#!     );
+#!     extracted_3_1 := deduped_8_1;
+#!     extracted_2_1 := deduped_8_1;
+#!     return (
+#!         ListWithKeys(
+#!             domain_1_1,
+#!             function ( key_2, x_2 )
+#!               local hoisted_1_2, hoisted_2_2, hoisted_3_2;
+#!                 hoisted_3_2 := extracted_3_1[key_2];
+#!                 hoisted_1_2 := extracted_2_1[key_2];
+#!                 hoisted_2_2 := ListWithKeys(
+#!                     hoisted_1_2,
+#!                     function ( key_3, x_3 )
+#!                         return (
+#!                             x_3 + 5
+#!                         );
+#!                     end
+#!                 );
+#!                 return (
+#!                     ListWithKeys(
+#!                         hoisted_5_1,
+#!                         function ( key_3, x_3 )
+#!                           local extracted_2_3, extracted_4_3, hoisted_5_3;
+#!                             hoisted_5_3 := hoisted_6_1[key_3];
+#!                             extracted_4_3 := ListWithKeys(
+#!                                 hoisted_4_1,
+#!                                 function ( key_4, x_4 )
+#!                                     return (
+#!                                         ListWithKeys(
+#!                                             hoisted_1_2,
+#!                                             function ( key_5, x_5 )
+#!                                                 return (
+#!                                                     hoisted_2_2[key_5] + hoisted_5_3
+#!                                                 );
+#!                                             end
+#!                                         )
+#!                                     );
+#!                                 end
+#!                             );
+#!                             extracted_2_3 := hoisted_7_1[key_3];
+#!                             return (
+#!                                 ListWithKeys(
+#!                                     hoisted_4_1,
+#!                                     function ( key_4, x_4 )
+#!                                       local extracted_3_4, hoisted_4_4;
+#!                                         hoisted_4_4 := extracted_2_3[key_4];
+#!                                         extracted_3_4 := extracted_4_3[key_4];
+#!                                         return (
+#!                                             ListWithKeys(
+#!                                                 hoisted_3_2,
+#!                                                 function ( key_5, x_5 )
+#!                                                     return (
+#!                                                         extracted_3_4[key_5] + hoisted_4_4
+#!                                                     );
+#!                                                 end
+#!                                             )
+#!                                         );
+#!                                     end
+#!                                 )
+#!                             );
+#!                         end
+#!                     )
+#!                 );
+#!             end
+#!         )
+#!     );
+#! end
 #! function ( x_1 )
 #!     local hoisted_1_1;
 #!     hoisted_1_1 := x_1 + 1;
