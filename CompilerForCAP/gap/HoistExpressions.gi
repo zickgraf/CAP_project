@@ -19,7 +19,198 @@ InstallGlobalFunction( CapJitHoistedBindings, function ( tree )
 end );
 
 InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, function ( tree, only_hoist_bindings )
-  local expressions_to_hoist, references_to_function_variables, result_func, additional_arguments_func, pre_func;
+  local expressions_to_hoist, references_to_function_variables, pre_func, result_func, additional_arguments_func, func, id, HOIST;
+    
+    # TODO: handle functions without domain
+    
+    ## hoist to level 1
+    
+    # functions and hoisted variables will be modified inline
+    tree := StructuralCopy( tree );
+    
+    func := tree;
+    
+    id := CapJitGetNextUnusedVariableID( func );
+    
+    HOIST := function ( tree, func_stack, domains, domain_levels )
+        
+        pre_func := function ( tree, additional_arguments )
+            
+            if CapJitIsCallToGlobalFunction( tree, gvar -> gvar in [ "List", "Sum", "Product" ] ) and tree.args.length = 2 and tree.args.2.type = "EXPR_DECLARATIVE_FUNC" then
+                
+                # TODO not inline?
+                tree.funcref.gvar := Concatenation( tree.funcref.gvar, "WithKeys" );
+                
+                tree.args.2.narg := 2;
+                Add( tree.args.2.nams, "key", 1 );
+                
+                return fail;
+                
+            fi;
+            
+            return tree;
+            
+        end;
+        
+        result_func := function ( tree, result, keys, additional_arguments )
+          local levels, hoist_expression, domain_result;
+            
+            levels := Union( List( keys, name -> result.(name).levels ) );
+            
+            if tree.type = "EXPR_REF_FVAR" then
+                
+                # references to variables always restrict the scope to the corresponding function
+                AddSet( levels, PositionProperty( func_stack, f -> f.id = tree.func_id ) );
+                
+            elif tree.type = "FVAR_BINDING_SEQ" then
+                
+                # bindings restrict the scope to the current function
+                AddSet( levels, Length( func_stack ) );
+                
+            elif tree.type = "EXPR_DECLARATIVE_FUNC" then
+                
+                # a function binds its variables, so the level of the function variables can be ignored
+                levels := Difference( levels, [ Length( func_stack ) ] );
+                
+            fi;
+            
+            hoist_expression := function ( expr, levels )
+              local new_variable_name, loop_func, domain, args, new_expr, level;
+                
+                new_variable_name := Concatenation( "hoisted_", String( id ) );
+                id := id + 1;
+                
+                levels := Union( levels, Union( List( levels, l -> domain_levels[l] ) ) );
+                
+                for level in Reversed( levels ) do
+                    
+                    loop_func := func_stack[level];
+                    domain := domains[level];
+                    
+                    Assert( 0, loop_func.narg = 2 );
+                    Assert( 0, Length( loop_func.nams ) = 3 );
+                    Assert( 0, loop_func.nams[1] = "key" );
+                    Assert( 0, loop_func.nams[3] = "RETURN_VALUE" );
+                    
+                    expr := rec(
+                        type := "EXPR_FUNCCALL",
+                        funcref := rec(
+                            type := "EXPR_REF_GVAR",
+                            gvar := "ListWithKeys",
+                        ),
+                        args := AsSyntaxTreeList( [
+                            domain,
+                            rec(
+                                type := "EXPR_DECLARATIVE_FUNC",
+                                id := loop_func.id,
+                                narg := 2,
+                                variadic := false,
+                                nams := loop_func.nams,
+                                bindings := rec(
+                                    type := "FVAR_BINDING_SEQ",
+                                    names := [ "RETURN_VALUE" ],
+                                    BINDING_RETURN_VALUE := expr,
+                                ),
+                            ),
+                        ] ),
+                    );
+                    
+                od;
+                
+                func.nams := Concatenation( func.nams, [ new_variable_name ] );
+                
+                CapJitAddBinding( func.bindings, new_variable_name, CapJitCopyWithNewFunctionIDs( expr ) );
+                
+                new_expr := rec(
+                    type := "EXPR_REF_FVAR",
+                    func_id := func.id,
+                    name := new_variable_name,
+                );
+                
+                for level in levels do
+                    
+                    loop_func := func_stack[level];
+                    #domain := domains[level];
+                    
+                    new_expr := rec(
+                        type := "EXPR_FUNCCALL",
+                        funcref := rec(
+                            type := "EXPR_REF_GVAR",
+                            gvar := "[]",
+                        ),
+                        args := AsSyntaxTreeList( [
+                            new_expr,
+                            rec(
+                                type := "EXPR_REF_FVAR",
+                                func_id := loop_func.id,
+                                name := "key",
+                            ),
+                        ] ),
+                    );
+                    
+                od;
+                
+                return new_expr;
+                
+            end;
+            
+            if result = fail then
+                
+                domain_result := HOIST( tree.args.1, func_stack, domains, domain_levels );
+                
+                tree.args.1 := hoist_expression( tree.args.1, domain_result.levels );
+                
+                Display( ENHANCED_SYNTAX_TREE_CODE( func ) );
+                
+                func_result := HOIST( tree.args.2, Concatenation( func_stack, [ tree.args.2 ] ), Concatenation( domains, [ tree.args.1 ] ), Concatenation( domain_levels, [ domain_result.levels ] ) );
+                
+                levels := Union( domain_result.levels, func_result.levels );
+                
+            else
+                
+                for key in keys do
+                    
+                    #Display( "################" );
+                    #Display( ENHANCED_SYNTAX_TREE_CODE( func ) );
+                    #Display( levels );
+                    if not IsEmpty( Difference( levels, result.(key).levels ) ) and StartsWith( tree.(key).type, "EXPR_" ) and not tree.(key).type in [ "EXPR_REF_FVAR", "EXPR_REF_GVAR", "EXPR_DECLARATIVE_FUNC", "EXPR_INT", "EXPR_STRING", "EXPR_TRUE", "EXPR_FALSE" ] then
+                        
+                        tree.(key) := hoist_expression( tree.(key), result.(key).levels );
+                        
+                        Display( ENHANCED_SYNTAX_TREE_CODE( func ) );
+                        
+                    fi;
+                    
+                od;
+                
+            fi;
+            
+            return rec( levels := levels );
+            
+        end;
+        
+        additional_arguments_func := function ( tree, key, additional_arguments )
+            
+            #if tree.type = "EXPR_DECLARATIVE_FUNC" then
+            #    
+            #    return Concatenation( func_stack, [ tree ] );
+            #    
+            #fi;
+            
+            return additional_arguments;
+            
+        end;
+        
+        return CapJitIterateOverTree( tree, pre_func, result_func, additional_arguments_func, rec( ) );
+        
+    end;
+    
+    HOIST( tree, [ ], [ ], [ ] );
+    
+    return tree;
+    
+    
+    
     
     # functions and hoisted variables will be modified inline
     tree := StructuralCopy( tree );
