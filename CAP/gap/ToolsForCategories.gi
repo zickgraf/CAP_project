@@ -1576,3 +1576,23 @@ InstallGlobalFunction( ProductWithKeys, function ( list, func )
     return product;
     
 end );
+
+##
+InstallGlobalFunction( ForAllWithKeys, function ( list, func )
+  local i;
+    
+    # adapted implementation of `ForAll`
+    
+    for i in [ 1 .. Length( list ) ] do
+        
+        if not func( i, list[i] ) then
+            
+            return false;
+            
+        fi;
+        
+    od;
+    
+    return true;
+    
+end );

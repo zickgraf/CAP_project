@@ -318,3 +318,9 @@ DeclareGlobalFunction( "SumWithKeys" );
 #! @Arguments list, func
 #! @Returns a list
 DeclareGlobalFunction( "ProductWithKeys" );
+
+#! @Description
+#!   Same as `ForAll( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "ForAllWithKeys" );
