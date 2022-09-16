@@ -70,6 +70,44 @@ func := x_1 ->
         )
     );
 
+func := x_1 ->
+    List( [ 1 .. 2 ], x_2 ->
+        List( [ 1 .. 3 ], x_3 ->
+            List( [ 1 .. x_3 ], x_4 ->
+                List( [ 1 .. 4 ], x_5 ->
+                    List( [ 1 .. 5 ], x_6 ->
+                        ((x_6 + 6) + (x_5 + 5)) + ((x_6 + 6) + (x_4 + 4))
+                    )
+                )
+            )
+        )
+    );
+
+#EXPENSIVE_OPERATION := x -> x;
+#
+#func := x_1 ->
+#    List( EXPENSIVE_OPERATION( x_1 ), x_2 ->
+#        List( EXPENSIVE_OPERATION( x_2 ), x_3 ->
+#            List( EXPENSIVE_OPERATION( x_1 ), x_4 ->
+#                List( EXPENSIVE_OPERATION( x_2 ), x_5 ->
+#                    List( [ 1 .. x_3 ], x_6 ->
+#                        ((x_6 + 6) + (x_5 + 5)) + (x_4 + 4)
+#                    )
+#                )
+#            )
+#        )
+#    );
+
+#EXPENSIVE_OPERATION := x -> x;
+#
+#func := x_1 ->
+#    List( [ 1 .. x_1 ], x_2 -> [
+#        List( [ 1 .. x_2 ], x_3 -> EXPENSIVE_OPERATION( x_3 ) + x_2 ),
+#        List( [ 1 .. x_2 ], x_3 ->
+#            List( [ 1 .. x_2 ], x_4 -> EXPENSIVE_OPERATION( x_4 ) + x_2 )
+#        )
+#    ] );
+
 #func := x_1 ->
 #    extracted_1 := List( [ 1 .. 3 ], x_3 ->
 #        List( [ 1 .. x_3 ], x_6 ->

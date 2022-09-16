@@ -60,9 +60,9 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                             
                         fi;
                         
-                    elif ForAny( tree.args, a -> a.type = "EXPR_DECLARATIVE_FUNC" ) and not tree.funcref.gvar in [ "ListN", "Iterated" ] then
+                    elif ForAny( tree.args, a -> a.type = "EXPR_DECLARATIVE_FUNC" ) and not tree.funcref.gvar in [ "ListN", "Iterated", "CapFixpoint" ] then
                         
-                        Print( "WARNING: Could not detect domain of function in call of ", tree.funcref.gvar, "\n" );
+                        Print( "WARNING: Could not detect domain of function in call of ", tree.funcref.gvar, ". Please write a bug report including this message.\n" );
                         
                     fi;
                     
@@ -76,7 +76,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
               local hoisted_expression, levels, level, current_domain_levels, func_levels, key;
                 
                 hoisted_expression := function ( expr, levels )
-                  local is_cheap_expression, old_length, new_length, target_level, func, loop_func, domain, args, new_variable_name, new_expr, level, pos, name;
+                  local is_cheap_expression, old_length, new_length, target_level, func, loop_func, domain, new_variable_name, value, new_expr, level, pos, name;
                     
                     if not StartsWith( expr.type, "EXPR_" ) then
                         
@@ -123,7 +123,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                     
                     levels := ShallowCopy( levels );
                     
-                    # we never hoist to level 0 -> always depend on level 1
+                    # we never hoist to level 0 -> always implicitly depend on level 1
                     AddSet( levels, 1 );
                     
                     # recursively collect all levels on which expr depends
@@ -157,15 +157,17 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                     
                     Assert( 0, target_level > 0 );
                     
-                    # We want to hoist even if target_level = Length( func_stack ) because this improves deduplication. TODO: only if Length( func_stack ) = 1?
-                    #if target_level = Length( func_stack ) then
-                    #    
-                    #    return expr;
-                    #    
-                    #fi;
-                    
                     func := func_stack[target_level];
                     levels := Filtered( levels, l -> l > target_level );
+                    
+                    # if we would hoist to the current level, do nothing
+                    if target_level = Length( func_stack ) then
+                        
+                        Assert( 0, IsEmpty( levels ) );
+                        
+                        return expr;
+                        
+                    fi;
                     
                     for level in Reversed( levels ) do
                         
@@ -213,16 +215,18 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                     
                     for name in func.bindings.names do
                         
-                        # TODO
-                        # By construction, func had no proper bindings 
+                        # We cannot reuse the return value.
                         if name = "RETURN_VALUE" then
                             
                             continue;
                             
                         fi;
                         
-                        # TODO
-                        if not IsIdenticalObj( CapJitValueOfBinding( func.bindings, name ), expr ) and CapJitIsEqualForEnhancedSyntaxTrees( CapJitValueOfBinding( func.bindings, name ), expr ) then
+                        value := CapJitValueOfBinding( func.bindings, name );
+                        
+                        Assert( 0, not IsIdenticalObj( value, expr ) ); # this would mean that we hoist to the same level, but this is excluded above
+                        
+                        if CapJitIsEqualForEnhancedSyntaxTrees( value, expr ) then
                             
                             new_variable_name := name;
                             
