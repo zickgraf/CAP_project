@@ -865,16 +865,26 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE_CODE, function ( tree )
         # COVERAGE_IGNORE_BLOCK_START
         Display( "The syntax tree is not of type EXPR_FUNC. It will be wrapped in a dummy function for debugging purposes." );
         
-        if StartsWith( tree.type, "EXPR" ) then
+        if StartsWith( tree.type, "EXPR_" ) then
             
             stat := rec(
                 type := "STAT_RETURN_OBJ",
                 obj := tree,
             );
             
-        elif StartsWith( tree.type, "STAT" ) then
+        elif StartsWith( tree.type, "STAT_" ) then
             
             stat := tree;
+            
+        elif tree.type = "SYNTAX_TREE_LIST" then
+            
+            stat := rec(
+                type := "STAT_RETURN_OBJ",
+                obj := rec(
+                    type := "EXPR_LIST",
+                    list := tree,
+                ),
+            );
             
         else
             
