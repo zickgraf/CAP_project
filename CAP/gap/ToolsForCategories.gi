@@ -1596,3 +1596,117 @@ InstallGlobalFunction( ForAllWithKeys, function ( list, func )
     return true;
     
 end );
+
+##
+InstallGlobalFunction( ForAnyWithKeys, function ( list, func )
+  local i;
+    
+    # adapted implementation of `ForAny`
+    
+    for i in [ 1 .. Length( list ) ] do
+        
+        if func( i, list[i] ) then
+            
+            return true;
+            
+        fi;
+        
+    od;
+    
+    return false;
+    
+end );
+
+##
+InstallGlobalFunction( NumberWithKeys, function ( list, func )
+  local nr, i;
+    
+    # adapted implementation of `Number`
+    
+    nr := 0;
+    
+    for i in [ 1 .. Length( list ) ] do
+        
+        if func( i, list[i] ) then
+            
+            nr := nr + 1;
+            
+        fi;
+        
+    od;
+    
+    return nr;
+    
+end );
+
+##
+InstallGlobalFunction( FilteredWithKeys, function ( list, func )
+  local res, i, elm, j;
+    
+    # adapted implementation of `Filtered`
+    
+    res := list{[ ]};
+    
+    i := 0;
+    
+    for j in [ 1 .. Length( list ) ] do
+        
+        elm := list[j];
+        
+        if func( j, elm ) then
+            
+            i := i + 1;
+            
+            res[i] := elm;
+            
+        fi;
+        
+    od;
+    
+    return res;
+    
+end );
+
+##
+InstallGlobalFunction( FirstWithKeys, function ( list, func )
+  local elm, i;
+    
+    # adapted implementation of `First`
+    
+    for i in [ 1 .. Length( list ) ] do
+        
+        elm := list[i];
+        
+        if func( i, elm ) then
+            
+            return elm;
+            
+        fi;
+        
+    od;
+    
+    return fail;
+    
+end );
+
+##
+InstallGlobalFunction( LastWithKeys, function ( list, func )
+  local elm, i;
+    
+    # adapted implementation of `Last`
+    
+    for i in [ Length( list ), Length( list ) - 1 .. 1 ] do
+        
+        elm := list[i];
+        
+        if func( i, elm ) then
+            
+            return elm;
+            
+        fi;
+        
+    od;
+    
+    return fail;
+    
+end );

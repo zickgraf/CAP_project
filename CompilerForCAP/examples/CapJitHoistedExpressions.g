@@ -42,6 +42,34 @@ func := x_1 ->
         )
     );
 
+func := x_1 ->
+    List( [ 1 .. 2 ], x_2 ->
+        List( [ 1 .. 3 ], x_3 ->
+            List( [ 1 .. 4 ], x_4 ->
+                List( [ 1 .. 5 ], x_5 ->
+                    List( [ 1 .. x_3 ], function ( x_6 )
+                        local tmp_6;
+                        tmp_6 := x_6 + 6;
+                        return (tmp_6 + (x_5 + 5)) + (x_4 + 4);
+                    end )
+                )
+            )
+        )
+    );
+
+func := x_1 ->
+    List( [ 1 .. x_1 ], x_2 ->
+        List( [ 1 .. x_2 ], x_3 ->
+            List( [ 1 .. x_3 ], x_4 ->
+                List( [ 1 .. x_4 ], x_5 ->
+                    List( [ 1 .. x_5 ], x_6 ->
+                        ((x_6 + 6) + (x_5 + 5)) + ((x_6 + 6) + (x_4 + 4))
+                    )
+                )
+            )
+        )
+    );
+
 #func := x_1 ->
 #    extracted_1 := List( [ 1 .. 3 ], x_3 ->
 #        List( [ 1 .. x_3 ], x_6 ->

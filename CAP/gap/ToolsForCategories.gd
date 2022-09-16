@@ -324,3 +324,33 @@ DeclareGlobalFunction( "ProductWithKeys" );
 #! @Arguments list, func
 #! @Returns a list
 DeclareGlobalFunction( "ForAllWithKeys" );
+
+#! @Description
+#!   Same as `ForAny( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "ForAnyWithKeys" );
+
+#! @Description
+#!   Same as `Number( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "NumberWithKeys" );
+
+#! @Description
+#!   Same as `Filtered( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "FilteredWithKeys" );
+
+#! @Description
+#!   Same as `First( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "FirstWithKeys" );
+
+#! @Description
+#!   Same as `Last( <A>list</A>, <A>func</A> )` but <A>func</A> gets both the key `i` and `<A>list</A>[i]` as arguments.
+#! @Arguments list, func
+#! @Returns a list
+DeclareGlobalFunction( "LastWithKeys" );
