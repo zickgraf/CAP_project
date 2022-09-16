@@ -117,7 +117,9 @@ function ( cat_1, arg2_1, arg3_1 )
     hoisted_2_1 := HomalgIdentityMatrix( deduped_5_1, UnderlyingRing( cat_1 ) );
     hoisted_1_1 := [ 1 .. deduped_5_1 ];
     return ListWithKeys( hoisted_1_1, function ( key_2, logic_new_func_x_2 )
-            return CreateCapCategoryMorphismWithAttributes( cat_1, arg2_1, arg3_1, UnderlyingMatrix, ConvertRowToMatrix( CertainRows( hoisted_2_1, [ logic_new_func_x_2 ] ), hoisted_3_1, hoisted_4_1 ) );
+            local hoisted_1_2;
+            hoisted_1_2 := [ logic_new_func_x_2 ];
+            return CreateCapCategoryMorphismWithAttributes( cat_1, arg2_1, arg3_1, UnderlyingMatrix, ConvertRowToMatrix( CertainRows( hoisted_2_1, hoisted_1_2 ), hoisted_3_1, hoisted_4_1 ) );
         end );
 end
 ########
@@ -137,9 +139,9 @@ function ( cat_1, a_1, b_1 )
     hoisted_5_1 := deduped_9_1;
     hoisted_4_1 := [ 1 .. deduped_7_1 ];
     morphism_attr_3_1 := HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                  local deduped_1_2;
-                  deduped_1_2 := i_2 - 1;
-                  return REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_6_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1;
+                  local hoisted_1_2;
+                  hoisted_1_2 := i_2 - 1;
+                  return REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_6_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1;
               end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, UnderlyingRing( cat_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_3_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_3_1 ) ), UnderlyingMatrix, morphism_attr_3_1 );
 end
@@ -160,9 +162,9 @@ function ( cat_1, a_1, b_1 )
     hoisted_5_1 := deduped_8_1;
     hoisted_4_1 := [ 1 .. deduped_7_1 ];
     morphism_attr_3_1 := HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                  local deduped_1_2;
-                  deduped_1_2 := i_2 - 1;
-                  return REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_6_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1;
+                  local hoisted_1_2;
+                  hoisted_1_2 := i_2 - 1;
+                  return REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_6_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1;
               end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, UnderlyingRing( cat_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_3_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_3_1 ) ), UnderlyingMatrix, morphism_attr_3_1 );
 end
@@ -181,9 +183,9 @@ function ( cat_1, s_1, a_1, b_1, r_1 )
     hoisted_4_1 := Dimension( a_1 );
     hoisted_3_1 := [ 1 .. deduped_6_1 ];
     return CreateCapCategoryMorphismWithAttributes( cat_1, s_1, r_1, UnderlyingMatrix, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_3_1, function ( key_2, i_2 )
-                    local deduped_1_2;
-                    deduped_1_2 := i_2 - 1;
-                    return REM_INT( deduped_1_2, hoisted_4_1 ) * hoisted_5_1 + QUO_INT( deduped_1_2, hoisted_4_1 ) + 1;
+                    local hoisted_1_2;
+                    hoisted_1_2 := i_2 - 1;
+                    return REM_INT( hoisted_1_2, hoisted_4_1 ) * hoisted_5_1 + QUO_INT( hoisted_1_2, hoisted_4_1 ) + 1;
                 end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, UnderlyingRing( cat_1 ) ) );
 end
 ########
@@ -201,9 +203,9 @@ function ( cat_1, s_1, a_1, b_1, r_1 )
     hoisted_4_1 := Dimension( b_1 );
     hoisted_3_1 := [ 1 .. deduped_6_1 ];
     return CreateCapCategoryMorphismWithAttributes( cat_1, s_1, r_1, UnderlyingMatrix, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_3_1, function ( key_2, i_2 )
-                    local deduped_1_2;
-                    deduped_1_2 := i_2 - 1;
-                    return REM_INT( deduped_1_2, hoisted_4_1 ) * hoisted_5_1 + QUO_INT( deduped_1_2, hoisted_4_1 ) + 1;
+                    local hoisted_1_2;
+                    hoisted_1_2 := i_2 - 1;
+                    return REM_INT( hoisted_1_2, hoisted_4_1 ) * hoisted_5_1 + QUO_INT( hoisted_1_2, hoisted_4_1 ) + 1;
                 end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, UnderlyingRing( cat_1 ) ) );
 end
 ########
@@ -275,25 +277,25 @@ function ( cat_1, a_1, b_1 )
     hoisted_3_1 := deduped_25_1;
     hoisted_2_1 := [ 1 .. deduped_19_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_17_1 ), KroneckerMat( deduped_21_1, KroneckerMat( deduped_21_1, ConvertMatrixToRow( deduped_22_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_3_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_3_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                                 end ) ), deduped_19_1 ), deduped_19_1, deduped_19_1, deduped_26_1 ), deduped_22_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_25_1 * 1), deduped_26_1 ), deduped_22_1 ) ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_21_1, ConvertMatrixToRow( deduped_23_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                                      local deduped_1_2;
-                                      deduped_1_2 := (i_2 - 1);
-                                      return (REM_INT( deduped_1_2, hoisted_5_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                                      local hoisted_1_2;
+                                      hoisted_1_2 := (i_2 - 1);
+                                      return (REM_INT( hoisted_1_2, hoisted_5_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                                   end ) ), deduped_18_1 ), deduped_18_1, deduped_18_1, deduped_26_1 ), deduped_23_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_24_1 * 1), deduped_26_1 ), deduped_23_1 )), HomalgIdentityMatrix( deduped_19_1, deduped_26_1 ) ), deduped_22_1 ) * KroneckerMat( KroneckerMat( HomalgIdentityMatrix( deduped_18_1, deduped_26_1 ), HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_5_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_5_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                           end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_26_1 ) ), deduped_22_1 ) ) * (KroneckerMat( deduped_17_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_8_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_10_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_10_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                         end ) ), deduped_12_1 ), deduped_12_1, deduped_12_1, deduped_26_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_11_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_9_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_9_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                         end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_26_1 ), deduped_13_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_17_1 ), deduped_13_1 )) * KroneckerMat( deduped_23_1, deduped_22_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -333,25 +335,25 @@ function ( cat_1, s_1, a_1, b_1, r_1 )
     hoisted_3_1 := deduped_25_1;
     hoisted_2_1 := [ 1 .. deduped_19_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_17_1 ), KroneckerMat( deduped_21_1, KroneckerMat( deduped_21_1, ConvertMatrixToRow( deduped_22_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_3_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_3_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                                 end ) ), deduped_19_1 ), deduped_19_1, deduped_19_1, deduped_26_1 ), deduped_22_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_25_1 * 1), deduped_26_1 ), deduped_22_1 ) ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_21_1, ConvertMatrixToRow( deduped_23_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                                      local deduped_1_2;
-                                      deduped_1_2 := (i_2 - 1);
-                                      return (REM_INT( deduped_1_2, hoisted_5_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                                      local hoisted_1_2;
+                                      hoisted_1_2 := (i_2 - 1);
+                                      return (REM_INT( hoisted_1_2, hoisted_5_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                                   end ) ), deduped_18_1 ), deduped_18_1, deduped_18_1, deduped_26_1 ), deduped_23_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_24_1 * 1), deduped_26_1 ), deduped_23_1 )), HomalgIdentityMatrix( deduped_19_1, deduped_26_1 ) ), deduped_22_1 ) * KroneckerMat( KroneckerMat( HomalgIdentityMatrix( deduped_18_1, deduped_26_1 ), HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_5_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_5_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                           end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_26_1 ) ), deduped_22_1 ) ) * (KroneckerMat( deduped_17_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_8_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_10_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_10_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                         end ) ), deduped_12_1 ), deduped_12_1, deduped_12_1, deduped_26_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_11_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_9_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_9_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                         end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_26_1 ), deduped_13_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_17_1 ), deduped_13_1 )) * KroneckerMat( deduped_23_1, deduped_22_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -374,9 +376,9 @@ function ( cat_1, a_1, b_1, alpha_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_7_1, deduped_9_1 ), ConvertMatrixToRow( deduped_6_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_8_1 * deduped_7_1), deduped_9_1 ), deduped_6_1 ) * KroneckerMat( UnderlyingMatrix( alpha_1 ), deduped_6_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), b_1, UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -400,13 +402,13 @@ function ( cat_1, alpha_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_7_1 ), UnderlyingMatrix( alpha_1 ) ) * (KroneckerMat( deduped_7_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_10_1 ), deduped_9_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_7_1 ), deduped_9_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -430,13 +432,13 @@ function ( cat_1, a_1 )
     hoisted_3_1 := deduped_9_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := ConvertMatrixToRow( deduped_7_1 ) * (KroneckerMat( TransposedMatrix( deduped_7_1 ), deduped_7_1 ) * (KroneckerMat( deduped_7_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_10_1 ), deduped_8_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_7_1 ), deduped_8_1 )));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -460,13 +462,13 @@ function ( cat_1, alpha_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := ConvertMatrixToRow( HomalgIdentityMatrix( Dimension( Source( alpha_1 ) ), deduped_10_1 ) ) * (KroneckerMat( TransposedMatrix( deduped_7_1 ), UnderlyingMatrix( alpha_1 ) ) * (KroneckerMat( deduped_7_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_10_1 ), deduped_9_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_7_1 ), deduped_9_1 )));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -544,13 +546,13 @@ function ( cat_1, a_1, b_1 )
     hoisted_3_1 := deduped_11_1;
     hoisted_2_1 := [ 1 .. deduped_6_1 ];
     morphism_attr_1_1 := KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_12_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_8_1 ), deduped_9_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -576,13 +578,13 @@ function ( cat_1, a_1, b_1, s_1 )
     hoisted_3_1 := deduped_11_1;
     hoisted_2_1 := [ 1 .. deduped_6_1 ];
     morphism_attr_1_1 := KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_12_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_8_1 ), deduped_9_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -629,9 +631,9 @@ function ( cat_1, a_1, b_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_7_1, deduped_9_1 ), ConvertMatrixToRow( deduped_6_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_8_1 * deduped_7_1), deduped_9_1 ), deduped_6_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -654,9 +656,9 @@ function ( cat_1, a_1, b_1, r_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_7_1, deduped_9_1 ), ConvertMatrixToRow( deduped_6_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_8_1 * deduped_7_1), deduped_9_1 ), deduped_6_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -717,13 +719,13 @@ function ( cat_1, a_1, b_1 )
     hoisted_3_1 := deduped_10_1;
     hoisted_2_1 := [ 1 .. deduped_6_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_8_1 ), deduped_9_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                      local deduped_1_2;
-                      deduped_1_2 := (i_2 - 1);
-                      return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                      local hoisted_1_2;
+                      hoisted_1_2 := (i_2 - 1);
+                      return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                   end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -749,13 +751,13 @@ function ( cat_1, a_1, b_1, r_1 )
     hoisted_3_1 := deduped_10_1;
     hoisted_2_1 := [ 1 .. deduped_6_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_8_1 ), deduped_9_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                      local deduped_1_2;
-                      deduped_1_2 := (i_2 - 1);
-                      return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                      local hoisted_1_2;
+                      hoisted_1_2 := (i_2 - 1);
+                      return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                   end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -969,9 +971,11 @@ function ( cat_1, objects_1, L_1, objectsp_1 )
     hoisted_3_1 := List( L_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. Length( L_1 ) ];
     morphism_attr_1_1 := UnionOfRows( deduped_9_1, Sum( deduped_8_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-              return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_5_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_6_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_6_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_5_1{[ (logic_new_func_x_2 + 1) .. hoisted_7_1 ]} ), hoisted_6_1 ) );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_5_1{hoisted_1_2} ), hoisted_6_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_6_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_5_1{[ hoisted_2_2 .. hoisted_7_1 ]} ), hoisted_6_1 ) );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -995,9 +999,11 @@ function ( cat_1, P_1, objects_1, L_1, objectsp_1, Pp_1 )
     hoisted_3_1 := List( L_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. Length( L_1 ) ];
     morphism_attr_1_1 := UnionOfRows( deduped_8_1, Dimension( Pp_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-              return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_5_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_6_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_6_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_5_1{[ (logic_new_func_x_2 + 1) .. hoisted_7_1 ]} ), hoisted_6_1 ) );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_5_1{hoisted_1_2} ), hoisted_6_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_6_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_5_1{[ hoisted_2_2 .. hoisted_7_1 ]} ), hoisted_6_1 ) );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), Pp_1, UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -1035,9 +1041,11 @@ function ( cat_1, objects_1, L_1, objectsp_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. Length( L_1 ) ];
     morphism_attr_1_1 := UnionOfColumns( deduped_9_1, Sum( deduped_8_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-              return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), deduped_1_2, hoisted_5_1 ) ) * hoisted_7_1[logic_new_func_x_2];
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), deduped_3_2, hoisted_5_1 ) ) * hoisted_7_1[logic_new_func_x_2];
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -1061,9 +1069,11 @@ function ( cat_1, P_1, objects_1, L_1, objectsp_1, Pp_1 )
         end );
     hoisted_2_1 := [ 1 .. Length( L_1 ) ];
     morphism_attr_1_1 := UnionOfColumns( deduped_8_1, Dimension( P_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-              return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), deduped_1_2, hoisted_5_1 ) ) * hoisted_7_1[logic_new_func_x_2];
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), deduped_3_2, hoisted_5_1 ) ) * hoisted_7_1[logic_new_func_x_2];
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, P_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -1102,9 +1112,11 @@ function ( cat_1, D_1 )
     hoisted_3_1 := List( D_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
     morphism_attr_1_1 := UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -1131,9 +1143,11 @@ function ( cat_1, D_1 )
     hoisted_3_1 := deduped_9_1;
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
     morphism_attr_1_1 := UnionOfColumns( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -1188,9 +1202,11 @@ function ( cat_1, D_1 )
     hoisted_3_1 := List( D_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
     morphism_attr_1_1 := SyzygiesOfColumns( UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -1304,9 +1320,9 @@ function ( cat_1, a_1, b_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_8_1, deduped_9_1 ), ConvertMatrixToColumn( deduped_6_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -1329,9 +1345,9 @@ function ( cat_1, a_1, b_1, s_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_8_1, deduped_9_1 ), ConvertMatrixToColumn( deduped_6_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -1357,9 +1373,11 @@ function ( cat_1, arg2_1 )
     hoisted_2_1 := deduped_8_1;
     hoisted_1_1 := [ 1 .. deduped_10_1 ];
     deduped_6_1 := ListWithKeys( hoisted_1_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_2_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_2_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_3_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_3_1 ), HomalgZeroMatrix( Sum( hoisted_2_1{[ (logic_new_func_x_2 + 1) .. hoisted_4_1 ]} ), deduped_1_2, hoisted_3_1 ) ) * hoisted_5_1[logic_new_func_x_2];
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_2_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_2_1{hoisted_1_2} ), deduped_3_2, hoisted_3_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_3_1 ), HomalgZeroMatrix( Sum( hoisted_2_1{[ hoisted_2_2 .. hoisted_4_1 ]} ), deduped_3_2, hoisted_3_1 ) ) * hoisted_5_1[logic_new_func_x_2];
         end );
     return CreateCapCategoryObjectWithAttributes( cat_1, Dimension, deduped_7_1 - RowRankOfMatrix( (UnionOfColumns( deduped_9_1, deduped_7_1, deduped_6_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_9_1, deduped_7_1, deduped_6_1{[ 2 .. deduped_10_1 ]} )) ) );
 end
@@ -1385,9 +1403,11 @@ function ( cat_1, D_1 )
     hoisted_3_1 := deduped_9_1;
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
     morphism_attr_1_1 := SyzygiesOfRows( UnionOfColumns( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -1401,46 +1421,63 @@ end
         
 ########
 function ( cat_1, morphisms_1, L_1, morphismsp_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, hoisted_8_1, hoisted_9_1, hoisted_10_1, hoisted_11_1, hoisted_12_1, hoisted_13_1, deduped_14_1, deduped_15_1, deduped_16_1, deduped_17_1, deduped_18_1, deduped_19_1, deduped_20_1, deduped_21_1, deduped_22_1, deduped_23_1;
-    deduped_23_1 := UnderlyingRing( cat_1 );
-    deduped_22_1 := Length( morphisms_1 );
-    deduped_21_1 := Length( morphismsp_1 );
-    deduped_20_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, hoisted_8_1, hoisted_9_1, hoisted_10_1, hoisted_11_1, hoisted_12_1, hoisted_13_1, hoisted_14_1, hoisted_15_1, deduped_16_1, deduped_17_1, deduped_18_1, deduped_19_1, deduped_20_1, deduped_21_1, deduped_22_1, deduped_23_1, deduped_24_1, deduped_25_1, deduped_26_1, deduped_27_1;
+    deduped_27_1 := Length( morphismsp_1 );
+    deduped_26_1 := Length( morphisms_1 );
+    deduped_25_1 := UnderlyingRing( cat_1 );
+    deduped_24_1 := [ 2 .. deduped_26_1 ];
+    deduped_23_1 := [ 1 .. deduped_26_1 - 1 ];
+    deduped_22_1 := ListWithKeys( morphismsp_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Source( logic_new_func_x_2 ) );
         end );
-    deduped_19_1 := ListWithKeys( morphismsp_1, function ( key_2, logic_new_func_x_2 )
+    deduped_21_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Source( logic_new_func_x_2 ) );
         end );
-    deduped_18_1 := Sum( deduped_19_1 );
-    deduped_17_1 := Sum( deduped_20_1 );
-    hoisted_13_1 := List( morphismsp_1, UnderlyingMatrix );
-    hoisted_12_1 := deduped_21_1;
-    hoisted_11_1 := deduped_19_1;
-    hoisted_10_1 := [ 1 .. deduped_21_1 ];
-    hoisted_4_1 := deduped_23_1;
-    deduped_16_1 := ListWithKeys( hoisted_10_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_11_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_11_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_11_1{[ (logic_new_func_x_2 + 1) .. hoisted_12_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_13_1[logic_new_func_x_2];
+    deduped_20_1 := Sum( deduped_22_1 );
+    deduped_19_1 := Sum( deduped_21_1 );
+    hoisted_15_1 := List( morphismsp_1, UnderlyingMatrix );
+    hoisted_14_1 := deduped_27_1;
+    hoisted_13_1 := deduped_22_1;
+    hoisted_12_1 := [ 1 .. deduped_27_1 ];
+    hoisted_4_1 := deduped_25_1;
+    deduped_18_1 := ListWithKeys( hoisted_12_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_13_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_13_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_13_1{[ hoisted_2_2 .. hoisted_14_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_15_1[logic_new_func_x_2];
         end );
     hoisted_6_1 := List( morphisms_1, UnderlyingMatrix );
-    hoisted_5_1 := deduped_22_1;
-    hoisted_3_1 := deduped_20_1;
-    hoisted_2_1 := [ 1 .. deduped_22_1 ];
-    deduped_15_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+    hoisted_5_1 := deduped_26_1;
+    hoisted_3_1 := deduped_21_1;
+    hoisted_2_1 := [ 1 .. deduped_26_1 ];
+    deduped_17_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+        end );
+    hoisted_9_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+            return logic_new_func_x_2 + 1;
+        end );
+    hoisted_8_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+            return [ 1 .. logic_new_func_x_2 - 1 ];
+        end );
+    deduped_16_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
             local deduped_1_2;
             deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_8_1[key_2]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_9_1[key_2] .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
-    deduped_14_1 := UnionOfColumns( deduped_23_1, deduped_17_1, deduped_15_1{[ 1 .. deduped_22_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_23_1, deduped_17_1, deduped_15_1{[ 2 .. deduped_22_1 ]} );
-    hoisted_9_1 := List( L_1, UnderlyingMatrix );
-    hoisted_8_1 := SyzygiesOfRows( deduped_14_1 );
+    hoisted_11_1 := List( L_1, UnderlyingMatrix );
+    hoisted_10_1 := SyzygiesOfRows( UnionOfColumns( deduped_25_1, deduped_19_1, deduped_16_1{deduped_23_1} ) + -1 * UnionOfColumns( deduped_25_1, deduped_19_1, deduped_16_1{deduped_24_1} ) );
     hoisted_7_1 := [ 1 .. Length( L_1 ) ];
-    morphism_attr_1_1 := RightDivide( UnionOfColumns( deduped_23_1, deduped_17_1 - RowRankOfMatrix( deduped_14_1 ), ListWithKeys( hoisted_7_1, function ( key_2, logic_new_func_x_2 )
-                local deduped_1_2;
-                deduped_1_2 := Sum( hoisted_3_1{[ 1 .. logic_new_func_x_2 - 1 ]} ) + 1;
-                return CertainColumns( hoisted_8_1, [ deduped_1_2 .. (deduped_1_2 - 1 + hoisted_3_1[logic_new_func_x_2]) ] ) * hoisted_9_1[logic_new_func_x_2];
-            end ) ), SyzygiesOfRows( UnionOfColumns( deduped_23_1, deduped_18_1, deduped_16_1{[ 1 .. deduped_21_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_23_1, deduped_18_1, deduped_16_1{[ 2 .. deduped_21_1 ]} ) ) );
+    morphism_attr_1_1 := RightDivide( UnionOfColumns( deduped_25_1, deduped_19_1 - RowRankOfMatrix( (UnionOfColumns( deduped_25_1, deduped_19_1, deduped_17_1{deduped_23_1} ) + -1 * UnionOfColumns( deduped_25_1, deduped_19_1, deduped_17_1{deduped_24_1} )) ), ListWithKeys( hoisted_7_1, function ( key_2, logic_new_func_x_2 )
+                local hoisted_1_2, deduped_2_2;
+                hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+                deduped_2_2 := Sum( hoisted_3_1{hoisted_1_2} ) + 1;
+                return CertainColumns( hoisted_10_1, [ deduped_2_2 .. (deduped_2_2 - 1 + hoisted_3_1[logic_new_func_x_2]) ] ) * hoisted_11_1[logic_new_func_x_2];
+            end ) ), SyzygiesOfRows( UnionOfColumns( deduped_25_1, deduped_20_1, deduped_18_1{[ 1 .. deduped_27_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_25_1, deduped_20_1, deduped_18_1{[ 2 .. deduped_27_1 ]} ) ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -1452,45 +1489,54 @@ end
         
 ########
 function ( cat_1, P_1, morphisms_1, L_1, morphismsp_1, Pp_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, hoisted_8_1, hoisted_9_1, hoisted_10_1, hoisted_11_1, hoisted_12_1, hoisted_13_1, deduped_14_1, deduped_15_1, deduped_16_1, deduped_17_1, deduped_18_1, deduped_19_1, deduped_20_1, deduped_21_1, deduped_22_1;
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, hoisted_8_1, hoisted_9_1, hoisted_10_1, hoisted_11_1, hoisted_12_1, hoisted_13_1, hoisted_14_1, hoisted_15_1, deduped_16_1, deduped_17_1, deduped_18_1, deduped_19_1, deduped_20_1, deduped_21_1, deduped_22_1, deduped_23_1, deduped_24_1;
+    deduped_24_1 := Length( morphismsp_1 );
+    deduped_23_1 := Length( morphisms_1 );
     deduped_22_1 := UnderlyingRing( cat_1 );
-    deduped_21_1 := Length( morphisms_1 );
-    deduped_20_1 := Length( morphismsp_1 );
-    deduped_19_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
+    deduped_21_1 := ListWithKeys( morphismsp_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Source( logic_new_func_x_2 ) );
         end );
-    deduped_18_1 := ListWithKeys( morphismsp_1, function ( key_2, logic_new_func_x_2 )
+    deduped_20_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Source( logic_new_func_x_2 ) );
         end );
-    deduped_17_1 := Sum( deduped_18_1 );
-    deduped_16_1 := Sum( deduped_19_1 );
-    hoisted_13_1 := List( morphismsp_1, UnderlyingMatrix );
-    hoisted_12_1 := deduped_20_1;
-    hoisted_11_1 := deduped_18_1;
-    hoisted_10_1 := [ 1 .. deduped_20_1 ];
-    hoisted_5_1 := deduped_22_1;
-    deduped_15_1 := ListWithKeys( hoisted_10_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_11_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_11_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_11_1{[ (logic_new_func_x_2 + 1) .. hoisted_12_1 ]} ), deduped_1_2, hoisted_5_1 ) ) * hoisted_13_1[logic_new_func_x_2];
+    deduped_19_1 := Sum( deduped_21_1 );
+    deduped_18_1 := Sum( deduped_20_1 );
+    hoisted_15_1 := List( morphismsp_1, UnderlyingMatrix );
+    hoisted_14_1 := deduped_24_1;
+    hoisted_13_1 := deduped_21_1;
+    hoisted_12_1 := [ 1 .. deduped_24_1 ];
+    hoisted_6_1 := deduped_22_1;
+    deduped_17_1 := ListWithKeys( hoisted_12_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_13_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_13_1{hoisted_1_2} ), deduped_3_2, hoisted_6_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_6_1 ), HomalgZeroMatrix( Sum( hoisted_13_1{[ hoisted_2_2 .. hoisted_14_1 ]} ), deduped_3_2, hoisted_6_1 ) ) * hoisted_15_1[logic_new_func_x_2];
         end );
-    hoisted_7_1 := List( morphisms_1, UnderlyingMatrix );
-    hoisted_6_1 := deduped_21_1;
-    hoisted_4_1 := deduped_19_1;
-    hoisted_3_1 := [ 1 .. deduped_21_1 ];
-    deduped_14_1 := ListWithKeys( hoisted_3_1, function ( key_2, logic_new_func_x_2 )
+    hoisted_9_1 := List( morphisms_1, UnderlyingMatrix );
+    hoisted_8_1 := deduped_23_1;
+    hoisted_3_1 := [ 1 .. deduped_23_1 ];
+    hoisted_7_1 := ListWithKeys( hoisted_3_1, function ( key_2, logic_new_func_x_2 )
+            return logic_new_func_x_2 + 1;
+        end );
+    hoisted_5_1 := ListWithKeys( hoisted_3_1, function ( key_2, logic_new_func_x_2 )
+            return [ 1 .. logic_new_func_x_2 - 1 ];
+        end );
+    hoisted_4_1 := deduped_20_1;
+    deduped_16_1 := ListWithKeys( hoisted_3_1, function ( key_2, logic_new_func_x_2 )
             local deduped_1_2;
             deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), deduped_1_2, hoisted_5_1 ) ) * hoisted_7_1[logic_new_func_x_2];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_4_1{hoisted_5_1[key_2]} ), deduped_1_2, hoisted_6_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_6_1 ), HomalgZeroMatrix( Sum( hoisted_4_1{[ hoisted_7_1[key_2] .. hoisted_8_1 ]} ), deduped_1_2, hoisted_6_1 ) ) * hoisted_9_1[logic_new_func_x_2];
         end );
-    hoisted_9_1 := List( L_1, UnderlyingMatrix );
-    hoisted_8_1 := SyzygiesOfRows( UnionOfColumns( deduped_22_1, deduped_16_1, deduped_14_1{[ 1 .. deduped_21_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_22_1, deduped_16_1, deduped_14_1{[ 2 .. deduped_21_1 ]} ) );
+    hoisted_11_1 := List( L_1, UnderlyingMatrix );
+    hoisted_10_1 := SyzygiesOfRows( UnionOfColumns( deduped_22_1, deduped_18_1, deduped_16_1{[ 1 .. deduped_23_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_22_1, deduped_18_1, deduped_16_1{[ 2 .. deduped_23_1 ]} ) );
     hoisted_2_1 := [ 1 .. Length( L_1 ) ];
     morphism_attr_1_1 := RightDivide( UnionOfColumns( deduped_22_1, Dimension( P_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-                local deduped_1_2;
-                deduped_1_2 := Sum( hoisted_4_1{[ 1 .. logic_new_func_x_2 - 1 ]} ) + 1;
-                return CertainColumns( hoisted_8_1, [ deduped_1_2 .. (deduped_1_2 - 1 + hoisted_4_1[logic_new_func_x_2]) ] ) * hoisted_9_1[logic_new_func_x_2];
-            end ) ), SyzygiesOfRows( UnionOfColumns( deduped_22_1, deduped_17_1, deduped_15_1{[ 1 .. deduped_20_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_22_1, deduped_17_1, deduped_15_1{[ 2 .. deduped_20_1 ]} ) ) );
+                local hoisted_1_2, deduped_2_2;
+                hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+                deduped_2_2 := Sum( hoisted_4_1{hoisted_1_2} ) + 1;
+                return CertainColumns( hoisted_10_1, [ deduped_2_2 .. (deduped_2_2 - 1 + hoisted_4_1[logic_new_func_x_2]) ] ) * hoisted_11_1[logic_new_func_x_2];
+            end ) ), SyzygiesOfRows( UnionOfColumns( deduped_22_1, deduped_19_1, deduped_17_1{[ 1 .. deduped_24_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_22_1, deduped_19_1, deduped_17_1{[ 2 .. deduped_24_1 ]} ) ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, P_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -1734,9 +1780,11 @@ function ( cat_1, morphisms_1, k_1 )
     hoisted_3_1 := List( morphisms_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. deduped_11_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
     morphism_attr_1_1 := CertainRows( SyzygiesOfColumns( UnionOfRows( deduped_12_1, deduped_9_1, deduped_7_1{[ 1 .. deduped_11_1 - 1 ]} ) + -1 * UnionOfRows( deduped_12_1, deduped_9_1, deduped_7_1{[ 2 .. deduped_11_1 ]} ) ), [ deduped_8_1 .. deduped_8_1 - 1 + deduped_10_1[k_1] ] );
     return CreateCapCategoryMorphismWithAttributes( cat_1, List( morphisms_1, Range )[k_1], CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -1764,9 +1812,11 @@ function ( cat_1, morphisms_1, k_1, P_1 )
     hoisted_3_1 := List( morphisms_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. deduped_11_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
     morphism_attr_1_1 := CertainRows( SyzygiesOfColumns( UnionOfRows( deduped_12_1, deduped_9_1, deduped_7_1{[ 1 .. deduped_11_1 - 1 ]} ) + -1 * UnionOfRows( deduped_12_1, deduped_9_1, deduped_7_1{[ 2 .. deduped_11_1 ]} ) ), [ deduped_8_1 .. deduped_8_1 - 1 + deduped_10_1[k_1] ] );
     return CreateCapCategoryMorphismWithAttributes( cat_1, List( morphisms_1, Range )[k_1], CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -1860,25 +1910,25 @@ function ( cat_1, list_1 )
     hoisted_3_1 := deduped_29_1;
     hoisted_2_1 := [ 1 .. deduped_21_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_19_1 ), KroneckerMat( deduped_23_1, KroneckerMat( HomalgIdentityMatrix( deduped_28_1, deduped_31_1 ), ConvertMatrixToRow( deduped_24_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                                  local hoisted_1_2;
+                                  hoisted_1_2 := (i_2 - 1);
+                                  return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                               end ) ), deduped_21_1 ), deduped_21_1, deduped_21_1, deduped_31_1 ), deduped_24_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_29_1 * deduped_28_1), deduped_31_1 ), deduped_24_1 ) ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_23_1, ConvertMatrixToRow( deduped_25_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_7_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                                 end ) ), deduped_20_1 ), deduped_20_1, deduped_20_1, deduped_31_1 ), deduped_25_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_27_1 * deduped_26_1), deduped_31_1 ), deduped_25_1 )), HomalgIdentityMatrix( deduped_21_1, deduped_31_1 ) ), deduped_24_1 ) * KroneckerMat( KroneckerMat( HomalgIdentityMatrix( deduped_20_1, deduped_31_1 ), HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_8_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_6_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_6_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                         end ) ), deduped_18_1 ), deduped_18_1, deduped_18_1, deduped_31_1 ) ), deduped_24_1 ) ) * (KroneckerMat( deduped_19_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_11_1 ) * hoisted_12_1 + QUO_INT( deduped_1_2, hoisted_11_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_11_1 ) * hoisted_12_1 + QUO_INT( hoisted_1_2, hoisted_11_1 ) + 1);
                       end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_31_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_13_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_11_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_11_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_11_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_11_1 ) + 1);
                       end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_31_1 ), deduped_15_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_19_1 ), deduped_15_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -1915,13 +1965,13 @@ function ( cat_1, list_1 )
     hoisted_3_1 := deduped_23_1;
     hoisted_2_1 := [ 1 .. deduped_15_1 ];
     deduped_14_1 := KroneckerMat( deduped_20_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_32_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_19_1 ), deduped_19_1, deduped_19_1, deduped_32_1 ), deduped_16_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_20_1 ), deduped_16_1 );
     hoisted_13_1 := deduped_21_1;
     hoisted_12_1 := [ 1 .. deduped_17_1 ];
@@ -1932,17 +1982,17 @@ function ( cat_1, list_1 )
     hoisted_7_1 := deduped_30_1;
     hoisted_6_1 := [ 1 .. deduped_21_1 ];
     morphism_attr_1_1 := RightDivide( HomalgIdentityMatrix( NumberColumns( deduped_14_1 ), deduped_32_1 ), KroneckerMat( TransposedMatrix( deduped_20_1 ), KroneckerMat( deduped_24_1, KroneckerMat( HomalgIdentityMatrix( deduped_29_1, deduped_32_1 ), ConvertMatrixToRow( deduped_25_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                                 end ) ), deduped_21_1 ), deduped_21_1, deduped_21_1, deduped_32_1 ), deduped_25_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_30_1 * deduped_29_1), deduped_32_1 ), deduped_25_1 ) ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_24_1, ConvertMatrixToRow( deduped_26_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                                      local deduped_1_2;
-                                      deduped_1_2 := (i_2 - 1);
-                                      return (REM_INT( deduped_1_2, hoisted_10_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_10_1 ) + 1);
+                                      local hoisted_1_2;
+                                      hoisted_1_2 := (i_2 - 1);
+                                      return (REM_INT( hoisted_1_2, hoisted_10_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_10_1 ) + 1);
                                   end ) ), deduped_22_1 ), deduped_22_1, deduped_22_1, deduped_32_1 ), deduped_26_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_27_1 * deduped_28_1), deduped_32_1 ), deduped_26_1 )), HomalgIdentityMatrix( deduped_21_1, deduped_32_1 ) ), deduped_25_1 ) * KroneckerMat( KroneckerMat( HomalgIdentityMatrix( deduped_22_1, deduped_32_1 ), HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_12_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_13_1 ) * hoisted_10_1 + QUO_INT( deduped_1_2, hoisted_13_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_13_1 ) * hoisted_10_1 + QUO_INT( hoisted_1_2, hoisted_13_1 ) + 1);
                           end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_32_1 ) ), deduped_25_1 ) ) * deduped_14_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -1979,13 +2029,13 @@ function ( cat_1, source_1, list_1, range_1 )
     hoisted_3_1 := deduped_23_1;
     hoisted_2_1 := [ 1 .. deduped_15_1 ];
     deduped_14_1 := KroneckerMat( deduped_20_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_32_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_19_1 ), deduped_19_1, deduped_19_1, deduped_32_1 ), deduped_16_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_20_1 ), deduped_16_1 );
     hoisted_13_1 := deduped_21_1;
     hoisted_12_1 := [ 1 .. deduped_17_1 ];
@@ -1996,17 +2046,17 @@ function ( cat_1, source_1, list_1, range_1 )
     hoisted_7_1 := deduped_30_1;
     hoisted_6_1 := [ 1 .. deduped_21_1 ];
     morphism_attr_1_1 := RightDivide( HomalgIdentityMatrix( NumberColumns( deduped_14_1 ), deduped_32_1 ), KroneckerMat( TransposedMatrix( deduped_20_1 ), KroneckerMat( deduped_24_1, KroneckerMat( HomalgIdentityMatrix( deduped_29_1, deduped_32_1 ), ConvertMatrixToRow( deduped_25_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                                 end ) ), deduped_21_1 ), deduped_21_1, deduped_21_1, deduped_32_1 ), deduped_25_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_30_1 * deduped_29_1), deduped_32_1 ), deduped_25_1 ) ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_24_1, ConvertMatrixToRow( deduped_26_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                                      local deduped_1_2;
-                                      deduped_1_2 := (i_2 - 1);
-                                      return (REM_INT( deduped_1_2, hoisted_10_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_10_1 ) + 1);
+                                      local hoisted_1_2;
+                                      hoisted_1_2 := (i_2 - 1);
+                                      return (REM_INT( hoisted_1_2, hoisted_10_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_10_1 ) + 1);
                                   end ) ), deduped_22_1 ), deduped_22_1, deduped_22_1, deduped_32_1 ), deduped_26_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_27_1 * deduped_28_1), deduped_32_1 ), deduped_26_1 )), HomalgIdentityMatrix( deduped_21_1, deduped_32_1 ) ), deduped_25_1 ) * KroneckerMat( KroneckerMat( HomalgIdentityMatrix( deduped_22_1, deduped_32_1 ), HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_12_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_13_1 ) * hoisted_10_1 + QUO_INT( deduped_1_2, hoisted_13_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_13_1 ) * hoisted_10_1 + QUO_INT( hoisted_1_2, hoisted_13_1 ) + 1);
                           end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_32_1 ) ), deduped_25_1 ) ) * deduped_14_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -2051,25 +2101,25 @@ function ( cat_1, source_1, list_1, range_1 )
     hoisted_3_1 := deduped_29_1;
     hoisted_2_1 := [ 1 .. deduped_21_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_19_1 ), KroneckerMat( deduped_23_1, KroneckerMat( HomalgIdentityMatrix( deduped_28_1, deduped_31_1 ), ConvertMatrixToRow( deduped_24_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                                  local hoisted_1_2;
+                                  hoisted_1_2 := (i_2 - 1);
+                                  return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                               end ) ), deduped_21_1 ), deduped_21_1, deduped_21_1, deduped_31_1 ), deduped_24_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_29_1 * deduped_28_1), deduped_31_1 ), deduped_24_1 ) ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_23_1, ConvertMatrixToRow( deduped_25_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_7_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                                 end ) ), deduped_20_1 ), deduped_20_1, deduped_20_1, deduped_31_1 ), deduped_25_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_27_1 * deduped_26_1), deduped_31_1 ), deduped_25_1 )), HomalgIdentityMatrix( deduped_21_1, deduped_31_1 ) ), deduped_24_1 ) * KroneckerMat( KroneckerMat( HomalgIdentityMatrix( deduped_20_1, deduped_31_1 ), HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_8_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_6_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_6_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                         end ) ), deduped_18_1 ), deduped_18_1, deduped_18_1, deduped_31_1 ) ), deduped_24_1 ) ) * (KroneckerMat( deduped_19_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_11_1 ) * hoisted_12_1 + QUO_INT( deduped_1_2, hoisted_11_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_11_1 ) * hoisted_12_1 + QUO_INT( hoisted_1_2, hoisted_11_1 ) + 1);
                       end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_31_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_13_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_11_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_11_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_11_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_11_1 ) + 1);
                       end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_31_1 ), deduped_15_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_19_1 ), deduped_15_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -2092,9 +2142,9 @@ function ( cat_1, a_1, b_1, f_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_7_1, deduped_9_1 ), ConvertMatrixToRow( deduped_6_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_8_1 * deduped_7_1), deduped_9_1 ), deduped_6_1 ) * KroneckerMat( UnderlyingMatrix( f_1 ), deduped_6_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -2154,9 +2204,9 @@ function ( cat_1, b_1, c_1, g_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( UnderlyingMatrix( g_1 ), deduped_6_1 ) * (KroneckerMat( HomalgIdentityMatrix( deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_8_1, deduped_9_1 ), ConvertMatrixToColumn( deduped_6_1 ) ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -2660,9 +2710,11 @@ function ( cat_1, D_1 )
     hoisted_3_1 := List( D_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
     morphism_attr_1_1 := HomalgIdentityMatrix( deduped_8_1 - RowRankOfMatrix( (UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} )) ), deduped_11_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -2773,9 +2825,11 @@ function ( cat_1, D_1 )
     hoisted_3_1 := deduped_9_1;
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
     morphism_attr_1_1 := HomalgIdentityMatrix( deduped_8_1 - RowRankOfMatrix( (UnionOfColumns( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} )) ), deduped_11_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -2841,25 +2895,29 @@ end
         
 ########
 function ( cat_1, a_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, deduped_5_1, deduped_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1;
-    deduped_10_1 := UnderlyingRing( cat_1 );
-    deduped_9_1 := 1 * 1;
-    deduped_8_1 := Dimension( a_1 );
-    deduped_7_1 := HomalgIdentityMatrix( deduped_8_1, deduped_10_1 );
-    deduped_6_1 := HomalgIdentityMatrix( 1, deduped_10_1 );
-    deduped_5_1 := deduped_8_1 * 1;
-    hoisted_4_1 := [ 1 .. deduped_9_1 ];
-    hoisted_3_1 := deduped_8_1;
-    hoisted_2_1 := [ 1 .. deduped_5_1 ];
-    morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_6_1 ), deduped_7_1 ) * (KroneckerMat( deduped_6_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, 1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, 1 ) + 1);
-                      end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, 1 ) * 1 + QUO_INT( deduped_1_2, 1 ) + 1);
-                      end ) ), deduped_9_1 ), deduped_9_1, deduped_9_1, deduped_10_1 ), deduped_7_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_6_1 ), deduped_7_1 ));
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1;
+    deduped_12_1 := UnderlyingRing( cat_1 );
+    deduped_11_1 := 1 * 1;
+    deduped_10_1 := Dimension( a_1 );
+    deduped_9_1 := HomalgIdentityMatrix( deduped_10_1, deduped_12_1 );
+    deduped_8_1 := HomalgIdentityMatrix( 1, deduped_12_1 );
+    deduped_7_1 := deduped_10_1 * 1;
+    hoisted_6_1 := deduped_11_1;
+    hoisted_4_1 := [ 1 .. deduped_11_1 ];
+    hoisted_5_1 := PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
+                local deduped_1_2;
+                deduped_1_2 := i_2 - 1;
+                return REM_INT( deduped_1_2, 1 ) * 1 + QUO_INT( deduped_1_2, 1 ) + 1;
+            end ) ), deduped_11_1 );
+    hoisted_3_1 := deduped_10_1;
+    hoisted_2_1 := [ 1 .. deduped_7_1 ];
+    morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_8_1 ), deduped_9_1 ) * (KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
+                          local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                          deduped_3_2 := (i_2 - 1);
+                          hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                          hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                          return (hoisted_1_2 * hoisted_3_1 + hoisted_2_2 + 1);
+                      end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ) ) * KroneckerMat( HomalgMatrix( hoisted_5_1, hoisted_6_1, hoisted_6_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_8_1 ), deduped_9_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -2871,25 +2929,29 @@ end
         
 ########
 function ( cat_1, a_1, s_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, deduped_5_1, deduped_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1;
-    deduped_10_1 := UnderlyingRing( cat_1 );
-    deduped_9_1 := 1 * 1;
-    deduped_8_1 := Dimension( a_1 );
-    deduped_7_1 := HomalgIdentityMatrix( deduped_8_1, deduped_10_1 );
-    deduped_6_1 := HomalgIdentityMatrix( 1, deduped_10_1 );
-    deduped_5_1 := deduped_8_1 * 1;
-    hoisted_4_1 := [ 1 .. deduped_9_1 ];
-    hoisted_3_1 := deduped_8_1;
-    hoisted_2_1 := [ 1 .. deduped_5_1 ];
-    morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_6_1 ), deduped_7_1 ) * (KroneckerMat( deduped_6_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, 1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, 1 ) + 1);
-                      end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, 1 ) * 1 + QUO_INT( deduped_1_2, 1 ) + 1);
-                      end ) ), deduped_9_1 ), deduped_9_1, deduped_9_1, deduped_10_1 ), deduped_7_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_6_1 ), deduped_7_1 ));
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1;
+    deduped_12_1 := UnderlyingRing( cat_1 );
+    deduped_11_1 := 1 * 1;
+    deduped_10_1 := Dimension( a_1 );
+    deduped_9_1 := HomalgIdentityMatrix( deduped_10_1, deduped_12_1 );
+    deduped_8_1 := HomalgIdentityMatrix( 1, deduped_12_1 );
+    deduped_7_1 := deduped_10_1 * 1;
+    hoisted_6_1 := deduped_11_1;
+    hoisted_4_1 := [ 1 .. deduped_11_1 ];
+    hoisted_5_1 := PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
+                local deduped_1_2;
+                deduped_1_2 := i_2 - 1;
+                return REM_INT( deduped_1_2, 1 ) * 1 + QUO_INT( deduped_1_2, 1 ) + 1;
+            end ) ), deduped_11_1 );
+    hoisted_3_1 := deduped_10_1;
+    hoisted_2_1 := [ 1 .. deduped_7_1 ];
+    morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_8_1 ), deduped_9_1 ) * (KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
+                          local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                          deduped_3_2 := (i_2 - 1);
+                          hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                          hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                          return (hoisted_1_2 * hoisted_3_1 + hoisted_2_2 + 1);
+                      end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ) ) * KroneckerMat( HomalgMatrix( hoisted_5_1, hoisted_6_1, hoisted_6_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_8_1 ), deduped_9_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -2933,9 +2995,9 @@ function ( cat_1, a_1 )
     hoisted_3_1 := deduped_6_1;
     hoisted_2_1 := [ 1 .. deduped_4_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_4_1, deduped_7_1 ), deduped_5_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_4_1 ), deduped_4_1, deduped_4_1, deduped_7_1 ), deduped_5_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_6_1, deduped_7_1 ), ConvertMatrixToColumn( deduped_5_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, a_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -2956,9 +3018,9 @@ function ( cat_1, a_1, s_1 )
     hoisted_3_1 := deduped_6_1;
     hoisted_2_1 := [ 1 .. deduped_4_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_4_1, deduped_7_1 ), deduped_5_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_3_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_3_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                     end ) ), deduped_4_1 ), deduped_4_1, deduped_4_1, deduped_7_1 ), deduped_5_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_6_1, deduped_7_1 ), ConvertMatrixToColumn( deduped_5_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, s_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3024,9 +3086,11 @@ function ( cat_1, D_1 )
     hoisted_3_1 := deduped_9_1;
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
     morphism_attr_1_1 := HomalgIdentityMatrix( deduped_8_1 - RowRankOfMatrix( (UnionOfColumns( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} )) ), deduped_11_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -3048,9 +3112,11 @@ function ( cat_1, a_1 )
     hoisted_3_1 := deduped_6_1;
     hoisted_2_1 := [ 1 .. deduped_4_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_6_1, deduped_7_1 ), ConvertMatrixToRow( deduped_5_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, 1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, 1 ) + 1);
+                        local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                        deduped_3_2 := (i_2 - 1);
+                        hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                        hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                        return (hoisted_1_2 * hoisted_3_1 + hoisted_2_2 + 1);
                     end ) ), deduped_4_1 ), deduped_4_1, deduped_4_1, deduped_7_1 ), deduped_5_1 ) * KroneckerMat( HomalgIdentityMatrix( (1 * deduped_6_1), deduped_7_1 ), deduped_5_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), a_1, UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3071,9 +3137,11 @@ function ( cat_1, a_1, r_1 )
     hoisted_3_1 := deduped_6_1;
     hoisted_2_1 := [ 1 .. deduped_4_1 ];
     morphism_attr_1_1 := KroneckerMat( HomalgIdentityMatrix( deduped_6_1, deduped_7_1 ), ConvertMatrixToRow( deduped_5_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, 1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, 1 ) + 1);
+                        local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                        deduped_3_2 := (i_2 - 1);
+                        hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                        hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                        return (hoisted_1_2 * hoisted_3_1 + hoisted_2_2 + 1);
                     end ) ), deduped_4_1 ), deduped_4_1, deduped_4_1, deduped_7_1 ), deduped_5_1 ) * KroneckerMat( HomalgIdentityMatrix( (1 * deduped_6_1), deduped_7_1 ), deduped_5_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), r_1, UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3086,25 +3154,27 @@ end
         
 ########
 function ( cat_1, a_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, deduped_5_1, deduped_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1;
-    deduped_10_1 := UnderlyingRing( cat_1 );
-    deduped_9_1 := Dimension( a_1 );
-    deduped_8_1 := 1 * 1;
-    deduped_7_1 := HomalgIdentityMatrix( deduped_9_1, deduped_10_1 );
-    deduped_6_1 := HomalgIdentityMatrix( 1, deduped_10_1 );
-    deduped_5_1 := 1 * deduped_9_1;
-    hoisted_4_1 := deduped_9_1;
-    hoisted_3_1 := [ 1 .. deduped_5_1 ];
-    hoisted_2_1 := [ 1 .. deduped_8_1 ];
-    morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_6_1 ), deduped_7_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, 1 ) * 1 + QUO_INT( deduped_1_2, 1 ) + 1);
-                      end ) ), deduped_8_1 ), deduped_8_1, deduped_8_1, deduped_10_1 ), deduped_7_1 ) * KroneckerMat( deduped_6_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_3_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_4_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_4_1 ) + 1);
-                    end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ) ) * KroneckerMat( TransposedMatrix( deduped_6_1 ), deduped_7_1 );
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1;
+    deduped_12_1 := UnderlyingRing( cat_1 );
+    deduped_11_1 := Dimension( a_1 );
+    deduped_10_1 := 1 * 1;
+    deduped_9_1 := HomalgIdentityMatrix( deduped_11_1, deduped_12_1 );
+    deduped_8_1 := HomalgIdentityMatrix( 1, deduped_12_1 );
+    deduped_7_1 := 1 * deduped_11_1;
+    hoisted_6_1 := deduped_11_1;
+    hoisted_5_1 := [ 1 .. deduped_7_1 ];
+    hoisted_4_1 := deduped_10_1;
+    hoisted_2_1 := [ 1 .. deduped_10_1 ];
+    hoisted_3_1 := PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
+                local deduped_1_2;
+                deduped_1_2 := i_2 - 1;
+                return REM_INT( deduped_1_2, 1 ) * 1 + QUO_INT( deduped_1_2, 1 ) + 1;
+            end ) ), deduped_10_1 );
+    morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_8_1 ), deduped_9_1 ) * KroneckerMat( HomalgMatrix( hoisted_3_1, hoisted_4_1, hoisted_4_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_6_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
+                    end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ) ) * KroneckerMat( TransposedMatrix( deduped_8_1 ), deduped_9_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -3116,25 +3186,27 @@ end
         
 ########
 function ( cat_1, a_1, r_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, deduped_5_1, deduped_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1;
-    deduped_10_1 := UnderlyingRing( cat_1 );
-    deduped_9_1 := Dimension( a_1 );
-    deduped_8_1 := 1 * 1;
-    deduped_7_1 := HomalgIdentityMatrix( deduped_9_1, deduped_10_1 );
-    deduped_6_1 := HomalgIdentityMatrix( 1, deduped_10_1 );
-    deduped_5_1 := 1 * deduped_9_1;
-    hoisted_4_1 := deduped_9_1;
-    hoisted_3_1 := [ 1 .. deduped_5_1 ];
-    hoisted_2_1 := [ 1 .. deduped_8_1 ];
-    morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_6_1 ), deduped_7_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, 1 ) * 1 + QUO_INT( deduped_1_2, 1 ) + 1);
-                      end ) ), deduped_8_1 ), deduped_8_1, deduped_8_1, deduped_10_1 ), deduped_7_1 ) * KroneckerMat( deduped_6_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_3_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_4_1 ) * 1 + QUO_INT( deduped_1_2, hoisted_4_1 ) + 1);
-                    end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ) ) * KroneckerMat( TransposedMatrix( deduped_6_1 ), deduped_7_1 );
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1;
+    deduped_12_1 := UnderlyingRing( cat_1 );
+    deduped_11_1 := Dimension( a_1 );
+    deduped_10_1 := 1 * 1;
+    deduped_9_1 := HomalgIdentityMatrix( deduped_11_1, deduped_12_1 );
+    deduped_8_1 := HomalgIdentityMatrix( 1, deduped_12_1 );
+    deduped_7_1 := 1 * deduped_11_1;
+    hoisted_6_1 := deduped_11_1;
+    hoisted_5_1 := [ 1 .. deduped_7_1 ];
+    hoisted_4_1 := deduped_10_1;
+    hoisted_2_1 := [ 1 .. deduped_10_1 ];
+    hoisted_3_1 := PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
+                local deduped_1_2;
+                deduped_1_2 := i_2 - 1;
+                return REM_INT( deduped_1_2, 1 ) * 1 + QUO_INT( deduped_1_2, 1 ) + 1;
+            end ) ), deduped_10_1 );
+    morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_8_1 ), deduped_9_1 ) * KroneckerMat( HomalgMatrix( hoisted_3_1, hoisted_4_1, hoisted_4_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_6_1 ) * 1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
+                    end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ) ) * KroneckerMat( TransposedMatrix( deduped_8_1 ), deduped_9_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -3159,9 +3231,11 @@ function ( cat_1, D_1 )
     hoisted_3_1 := List( D_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
     morphism_attr_1_1 := HomalgIdentityMatrix( deduped_8_1 - RowRankOfMatrix( (UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} )) ), deduped_11_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
@@ -3342,9 +3416,9 @@ function ( cat_1, a_1, b_1, alpha_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( UnderlyingMatrix( alpha_1 ), deduped_6_1 ) * (KroneckerMat( HomalgIdentityMatrix( deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_9_1 ), deduped_6_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_8_1, deduped_9_1 ), ConvertMatrixToColumn( deduped_6_1 ) ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, a_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3368,13 +3442,15 @@ function ( cat_1, alpha_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_7_1 ), deduped_9_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ), deduped_9_1 ) * KroneckerMat( deduped_7_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, 1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, 1 ) + 1);
+                        local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                        deduped_3_2 := (i_2 - 1);
+                        hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                        hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                        return (hoisted_1_2 * hoisted_3_1 + hoisted_2_2 + 1);
                     end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_10_1 ) ) * KroneckerMat( TransposedMatrix( deduped_7_1 ), UnderlyingMatrix( alpha_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3401,9 +3477,11 @@ function ( cat_1, a_1, L_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_9_1 ];
     morphism_attr_1_1 := UnionOfColumns( deduped_10_1, deduped_11_1 * Sum( deduped_8_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-              return KroneckerMat( hoisted_7_1, UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. logic_new_func_x_2 - 1 ]} ), deduped_1_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ logic_new_func_x_2 + 1 .. hoisted_6_1 ]} ), deduped_1_2, hoisted_5_1 ) ) );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return KroneckerMat( hoisted_7_1, UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), deduped_3_2, hoisted_5_1 ) ) );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3428,9 +3506,11 @@ function ( cat_1, s_1, a_1, L_1, r_1 )
         end );
     hoisted_2_1 := [ 1 .. deduped_8_1 ];
     morphism_attr_1_1 := UnionOfColumns( deduped_9_1, Dimension( s_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-              return KroneckerMat( hoisted_7_1, UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. logic_new_func_x_2 - 1 ]} ), deduped_1_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ logic_new_func_x_2 + 1 .. hoisted_6_1 ]} ), deduped_1_2, hoisted_5_1 ) ) );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return KroneckerMat( hoisted_7_1, UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), deduped_3_2, hoisted_5_1 ) ) );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, s_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3457,9 +3537,11 @@ function ( cat_1, a_1, L_1 )
     hoisted_3_1 := List( L_1, Dimension );
     hoisted_2_1 := [ 1 .. deduped_9_1 ];
     morphism_attr_1_1 := UnionOfRows( deduped_10_1, deduped_11_1 * Sum( deduped_8_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-              return KroneckerMat( hoisted_7_1, UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. logic_new_func_x_2 - 1 ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ logic_new_func_x_2 + 1 .. hoisted_6_1 ]} ), hoisted_5_1 ) ) );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return KroneckerMat( hoisted_7_1, UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) ) );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3484,9 +3566,11 @@ function ( cat_1, s_1, a_1, L_1, r_1 )
     hoisted_3_1 := List( L_1, Dimension );
     hoisted_2_1 := [ 1 .. deduped_8_1 ];
     morphism_attr_1_1 := UnionOfRows( deduped_9_1, Dimension( r_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-              return KroneckerMat( hoisted_7_1, UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. logic_new_func_x_2 - 1 ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ logic_new_func_x_2 + 1 .. hoisted_6_1 ]} ), hoisted_5_1 ) ) );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return KroneckerMat( hoisted_7_1, UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) ) );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), r_1, UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3614,21 +3698,21 @@ function ( cat_1, a_1, b_1, c_1 )
     hoisted_3_1 := deduped_19_1;
     hoisted_2_1 := [ 1 .. deduped_13_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_16_1 ), KroneckerMat( HomalgIdentityMatrix( deduped_18_1, deduped_21_1 ), ConvertMatrixToRow( deduped_17_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                           end ) ), deduped_13_1 ), deduped_13_1, deduped_13_1, deduped_21_1 ), deduped_17_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_19_1 * deduped_18_1), deduped_21_1 ), deduped_17_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_13_1, deduped_21_1 ), (KroneckerMat( deduped_17_1, ConvertMatrixToRow( deduped_16_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                                local deduped_1_2;
-                                deduped_1_2 := (i_2 - 1);
-                                return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                                local hoisted_1_2;
+                                hoisted_1_2 := (i_2 - 1);
+                                return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                             end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_21_1 ), deduped_16_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_20_1 * deduped_19_1), deduped_21_1 ), deduped_16_1 )) ) ) * (KroneckerMat( deduped_16_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_7_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                       end ) ), deduped_10_1 ), deduped_10_1, deduped_10_1, deduped_21_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_6_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_6_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                       end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_21_1 ), deduped_11_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_16_1 ), deduped_11_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3663,21 +3747,21 @@ function ( cat_1, s_1, a_1, b_1, c_1, r_1 )
     hoisted_3_1 := deduped_19_1;
     hoisted_2_1 := [ 1 .. deduped_13_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_16_1 ), KroneckerMat( HomalgIdentityMatrix( deduped_18_1, deduped_21_1 ), ConvertMatrixToRow( deduped_17_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                           end ) ), deduped_13_1 ), deduped_13_1, deduped_13_1, deduped_21_1 ), deduped_17_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_19_1 * deduped_18_1), deduped_21_1 ), deduped_17_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_13_1, deduped_21_1 ), (KroneckerMat( deduped_17_1, ConvertMatrixToRow( deduped_16_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                                local deduped_1_2;
-                                deduped_1_2 := (i_2 - 1);
-                                return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                                local hoisted_1_2;
+                                hoisted_1_2 := (i_2 - 1);
+                                return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                             end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_21_1 ), deduped_16_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_20_1 * deduped_19_1), deduped_21_1 ), deduped_16_1 )) ) ) * (KroneckerMat( deduped_16_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_7_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                       end ) ), deduped_10_1 ), deduped_10_1, deduped_10_1, deduped_21_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_6_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_6_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                       end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_21_1 ), deduped_11_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_16_1 ), deduped_11_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3713,21 +3797,21 @@ function ( cat_1, a_1, b_1, c_1 )
     hoisted_3_1 := deduped_19_1;
     hoisted_2_1 := [ 1 .. deduped_14_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_17_1 ), deduped_11_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_22_1 ), deduped_11_1 ) * KroneckerMat( deduped_17_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                     end ) ), deduped_10_1 ), deduped_10_1, deduped_10_1, deduped_22_1 ) ) * KroneckerMat( TransposedMatrix( deduped_17_1 ), (KroneckerMat( deduped_13_1, KroneckerMat( HomalgIdentityMatrix( deduped_16_1, deduped_22_1 ), deduped_17_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                                local deduped_1_2;
-                                deduped_1_2 := (i_2 - 1);
-                                return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                                local hoisted_1_2;
+                                hoisted_1_2 := (i_2 - 1);
+                                return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                             end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_22_1 ), deduped_17_1 ) * KroneckerMat( deduped_18_1, ConvertMatrixToColumn( deduped_17_1 ) ) ) * (KroneckerMat( deduped_13_1, deduped_18_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_8_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_7_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                           end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_22_1 ), deduped_18_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_21_1, deduped_22_1 ), ConvertMatrixToColumn( deduped_18_1 ) ))) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3763,21 +3847,21 @@ function ( cat_1, s_1, a_1, b_1, c_1, r_1 )
     hoisted_3_1 := deduped_19_1;
     hoisted_2_1 := [ 1 .. deduped_14_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_17_1 ), deduped_11_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_22_1 ), deduped_11_1 ) * KroneckerMat( deduped_17_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                     end ) ), deduped_10_1 ), deduped_10_1, deduped_10_1, deduped_22_1 ) ) * KroneckerMat( TransposedMatrix( deduped_17_1 ), (KroneckerMat( deduped_13_1, KroneckerMat( HomalgIdentityMatrix( deduped_16_1, deduped_22_1 ), deduped_17_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                                local deduped_1_2;
-                                deduped_1_2 := (i_2 - 1);
-                                return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                                local hoisted_1_2;
+                                hoisted_1_2 := (i_2 - 1);
+                                return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                             end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_22_1 ), deduped_17_1 ) * KroneckerMat( deduped_18_1, ConvertMatrixToColumn( deduped_17_1 ) ) ) * (KroneckerMat( deduped_13_1, deduped_18_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_8_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_7_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                           end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_22_1 ), deduped_18_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_21_1, deduped_22_1 ), ConvertMatrixToColumn( deduped_18_1 ) ))) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3817,29 +3901,29 @@ function ( cat_1, a_1, b_1, c_1 )
     hoisted_3_1 := deduped_23_1;
     hoisted_2_1 := [ 1 .. deduped_19_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_21_1 ), KroneckerMat( HomalgIdentityMatrix( deduped_25_1, deduped_26_1 ), ConvertMatrixToRow( deduped_22_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                                  local hoisted_1_2;
+                                  hoisted_1_2 := (i_2 - 1);
+                                  return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                               end ) ), deduped_19_1 ), deduped_19_1, deduped_19_1, deduped_26_1 ), deduped_22_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_23_1 * deduped_25_1), deduped_26_1 ), deduped_22_1 ) * HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_6_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_6_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_26_1 ) * KroneckerMat( (KroneckerMat( deduped_22_1, ConvertMatrixToRow( deduped_21_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_7_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, hoisted_8_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_8_1 ) + 1);
+                                  local hoisted_1_2;
+                                  hoisted_1_2 := (i_2 - 1);
+                                  return (REM_INT( hoisted_1_2, hoisted_8_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_8_1 ) + 1);
                               end ) ), deduped_18_1 ), deduped_18_1, deduped_18_1, deduped_26_1 ), deduped_21_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_24_1 * deduped_23_1), deduped_26_1 ), deduped_21_1 )), HomalgIdentityMatrix( deduped_19_1, deduped_26_1 ) ) * KroneckerMat( HomalgIdentityMatrix( deduped_18_1, deduped_26_1 ), HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                       end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_26_1 ) ) ) * (KroneckerMat( deduped_21_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_8_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_8_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_8_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_8_1 ) + 1);
                       end ) ), deduped_13_1 ), deduped_13_1, deduped_13_1, deduped_26_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_12_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_8_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_8_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_8_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_8_1 ) + 1);
                       end ) ), deduped_20_1 ), deduped_20_1, deduped_20_1, deduped_26_1 ), deduped_14_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_21_1 ), deduped_14_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3879,29 +3963,29 @@ function ( cat_1, s_1, a_1, b_1, c_1, r_1 )
     hoisted_3_1 := deduped_23_1;
     hoisted_2_1 := [ 1 .. deduped_19_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_21_1 ), KroneckerMat( HomalgIdentityMatrix( deduped_25_1, deduped_26_1 ), ConvertMatrixToRow( deduped_22_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                                  local hoisted_1_2;
+                                  hoisted_1_2 := (i_2 - 1);
+                                  return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                               end ) ), deduped_19_1 ), deduped_19_1, deduped_19_1, deduped_26_1 ), deduped_22_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_23_1 * deduped_25_1), deduped_26_1 ), deduped_22_1 ) * HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_6_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_6_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_26_1 ) * KroneckerMat( (KroneckerMat( deduped_22_1, ConvertMatrixToRow( deduped_21_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_7_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, hoisted_8_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_8_1 ) + 1);
+                                  local hoisted_1_2;
+                                  hoisted_1_2 := (i_2 - 1);
+                                  return (REM_INT( hoisted_1_2, hoisted_8_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_8_1 ) + 1);
                               end ) ), deduped_18_1 ), deduped_18_1, deduped_18_1, deduped_26_1 ), deduped_21_1 ) * KroneckerMat( HomalgIdentityMatrix( (deduped_24_1 * deduped_23_1), deduped_26_1 ), deduped_21_1 )), HomalgIdentityMatrix( deduped_19_1, deduped_26_1 ) ) * KroneckerMat( HomalgIdentityMatrix( deduped_18_1, deduped_26_1 ), HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                       end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_26_1 ) ) ) * (KroneckerMat( deduped_21_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_8_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_8_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_8_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_8_1 ) + 1);
                       end ) ), deduped_13_1 ), deduped_13_1, deduped_13_1, deduped_26_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_12_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_8_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_8_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_8_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_8_1 ) + 1);
                       end ) ), deduped_20_1 ), deduped_20_1, deduped_20_1, deduped_26_1 ), deduped_14_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_21_1 ), deduped_14_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -3943,29 +4027,29 @@ function ( cat_1, a_1, b_1, c_1 )
     hoisted_3_1 := deduped_27_1;
     hoisted_2_1 := [ 1 .. deduped_21_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_23_1 ), deduped_14_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_21_1 ), deduped_21_1, deduped_21_1, deduped_28_1 ), deduped_14_1 ) * KroneckerMat( deduped_23_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                     end ) ), deduped_13_1 ), deduped_13_1, deduped_13_1, deduped_28_1 ) ) * KroneckerMat( TransposedMatrix( deduped_23_1 ), (KroneckerMat( deduped_18_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_7_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                           end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_28_1 ) ) * KroneckerMat( (KroneckerMat( deduped_18_1, deduped_23_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_8_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                                 end ) ), deduped_22_1 ), deduped_22_1, deduped_22_1, deduped_28_1 ), deduped_23_1 ) * KroneckerMat( deduped_24_1, ConvertMatrixToColumn( deduped_23_1 ) )), deduped_19_1 ) * HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_9_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_9_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                       end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_28_1 ) * (KroneckerMat( deduped_19_1, deduped_24_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_11_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_12_1 ) * hoisted_9_1 + QUO_INT( deduped_1_2, hoisted_12_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_12_1 ) * hoisted_9_1 + QUO_INT( hoisted_1_2, hoisted_12_1 ) + 1);
                           end ) ), deduped_20_1 ), deduped_20_1, deduped_20_1, deduped_28_1 ), deduped_24_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_26_1, deduped_28_1 ), ConvertMatrixToColumn( deduped_24_1 ) ))) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -4007,29 +4091,29 @@ function ( cat_1, s_1, a_1, b_1, c_1, r_1 )
     hoisted_3_1 := deduped_27_1;
     hoisted_2_1 := [ 1 .. deduped_21_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_23_1 ), deduped_14_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_21_1 ), deduped_21_1, deduped_21_1, deduped_28_1 ), deduped_14_1 ) * KroneckerMat( deduped_23_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                     end ) ), deduped_13_1 ), deduped_13_1, deduped_13_1, deduped_28_1 ) ) * KroneckerMat( TransposedMatrix( deduped_23_1 ), (KroneckerMat( deduped_18_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_7_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                           end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_28_1 ) ) * KroneckerMat( (KroneckerMat( deduped_18_1, deduped_23_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_8_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_9_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_9_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_9_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_9_1 ) + 1);
                                 end ) ), deduped_22_1 ), deduped_22_1, deduped_22_1, deduped_28_1 ), deduped_23_1 ) * KroneckerMat( deduped_24_1, ConvertMatrixToColumn( deduped_23_1 ) )), deduped_19_1 ) * HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_9_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_9_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                       end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_28_1 ) * (KroneckerMat( deduped_19_1, deduped_24_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_11_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_12_1 ) * hoisted_9_1 + QUO_INT( deduped_1_2, hoisted_12_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_12_1 ) * hoisted_9_1 + QUO_INT( hoisted_1_2, hoisted_12_1 ) + 1);
                           end ) ), deduped_20_1 ), deduped_20_1, deduped_20_1, deduped_28_1 ), deduped_24_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_26_1, deduped_28_1 ), ConvertMatrixToColumn( deduped_24_1 ) ))) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -4072,7 +4156,9 @@ function ( cat_1, source_diagram_1, mat_1, range_diagram_1 )
             end ) ), ListN( source_diagram_1, ListWithKeys( mat_1, function ( key_2, row_2 )
                 return List( row_2, UnderlyingMatrix );
             end ), function ( source_2, row_2 )
-              return UnionOfColumns( hoisted_2_1, Dimension( source_2 ), row_2 );
+              local hoisted_1_2;
+              hoisted_1_2 := Dimension( source_2 );
+              return UnionOfColumns( hoisted_2_1, hoisted_1_2, row_2 );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -4091,7 +4177,9 @@ function ( cat_1, S_1, source_diagram_1, mat_1, range_diagram_1, T_1 )
     return CreateCapCategoryMorphismWithAttributes( cat_1, S_1, T_1, UnderlyingMatrix, UnionOfRows( deduped_2_1, Dimension( T_1 ), ListN( source_diagram_1, ListWithKeys( mat_1, function ( key_2, row_2 )
                   return List( row_2, UnderlyingMatrix );
               end ), function ( source_2, row_2 )
-                return UnionOfColumns( hoisted_1_1, Dimension( source_2 ), row_2 );
+                local hoisted_1_2;
+                hoisted_1_2 := Dimension( source_2 );
+                return UnionOfColumns( hoisted_1_1, hoisted_1_2, row_2 );
             end ) ) );
 end
 ########
@@ -4187,26 +4275,29 @@ end
         
 ########
 function ( cat_1, morphisms_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1, deduped_13_1;
-    deduped_13_1 := List( morphisms_1, UnderlyingMatrix );
-    deduped_12_1 := UnderlyingRing( cat_1 );
-    deduped_11_1 := Length( morphisms_1 );
-    deduped_10_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1, deduped_13_1, deduped_14_1;
+    deduped_14_1 := List( morphisms_1, UnderlyingMatrix );
+    deduped_13_1 := UnderlyingRing( cat_1 );
+    deduped_12_1 := Length( morphisms_1 );
+    deduped_11_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Source( logic_new_func_x_2 ) );
         end );
-    deduped_9_1 := Sum( deduped_10_1 );
-    deduped_8_1 := Sum( deduped_10_1{[ 1 .. 1 - 1 ]} ) + 1;
-    hoisted_6_1 := deduped_13_1;
-    hoisted_5_1 := deduped_11_1;
-    hoisted_4_1 := deduped_12_1;
-    hoisted_3_1 := deduped_10_1;
-    hoisted_2_1 := [ 1 .. deduped_11_1 ];
-    deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+    deduped_10_1 := Sum( deduped_11_1 );
+    hoisted_7_1 := [ 1 .. 1 - 1 ];
+    deduped_9_1 := Sum( deduped_11_1{hoisted_7_1} ) + 1;
+    hoisted_6_1 := deduped_14_1;
+    hoisted_5_1 := deduped_12_1;
+    hoisted_4_1 := deduped_13_1;
+    hoisted_3_1 := deduped_11_1;
+    hoisted_2_1 := [ 1 .. deduped_12_1 ];
+    deduped_8_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
-    morphism_attr_1_1 := CertainColumns( SyzygiesOfRows( (UnionOfColumns( deduped_12_1, deduped_9_1, deduped_7_1{[ 1 .. deduped_11_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_12_1, deduped_9_1, deduped_7_1{[ 2 .. deduped_11_1 ]} )) ), [ deduped_8_1 .. (deduped_8_1 - 1 + deduped_10_1[1]) ] ) * deduped_13_1[1];
+    morphism_attr_1_1 := CertainColumns( SyzygiesOfRows( (UnionOfColumns( deduped_13_1, deduped_10_1, deduped_8_1{[ 1 .. deduped_12_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_13_1, deduped_10_1, deduped_8_1{[ 2 .. deduped_12_1 ]} )) ), [ deduped_9_1 .. (deduped_9_1 - 1 + deduped_11_1[1]) ] ) * deduped_14_1[1];
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), List( morphisms_1, Range )[1], UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -4218,26 +4309,29 @@ end
         
 ########
 function ( cat_1, morphisms_1, P_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1, deduped_13_1;
-    deduped_13_1 := List( morphisms_1, UnderlyingMatrix );
-    deduped_12_1 := UnderlyingRing( cat_1 );
-    deduped_11_1 := Length( morphisms_1 );
-    deduped_10_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1, deduped_13_1, deduped_14_1;
+    deduped_14_1 := List( morphisms_1, UnderlyingMatrix );
+    deduped_13_1 := UnderlyingRing( cat_1 );
+    deduped_12_1 := Length( morphisms_1 );
+    deduped_11_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Source( logic_new_func_x_2 ) );
         end );
-    deduped_9_1 := Sum( deduped_10_1 );
-    deduped_8_1 := Sum( deduped_10_1{[ 1 .. 1 - 1 ]} ) + 1;
-    hoisted_6_1 := deduped_13_1;
-    hoisted_5_1 := deduped_11_1;
-    hoisted_4_1 := deduped_12_1;
-    hoisted_3_1 := deduped_10_1;
-    hoisted_2_1 := [ 1 .. deduped_11_1 ];
-    deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+    deduped_10_1 := Sum( deduped_11_1 );
+    hoisted_7_1 := [ 1 .. 1 - 1 ];
+    deduped_9_1 := Sum( deduped_11_1{hoisted_7_1} ) + 1;
+    hoisted_6_1 := deduped_14_1;
+    hoisted_5_1 := deduped_12_1;
+    hoisted_4_1 := deduped_13_1;
+    hoisted_3_1 := deduped_11_1;
+    hoisted_2_1 := [ 1 .. deduped_12_1 ];
+    deduped_8_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
-    morphism_attr_1_1 := CertainColumns( SyzygiesOfRows( (UnionOfColumns( deduped_12_1, deduped_9_1, deduped_7_1{[ 1 .. deduped_11_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_12_1, deduped_9_1, deduped_7_1{[ 2 .. deduped_11_1 ]} )) ), [ deduped_8_1 .. (deduped_8_1 - 1 + deduped_10_1[1]) ] ) * deduped_13_1[1];
+    morphism_attr_1_1 := CertainColumns( SyzygiesOfRows( (UnionOfColumns( deduped_13_1, deduped_10_1, deduped_8_1{[ 1 .. deduped_12_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_13_1, deduped_10_1, deduped_8_1{[ 2 .. deduped_12_1 ]} )) ), [ deduped_9_1 .. (deduped_9_1 - 1 + deduped_11_1[1]) ] ) * deduped_14_1[1];
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), List( morphisms_1, Range )[1], UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -4357,26 +4451,29 @@ end
         
 ########
 function ( cat_1, morphisms_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1, deduped_13_1;
-    deduped_13_1 := UnderlyingRing( cat_1 );
-    deduped_12_1 := List( morphisms_1, UnderlyingMatrix );
-    deduped_11_1 := Length( morphisms_1 );
-    deduped_10_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1, deduped_13_1, deduped_14_1;
+    deduped_14_1 := UnderlyingRing( cat_1 );
+    deduped_13_1 := List( morphisms_1, UnderlyingMatrix );
+    deduped_12_1 := Length( morphisms_1 );
+    deduped_11_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Range( logic_new_func_x_2 ) );
         end );
-    deduped_9_1 := Sum( deduped_10_1 );
-    deduped_8_1 := Sum( deduped_10_1{[ 1 .. 1 - 1 ]} ) + 1;
-    hoisted_6_1 := deduped_11_1;
-    hoisted_5_1 := deduped_13_1;
-    hoisted_4_1 := deduped_10_1;
-    hoisted_3_1 := deduped_12_1;
-    hoisted_2_1 := [ 1 .. deduped_11_1 ];
-    deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+    deduped_10_1 := Sum( deduped_11_1 );
+    hoisted_7_1 := [ 1 .. 1 - 1 ];
+    deduped_9_1 := Sum( deduped_11_1{hoisted_7_1} ) + 1;
+    hoisted_6_1 := deduped_12_1;
+    hoisted_5_1 := deduped_14_1;
+    hoisted_4_1 := deduped_11_1;
+    hoisted_3_1 := deduped_13_1;
+    hoisted_2_1 := [ 1 .. deduped_12_1 ];
+    deduped_8_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
-    morphism_attr_1_1 := deduped_12_1[1] * CertainRows( SyzygiesOfColumns( (UnionOfRows( deduped_13_1, deduped_9_1, deduped_7_1{[ 1 .. deduped_11_1 - 1 ]} ) + -1 * UnionOfRows( deduped_13_1, deduped_9_1, deduped_7_1{[ 2 .. deduped_11_1 ]} )) ), [ deduped_8_1 .. (deduped_8_1 - 1 + deduped_10_1[1]) ] );
+    morphism_attr_1_1 := deduped_13_1[1] * CertainRows( SyzygiesOfColumns( (UnionOfRows( deduped_14_1, deduped_10_1, deduped_8_1{[ 1 .. deduped_12_1 - 1 ]} ) + -1 * UnionOfRows( deduped_14_1, deduped_10_1, deduped_8_1{[ 2 .. deduped_12_1 ]} )) ), [ deduped_9_1 .. (deduped_9_1 - 1 + deduped_11_1[1]) ] );
     return CreateCapCategoryMorphismWithAttributes( cat_1, List( morphisms_1, Source )[1], CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -4388,26 +4485,29 @@ end
         
 ########
 function ( cat_1, morphisms_1, P_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, deduped_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1, deduped_13_1;
-    deduped_13_1 := UnderlyingRing( cat_1 );
-    deduped_12_1 := List( morphisms_1, UnderlyingMatrix );
-    deduped_11_1 := Length( morphisms_1 );
-    deduped_10_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, deduped_8_1, deduped_9_1, deduped_10_1, deduped_11_1, deduped_12_1, deduped_13_1, deduped_14_1;
+    deduped_14_1 := UnderlyingRing( cat_1 );
+    deduped_13_1 := List( morphisms_1, UnderlyingMatrix );
+    deduped_12_1 := Length( morphisms_1 );
+    deduped_11_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Range( logic_new_func_x_2 ) );
         end );
-    deduped_9_1 := Sum( deduped_10_1 );
-    deduped_8_1 := Sum( deduped_10_1{[ 1 .. 1 - 1 ]} ) + 1;
-    hoisted_6_1 := deduped_11_1;
-    hoisted_5_1 := deduped_13_1;
-    hoisted_4_1 := deduped_10_1;
-    hoisted_3_1 := deduped_12_1;
-    hoisted_2_1 := [ 1 .. deduped_11_1 ];
-    deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+    deduped_10_1 := Sum( deduped_11_1 );
+    hoisted_7_1 := [ 1 .. 1 - 1 ];
+    deduped_9_1 := Sum( deduped_11_1{hoisted_7_1} ) + 1;
+    hoisted_6_1 := deduped_12_1;
+    hoisted_5_1 := deduped_14_1;
+    hoisted_4_1 := deduped_11_1;
+    hoisted_3_1 := deduped_13_1;
+    hoisted_2_1 := [ 1 .. deduped_12_1 ];
+    deduped_8_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
-    morphism_attr_1_1 := deduped_12_1[1] * CertainRows( SyzygiesOfColumns( (UnionOfRows( deduped_13_1, deduped_9_1, deduped_7_1{[ 1 .. deduped_11_1 - 1 ]} ) + -1 * UnionOfRows( deduped_13_1, deduped_9_1, deduped_7_1{[ 2 .. deduped_11_1 ]} )) ), [ deduped_8_1 .. (deduped_8_1 - 1 + deduped_10_1[1]) ] );
+    morphism_attr_1_1 := deduped_13_1[1] * CertainRows( SyzygiesOfColumns( (UnionOfRows( deduped_14_1, deduped_10_1, deduped_8_1{[ 1 .. deduped_12_1 - 1 ]} ) + -1 * UnionOfRows( deduped_14_1, deduped_10_1, deduped_8_1{[ 2 .. deduped_12_1 ]} )) ), [ deduped_9_1 .. (deduped_9_1 - 1 + deduped_11_1[1]) ] );
     return CreateCapCategoryMorphismWithAttributes( cat_1, List( morphisms_1, Source )[1], CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
 ########
@@ -4689,9 +4789,11 @@ function ( cat_1, morphisms_1, k_1 )
     hoisted_3_1 := deduped_10_1;
     hoisted_2_1 := [ 1 .. deduped_11_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
     morphism_attr_1_1 := CertainColumns( SyzygiesOfRows( UnionOfColumns( deduped_12_1, deduped_9_1, deduped_7_1{[ 1 .. deduped_11_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_12_1, deduped_9_1, deduped_7_1{[ 2 .. deduped_11_1 ]} ) ), [ deduped_8_1 .. deduped_8_1 - 1 + deduped_10_1[k_1] ] );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), List( morphisms_1, Source )[k_1], UnderlyingMatrix, morphism_attr_1_1 );
@@ -4719,9 +4821,11 @@ function ( cat_1, morphisms_1, k_1, P_1 )
     hoisted_3_1 := deduped_10_1;
     hoisted_2_1 := [ 1 .. deduped_11_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
     morphism_attr_1_1 := CertainColumns( SyzygiesOfRows( UnionOfColumns( deduped_12_1, deduped_9_1, deduped_7_1{[ 1 .. deduped_11_1 - 1 ]} ) + -1 * UnionOfColumns( deduped_12_1, deduped_9_1, deduped_7_1{[ 2 .. deduped_11_1 ]} ) ), [ deduped_8_1 .. deduped_8_1 - 1 + deduped_10_1[k_1] ] );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), List( morphisms_1, Source )[k_1], UnderlyingMatrix, morphism_attr_1_1 );
@@ -4759,9 +4863,11 @@ function ( cat_1, arg2_1 )
     hoisted_2_1 := List( arg2_1, UnderlyingMatrix );
     hoisted_1_1 := [ 1 .. deduped_10_1 ];
     deduped_6_1 := ListWithKeys( hoisted_1_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return hoisted_2_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), hoisted_4_1 ) );
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_2_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_3_1{hoisted_1_2} ), hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), hoisted_4_1 ) );
         end );
     return CreateCapCategoryObjectWithAttributes( cat_1, Dimension, deduped_7_1 - RowRankOfMatrix( (UnionOfRows( deduped_9_1, deduped_7_1, deduped_6_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfRows( deduped_9_1, deduped_7_1, deduped_6_1{[ 2 .. deduped_10_1 ]} )) ) );
 end
@@ -4774,45 +4880,62 @@ end
         
 ########
 function ( cat_1, morphisms_1, L_1, morphismsp_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, hoisted_8_1, hoisted_9_1, hoisted_10_1, hoisted_11_1, hoisted_12_1, hoisted_13_1, deduped_14_1, deduped_15_1, deduped_16_1, deduped_17_1, deduped_18_1, deduped_19_1, deduped_20_1, deduped_21_1, deduped_22_1, deduped_23_1;
-    deduped_23_1 := Length( morphisms_1 );
-    deduped_22_1 := UnderlyingRing( cat_1 );
-    deduped_21_1 := Length( morphismsp_1 );
-    deduped_20_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, hoisted_8_1, hoisted_9_1, hoisted_10_1, hoisted_11_1, hoisted_12_1, hoisted_13_1, hoisted_14_1, hoisted_15_1, deduped_16_1, deduped_17_1, deduped_18_1, deduped_19_1, deduped_20_1, deduped_21_1, deduped_22_1, deduped_23_1, deduped_24_1, deduped_25_1, deduped_26_1, deduped_27_1;
+    deduped_27_1 := Length( morphisms_1 );
+    deduped_26_1 := UnderlyingRing( cat_1 );
+    deduped_25_1 := Length( morphismsp_1 );
+    deduped_24_1 := [ 2 .. deduped_25_1 ];
+    deduped_23_1 := [ 1 .. deduped_25_1 - 1 ];
+    deduped_22_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Range( logic_new_func_x_2 ) );
         end );
-    deduped_19_1 := ListWithKeys( morphismsp_1, function ( key_2, logic_new_func_x_2 )
+    deduped_21_1 := ListWithKeys( morphismsp_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Range( logic_new_func_x_2 ) );
         end );
-    deduped_18_1 := Sum( deduped_20_1 );
-    deduped_17_1 := Sum( deduped_19_1 );
-    hoisted_6_1 := deduped_23_1;
-    hoisted_5_1 := deduped_22_1;
-    hoisted_4_1 := deduped_20_1;
-    hoisted_3_1 := List( morphisms_1, UnderlyingMatrix );
-    hoisted_2_1 := [ 1 .. deduped_23_1 ];
-    deduped_16_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
-        end );
-    hoisted_10_1 := deduped_21_1;
-    hoisted_9_1 := deduped_19_1;
+    deduped_20_1 := Sum( deduped_22_1 );
+    deduped_19_1 := Sum( deduped_21_1 );
+    hoisted_10_1 := deduped_25_1;
+    hoisted_9_1 := deduped_21_1;
     hoisted_8_1 := List( morphismsp_1, UnderlyingMatrix );
-    hoisted_7_1 := [ 1 .. deduped_21_1 ];
-    deduped_15_1 := ListWithKeys( hoisted_7_1, function ( key_2, logic_new_func_x_2 )
+    hoisted_7_1 := [ 1 .. deduped_25_1 ];
+    hoisted_5_1 := deduped_26_1;
+    deduped_18_1 := ListWithKeys( hoisted_7_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_9_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_8_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_9_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_9_1{[ hoisted_2_2 .. hoisted_10_1 ]} ), hoisted_5_1 ) );
+        end );
+    hoisted_6_1 := deduped_27_1;
+    hoisted_4_1 := deduped_22_1;
+    hoisted_3_1 := List( morphisms_1, UnderlyingMatrix );
+    hoisted_2_1 := [ 1 .. deduped_27_1 ];
+    deduped_17_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+        end );
+    hoisted_14_1 := ListWithKeys( hoisted_7_1, function ( key_2, logic_new_func_x_2 )
+            return logic_new_func_x_2 + 1;
+        end );
+    hoisted_13_1 := ListWithKeys( hoisted_7_1, function ( key_2, logic_new_func_x_2 )
+            return [ 1 .. logic_new_func_x_2 - 1 ];
+        end );
+    deduped_16_1 := ListWithKeys( hoisted_7_1, function ( key_2, logic_new_func_x_2 )
             local deduped_1_2;
             deduped_1_2 := hoisted_9_1[logic_new_func_x_2];
-            return hoisted_8_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_9_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_9_1{[ (logic_new_func_x_2 + 1) .. hoisted_10_1 ]} ), hoisted_5_1 ) );
+            return hoisted_8_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_9_1{hoisted_13_1[key_2]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_9_1{[ hoisted_14_1[key_2] .. hoisted_10_1 ]} ), hoisted_5_1 ) );
         end );
-    deduped_14_1 := UnionOfRows( deduped_22_1, deduped_17_1, deduped_15_1{[ 1 .. deduped_21_1 - 1 ]} ) + -1 * UnionOfRows( deduped_22_1, deduped_17_1, deduped_15_1{[ 2 .. deduped_21_1 ]} );
-    hoisted_13_1 := SyzygiesOfColumns( deduped_14_1 );
+    hoisted_15_1 := SyzygiesOfColumns( UnionOfRows( deduped_26_1, deduped_19_1, deduped_16_1{deduped_23_1} ) + -1 * UnionOfRows( deduped_26_1, deduped_19_1, deduped_16_1{deduped_24_1} ) );
     hoisted_12_1 := List( L_1, UnderlyingMatrix );
     hoisted_11_1 := [ 1 .. Length( L_1 ) ];
-    morphism_attr_1_1 := LeftDivide( SyzygiesOfColumns( UnionOfRows( deduped_22_1, deduped_18_1, deduped_16_1{[ 1 .. deduped_23_1 - 1 ]} ) + -1 * UnionOfRows( deduped_22_1, deduped_18_1, deduped_16_1{[ 2 .. deduped_23_1 ]} ) ), UnionOfRows( deduped_22_1, deduped_17_1 - RowRankOfMatrix( deduped_14_1 ), ListWithKeys( hoisted_11_1, function ( key_2, logic_new_func_x_2 )
-                local deduped_1_2;
-                deduped_1_2 := Sum( hoisted_9_1{[ 1 .. logic_new_func_x_2 - 1 ]} ) + 1;
-                return hoisted_12_1[logic_new_func_x_2] * CertainRows( hoisted_13_1, [ deduped_1_2 .. (deduped_1_2 - 1 + hoisted_9_1[logic_new_func_x_2]) ] );
+    morphism_attr_1_1 := LeftDivide( SyzygiesOfColumns( UnionOfRows( deduped_26_1, deduped_20_1, deduped_17_1{[ 1 .. deduped_27_1 - 1 ]} ) + -1 * UnionOfRows( deduped_26_1, deduped_20_1, deduped_17_1{[ 2 .. deduped_27_1 ]} ) ), UnionOfRows( deduped_26_1, deduped_19_1 - RowRankOfMatrix( (UnionOfRows( deduped_26_1, deduped_19_1, deduped_18_1{deduped_23_1} ) + -1 * UnionOfRows( deduped_26_1, deduped_19_1, deduped_18_1{deduped_24_1} )) ), ListWithKeys( hoisted_11_1, function ( key_2, logic_new_func_x_2 )
+                local hoisted_1_2, deduped_2_2;
+                hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+                deduped_2_2 := Sum( hoisted_9_1{hoisted_1_2} ) + 1;
+                return hoisted_12_1[logic_new_func_x_2] * CertainRows( hoisted_15_1, [ deduped_2_2 .. (deduped_2_2 - 1 + hoisted_9_1[logic_new_func_x_2]) ] );
             end ) ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -4825,44 +4948,53 @@ end
         
 ########
 function ( cat_1, P_1, morphisms_1, L_1, morphismsp_1, Pp_1 )
-    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, hoisted_8_1, hoisted_9_1, hoisted_10_1, hoisted_11_1, hoisted_12_1, hoisted_13_1, deduped_14_1, deduped_15_1, deduped_16_1, deduped_17_1, deduped_18_1, deduped_19_1, deduped_20_1, deduped_21_1, deduped_22_1;
-    deduped_22_1 := Length( morphisms_1 );
-    deduped_21_1 := UnderlyingRing( cat_1 );
-    deduped_20_1 := Length( morphismsp_1 );
-    deduped_19_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
+    local morphism_attr_1_1, hoisted_2_1, hoisted_3_1, hoisted_4_1, hoisted_5_1, hoisted_6_1, hoisted_7_1, hoisted_8_1, hoisted_9_1, hoisted_10_1, hoisted_11_1, hoisted_12_1, hoisted_13_1, hoisted_14_1, hoisted_15_1, deduped_16_1, deduped_17_1, deduped_18_1, deduped_19_1, deduped_20_1, deduped_21_1, deduped_22_1, deduped_23_1, deduped_24_1;
+    deduped_24_1 := Length( morphisms_1 );
+    deduped_23_1 := UnderlyingRing( cat_1 );
+    deduped_22_1 := Length( morphismsp_1 );
+    deduped_21_1 := ListWithKeys( morphisms_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Range( logic_new_func_x_2 ) );
         end );
-    deduped_18_1 := ListWithKeys( morphismsp_1, function ( key_2, logic_new_func_x_2 )
+    deduped_20_1 := ListWithKeys( morphismsp_1, function ( key_2, logic_new_func_x_2 )
             return Dimension( Range( logic_new_func_x_2 ) );
         end );
-    deduped_17_1 := Sum( deduped_19_1 );
-    deduped_16_1 := Sum( deduped_18_1 );
-    hoisted_6_1 := deduped_22_1;
-    hoisted_5_1 := deduped_21_1;
-    hoisted_4_1 := deduped_19_1;
+    deduped_19_1 := Sum( deduped_21_1 );
+    deduped_18_1 := Sum( deduped_20_1 );
+    hoisted_6_1 := deduped_24_1;
+    hoisted_5_1 := deduped_23_1;
+    hoisted_4_1 := deduped_21_1;
     hoisted_3_1 := List( morphisms_1, UnderlyingMatrix );
-    hoisted_2_1 := [ 1 .. deduped_22_1 ];
-    deduped_15_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+    hoisted_2_1 := [ 1 .. deduped_24_1 ];
+    deduped_17_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
-    hoisted_12_1 := deduped_20_1;
-    hoisted_11_1 := deduped_18_1;
+    hoisted_14_1 := deduped_22_1;
+    hoisted_9_1 := [ 1 .. deduped_22_1 ];
+    hoisted_13_1 := ListWithKeys( hoisted_9_1, function ( key_2, logic_new_func_x_2 )
+            return logic_new_func_x_2 + 1;
+        end );
+    hoisted_12_1 := ListWithKeys( hoisted_9_1, function ( key_2, logic_new_func_x_2 )
+            return [ 1 .. logic_new_func_x_2 - 1 ];
+        end );
+    hoisted_11_1 := deduped_20_1;
     hoisted_10_1 := List( morphismsp_1, UnderlyingMatrix );
-    hoisted_9_1 := [ 1 .. deduped_20_1 ];
-    deduped_14_1 := ListWithKeys( hoisted_9_1, function ( key_2, logic_new_func_x_2 )
+    deduped_16_1 := ListWithKeys( hoisted_9_1, function ( key_2, logic_new_func_x_2 )
             local deduped_1_2;
             deduped_1_2 := hoisted_11_1[logic_new_func_x_2];
-            return hoisted_10_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_11_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_11_1{[ (logic_new_func_x_2 + 1) .. hoisted_12_1 ]} ), hoisted_5_1 ) );
+            return hoisted_10_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_11_1{hoisted_12_1[key_2]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_11_1{[ hoisted_13_1[key_2] .. hoisted_14_1 ]} ), hoisted_5_1 ) );
         end );
-    hoisted_13_1 := SyzygiesOfColumns( UnionOfRows( deduped_21_1, deduped_16_1, deduped_14_1{[ 1 .. deduped_20_1 - 1 ]} ) + -1 * UnionOfRows( deduped_21_1, deduped_16_1, deduped_14_1{[ 2 .. deduped_20_1 ]} ) );
+    hoisted_15_1 := SyzygiesOfColumns( UnionOfRows( deduped_23_1, deduped_18_1, deduped_16_1{[ 1 .. deduped_22_1 - 1 ]} ) + -1 * UnionOfRows( deduped_23_1, deduped_18_1, deduped_16_1{[ 2 .. deduped_22_1 ]} ) );
     hoisted_8_1 := List( L_1, UnderlyingMatrix );
     hoisted_7_1 := [ 1 .. Length( L_1 ) ];
-    morphism_attr_1_1 := LeftDivide( SyzygiesOfColumns( UnionOfRows( deduped_21_1, deduped_17_1, deduped_15_1{[ 1 .. deduped_22_1 - 1 ]} ) + -1 * UnionOfRows( deduped_21_1, deduped_17_1, deduped_15_1{[ 2 .. deduped_22_1 ]} ) ), UnionOfRows( deduped_21_1, Dimension( Pp_1 ), ListWithKeys( hoisted_7_1, function ( key_2, logic_new_func_x_2 )
-                local deduped_1_2;
-                deduped_1_2 := Sum( hoisted_11_1{[ 1 .. logic_new_func_x_2 - 1 ]} ) + 1;
-                return hoisted_8_1[logic_new_func_x_2] * CertainRows( hoisted_13_1, [ deduped_1_2 .. (deduped_1_2 - 1 + hoisted_11_1[logic_new_func_x_2]) ] );
+    morphism_attr_1_1 := LeftDivide( SyzygiesOfColumns( UnionOfRows( deduped_23_1, deduped_19_1, deduped_17_1{[ 1 .. deduped_24_1 - 1 ]} ) + -1 * UnionOfRows( deduped_23_1, deduped_19_1, deduped_17_1{[ 2 .. deduped_24_1 ]} ) ), UnionOfRows( deduped_23_1, Dimension( Pp_1 ), ListWithKeys( hoisted_7_1, function ( key_2, logic_new_func_x_2 )
+                local hoisted_1_2, deduped_2_2;
+                hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+                deduped_2_2 := Sum( hoisted_11_1{hoisted_1_2} ) + 1;
+                return hoisted_8_1[logic_new_func_x_2] * CertainRows( hoisted_15_1, [ deduped_2_2 .. (deduped_2_2 - 1 + hoisted_11_1[logic_new_func_x_2]) ] );
             end ) ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), Pp_1, UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -4886,13 +5018,15 @@ function ( cat_1, a_1 )
     hoisted_3_1 := deduped_9_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_7_1 ), deduped_8_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ), deduped_8_1 ) * KroneckerMat( deduped_7_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, 1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, 1 ) + 1);
+                          local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                          deduped_3_2 := (i_2 - 1);
+                          hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                          hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                          return (hoisted_1_2 * hoisted_3_1 + hoisted_2_2 + 1);
                       end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_10_1 ) ) * KroneckerMat( TransposedMatrix( deduped_7_1 ), deduped_7_1 ) * ConvertMatrixToColumn( deduped_7_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -4919,9 +5053,11 @@ function ( cat_1, L_1, a_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_9_1 ];
     morphism_attr_1_1 := UnionOfColumns( deduped_10_1, Sum( deduped_8_1 ) * deduped_11_1, ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-              return KroneckerMat( UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. logic_new_func_x_2 - 1 ]} ), deduped_1_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ logic_new_func_x_2 + 1 .. hoisted_6_1 ]} ), deduped_1_2, hoisted_5_1 ) ), hoisted_7_1 );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return KroneckerMat( UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), deduped_3_2, hoisted_5_1 ) ), hoisted_7_1 );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -4946,9 +5082,11 @@ function ( cat_1, s_1, L_1, a_1, r_1 )
         end );
     hoisted_2_1 := [ 1 .. deduped_8_1 ];
     morphism_attr_1_1 := UnionOfColumns( deduped_9_1, Dimension( s_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-              return KroneckerMat( UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. logic_new_func_x_2 - 1 ]} ), deduped_1_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ logic_new_func_x_2 + 1 .. hoisted_6_1 ]} ), deduped_1_2, hoisted_5_1 ) ), hoisted_7_1 );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return KroneckerMat( UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), deduped_3_2, hoisted_5_1 ) ), hoisted_7_1 );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, s_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -4975,9 +5113,11 @@ function ( cat_1, L_1, a_1 )
     hoisted_3_1 := List( L_1, Dimension );
     hoisted_2_1 := [ 1 .. deduped_9_1 ];
     morphism_attr_1_1 := UnionOfRows( deduped_10_1, Sum( deduped_8_1 ) * deduped_11_1, ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-              return KroneckerMat( UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. logic_new_func_x_2 - 1 ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ logic_new_func_x_2 + 1 .. hoisted_6_1 ]} ), hoisted_5_1 ) ), hoisted_7_1 );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return KroneckerMat( UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) ), hoisted_7_1 );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5002,9 +5142,11 @@ function ( cat_1, s_1, L_1, a_1, r_1 )
     hoisted_3_1 := List( L_1, Dimension );
     hoisted_2_1 := [ 1 .. deduped_8_1 ];
     morphism_attr_1_1 := UnionOfRows( deduped_9_1, Dimension( r_1 ), ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-              local deduped_1_2;
-              deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-              return KroneckerMat( UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. logic_new_func_x_2 - 1 ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ logic_new_func_x_2 + 1 .. hoisted_6_1 ]} ), hoisted_5_1 ) ), hoisted_7_1 );
+              local hoisted_1_2, hoisted_2_2, deduped_3_2;
+              deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+              hoisted_2_2 := logic_new_func_x_2 + 1;
+              hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+              return KroneckerMat( UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) ), hoisted_7_1 );
           end ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), r_1, UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5082,11 +5224,12 @@ function ( cat_1, arg2_1, arg3_1, arg4_1 )
             return Dimension( Range( hoisted_6_1[logic_new_func_x_2] ) ) * Dimension( Source( hoisted_7_1[logic_new_func_x_2] ) );
         end );
     return ListWithKeys( hoisted_1_1, function ( key_2, j_2 )
-            local deduped_1_2, deduped_2_2, deduped_3_2;
-            deduped_3_2 := Source( hoisted_7_1[j_2] );
-            deduped_2_2 := Range( hoisted_6_1[j_2] );
-            deduped_1_2 := Sum( hoisted_4_1{[ 1 .. j_2 - 1 ]} ) + 1;
-            return CreateCapCategoryMorphismWithAttributes( cat_1, deduped_2_2, deduped_3_2, UnderlyingMatrix, ConvertRowToMatrix( CertainColumns( hoisted_5_1, [ deduped_1_2 .. deduped_1_2 - 1 + hoisted_4_1[j_2] ] ), Dimension( deduped_2_2 ), Dimension( deduped_3_2 ) ) );
+            local hoisted_1_2, deduped_2_2, deduped_3_2, deduped_4_2;
+            deduped_4_2 := Source( hoisted_7_1[j_2] );
+            deduped_3_2 := Range( hoisted_6_1[j_2] );
+            hoisted_1_2 := [ 1 .. j_2 - 1 ];
+            deduped_2_2 := Sum( hoisted_4_1{hoisted_1_2} ) + 1;
+            return CreateCapCategoryMorphismWithAttributes( cat_1, deduped_3_2, deduped_4_2, UnderlyingMatrix, ConvertRowToMatrix( CertainColumns( hoisted_5_1, [ deduped_2_2 .. deduped_2_2 - 1 + hoisted_4_1[j_2] ] ), Dimension( deduped_3_2 ), Dimension( deduped_4_2 ) ) );
         end );
 end
 ########
@@ -5200,25 +5343,29 @@ function ( cat_1, a_1, b_1 )
     hoisted_3_1 := deduped_21_1;
     hoisted_2_1 := [ 1 .. deduped_14_1 ];
     morphism_attr_1_1 := KroneckerMat( deduped_23_1, deduped_24_1 ) * (KroneckerMat( ConvertMatrixToRow( deduped_17_1 ), deduped_13_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_28_1 ), deduped_13_1 ) * KroneckerMat( deduped_17_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                       end ) ), deduped_12_1 ), deduped_12_1, deduped_12_1, deduped_28_1 ) ) * KroneckerMat( TransposedMatrix( deduped_17_1 ), (KroneckerMat( KroneckerMat( deduped_18_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                                local deduped_1_2;
-                                deduped_1_2 := (i_2 - 1);
-                                return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                                local hoisted_1_2;
+                                hoisted_1_2 := (i_2 - 1);
+                                return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                             end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_28_1 ) ), deduped_24_1 ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_18_1, deduped_23_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                                      local deduped_1_2;
-                                      deduped_1_2 := (i_2 - 1);
-                                      return (REM_INT( deduped_1_2, 1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, 1 ) + 1);
+                                      local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                                      deduped_3_2 := (i_2 - 1);
+                                      hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                                      hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                                      return (hoisted_1_2 * hoisted_7_1 + hoisted_2_2 + 1);
                                   end ) ), deduped_22_1 ), deduped_22_1, deduped_22_1, deduped_28_1 ), deduped_23_1 ) * KroneckerMat( deduped_25_1, ConvertMatrixToColumn( deduped_23_1 ) )), deduped_19_1 ), deduped_24_1 ) * KroneckerMat( deduped_25_1, (KroneckerMat( deduped_19_1, deduped_24_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, 1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, 1 ) + 1);
+                                  local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                                  deduped_3_2 := (i_2 - 1);
+                                  hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                                  hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                                  return (hoisted_1_2 * hoisted_11_1 + hoisted_2_2 + 1);
                               end ) ), deduped_20_1 ), deduped_20_1, deduped_20_1, deduped_28_1 ), deduped_24_1 ) * KroneckerMat( deduped_25_1, ConvertMatrixToColumn( deduped_24_1 ) )) )) ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5260,25 +5407,29 @@ function ( cat_1, s_1, a_1, b_1, r_1 )
     hoisted_3_1 := deduped_21_1;
     hoisted_2_1 := [ 1 .. deduped_14_1 ];
     morphism_attr_1_1 := KroneckerMat( deduped_23_1, deduped_24_1 ) * (KroneckerMat( ConvertMatrixToRow( deduped_17_1 ), deduped_13_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_28_1 ), deduped_13_1 ) * KroneckerMat( deduped_17_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                       end ) ), deduped_12_1 ), deduped_12_1, deduped_12_1, deduped_28_1 ) ) * KroneckerMat( TransposedMatrix( deduped_17_1 ), (KroneckerMat( KroneckerMat( deduped_18_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                                local deduped_1_2;
-                                deduped_1_2 := (i_2 - 1);
-                                return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                                local hoisted_1_2;
+                                hoisted_1_2 := (i_2 - 1);
+                                return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                             end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_28_1 ) ), deduped_24_1 ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_18_1, deduped_23_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                                      local deduped_1_2;
-                                      deduped_1_2 := (i_2 - 1);
-                                      return (REM_INT( deduped_1_2, 1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, 1 ) + 1);
+                                      local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                                      deduped_3_2 := (i_2 - 1);
+                                      hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                                      hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                                      return (hoisted_1_2 * hoisted_7_1 + hoisted_2_2 + 1);
                                   end ) ), deduped_22_1 ), deduped_22_1, deduped_22_1, deduped_28_1 ), deduped_23_1 ) * KroneckerMat( deduped_25_1, ConvertMatrixToColumn( deduped_23_1 ) )), deduped_19_1 ), deduped_24_1 ) * KroneckerMat( deduped_25_1, (KroneckerMat( deduped_19_1, deduped_24_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, 1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, 1 ) + 1);
+                                  local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                                  deduped_3_2 := (i_2 - 1);
+                                  hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                                  hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                                  return (hoisted_1_2 * hoisted_11_1 + hoisted_2_2 + 1);
                               end ) ), deduped_20_1 ), deduped_20_1, deduped_20_1, deduped_28_1 ), deduped_24_1 ) * KroneckerMat( deduped_25_1, ConvertMatrixToColumn( deduped_24_1 ) )) )) ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5325,25 +5476,25 @@ function ( cat_1, list_1 )
     hoisted_3_1 := deduped_23_1;
     hoisted_2_1 := [ 1 .. deduped_16_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_19_1 ), deduped_15_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_33_1 ), deduped_15_1 ) * KroneckerMat( deduped_19_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                     end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_33_1 ) ) * KroneckerMat( TransposedMatrix( deduped_19_1 ), (KroneckerMat( KroneckerMat( deduped_20_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                           end ) ), deduped_18_1 ), deduped_18_1, deduped_18_1, deduped_33_1 ) ), deduped_25_1 ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_20_1, deduped_26_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_10_1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, hoisted_10_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_10_1 ) * hoisted_7_1 + QUO_INT( hoisted_1_2, hoisted_10_1 ) + 1);
                                 end ) ), deduped_24_1 ), deduped_24_1, deduped_24_1, deduped_33_1 ), deduped_26_1 ) * KroneckerMat( deduped_27_1, ConvertMatrixToColumn( deduped_26_1 ) )), deduped_21_1 ), deduped_25_1 ) * KroneckerMat( deduped_27_1, (KroneckerMat( deduped_21_1, deduped_25_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_11_1, function ( key_2, i_2 )
-                                local deduped_1_2;
-                                deduped_1_2 := (i_2 - 1);
-                                return (REM_INT( deduped_1_2, hoisted_12_1 ) * hoisted_13_1 + QUO_INT( deduped_1_2, hoisted_12_1 ) + 1);
+                                local hoisted_1_2;
+                                hoisted_1_2 := (i_2 - 1);
+                                return (REM_INT( hoisted_1_2, hoisted_12_1 ) * hoisted_13_1 + QUO_INT( hoisted_1_2, hoisted_12_1 ) + 1);
                             end ) ), deduped_22_1 ), deduped_22_1, deduped_22_1, deduped_33_1 ), deduped_25_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_30_1, deduped_33_1 ), ConvertMatrixToColumn( deduped_25_1 ) )) )) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5386,30 +5537,30 @@ function ( cat_1, list_1 )
     hoisted_3_1 := deduped_29_1;
     hoisted_2_1 := [ 1 .. deduped_19_1 ];
     deduped_14_1 := KroneckerMat( TransposedMatrix( deduped_20_1 ), KroneckerMat( KroneckerMat( deduped_21_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_19_1 ), deduped_19_1, deduped_19_1, deduped_34_1 ) ), deduped_26_1 ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_21_1, deduped_27_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                                  local hoisted_1_2;
+                                  hoisted_1_2 := (i_2 - 1);
+                                  return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                               end ) ), deduped_24_1 ), deduped_24_1, deduped_24_1, deduped_34_1 ), deduped_27_1 ) * KroneckerMat( deduped_28_1, ConvertMatrixToColumn( deduped_27_1 ) )), deduped_22_1 ), deduped_26_1 ) * KroneckerMat( deduped_28_1, (KroneckerMat( deduped_22_1, deduped_26_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_7_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_8_1 ) * hoisted_9_1 + QUO_INT( deduped_1_2, hoisted_8_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_8_1 ) * hoisted_9_1 + QUO_INT( hoisted_1_2, hoisted_8_1 ) + 1);
                           end ) ), deduped_25_1 ), deduped_25_1, deduped_25_1, deduped_34_1 ), deduped_26_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_32_1, deduped_34_1 ), ConvertMatrixToColumn( deduped_26_1 ) )) ) );
     hoisted_13_1 := deduped_18_1;
     hoisted_12_1 := [ 1 .. deduped_15_1 ];
     hoisted_11_1 := deduped_23_1;
     hoisted_10_1 := [ 1 .. deduped_17_1 ];
     morphism_attr_1_1 := RightDivide( HomalgIdentityMatrix( NumberColumns( deduped_14_1 ), deduped_34_1 ), KroneckerMat( ConvertMatrixToRow( deduped_20_1 ), deduped_16_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_11_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_11_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_11_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_11_1 ) + 1);
                         end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_34_1 ), deduped_16_1 ) * KroneckerMat( deduped_20_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_12_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_13_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_13_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_13_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_13_1 ) + 1);
                       end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_34_1 ) ) * deduped_14_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5452,30 +5603,30 @@ function ( cat_1, source_1, list_1, range_1 )
     hoisted_3_1 := deduped_29_1;
     hoisted_2_1 := [ 1 .. deduped_19_1 ];
     deduped_14_1 := KroneckerMat( TransposedMatrix( deduped_20_1 ), KroneckerMat( KroneckerMat( deduped_21_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_19_1 ), deduped_19_1, deduped_19_1, deduped_34_1 ) ), deduped_26_1 ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_21_1, deduped_27_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                                  local deduped_1_2;
-                                  deduped_1_2 := (i_2 - 1);
-                                  return (REM_INT( deduped_1_2, hoisted_6_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_6_1 ) + 1);
+                                  local hoisted_1_2;
+                                  hoisted_1_2 := (i_2 - 1);
+                                  return (REM_INT( hoisted_1_2, hoisted_6_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_6_1 ) + 1);
                               end ) ), deduped_24_1 ), deduped_24_1, deduped_24_1, deduped_34_1 ), deduped_27_1 ) * KroneckerMat( deduped_28_1, ConvertMatrixToColumn( deduped_27_1 ) )), deduped_22_1 ), deduped_26_1 ) * KroneckerMat( deduped_28_1, (KroneckerMat( deduped_22_1, deduped_26_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_7_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_8_1 ) * hoisted_9_1 + QUO_INT( deduped_1_2, hoisted_8_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_8_1 ) * hoisted_9_1 + QUO_INT( hoisted_1_2, hoisted_8_1 ) + 1);
                           end ) ), deduped_25_1 ), deduped_25_1, deduped_25_1, deduped_34_1 ), deduped_26_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_32_1, deduped_34_1 ), ConvertMatrixToColumn( deduped_26_1 ) )) ) );
     hoisted_13_1 := deduped_18_1;
     hoisted_12_1 := [ 1 .. deduped_15_1 ];
     hoisted_11_1 := deduped_23_1;
     hoisted_10_1 := [ 1 .. deduped_17_1 ];
     morphism_attr_1_1 := RightDivide( HomalgIdentityMatrix( NumberColumns( deduped_14_1 ), deduped_34_1 ), KroneckerMat( ConvertMatrixToRow( deduped_20_1 ), deduped_16_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_10_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_11_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_11_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_11_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_11_1 ) + 1);
                         end ) ), deduped_17_1 ), deduped_17_1, deduped_17_1, deduped_34_1 ), deduped_16_1 ) * KroneckerMat( deduped_20_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_12_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_13_1 ) * hoisted_11_1 + QUO_INT( deduped_1_2, hoisted_13_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_13_1 ) * hoisted_11_1 + QUO_INT( hoisted_1_2, hoisted_13_1 ) + 1);
                       end ) ), deduped_15_1 ), deduped_15_1, deduped_15_1, deduped_34_1 ) ) * deduped_14_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5522,25 +5673,25 @@ function ( cat_1, source_1, list_1, range_1 )
     hoisted_3_1 := deduped_23_1;
     hoisted_2_1 := [ 1 .. deduped_16_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_19_1 ), deduped_15_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_16_1 ), deduped_16_1, deduped_16_1, deduped_33_1 ), deduped_15_1 ) * KroneckerMat( deduped_19_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                     end ) ), deduped_14_1 ), deduped_14_1, deduped_14_1, deduped_33_1 ) ) * KroneckerMat( TransposedMatrix( deduped_19_1 ), (KroneckerMat( KroneckerMat( deduped_20_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_6_1, function ( key_2, i_2 )
-                              local deduped_1_2;
-                              deduped_1_2 := (i_2 - 1);
-                              return (REM_INT( deduped_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( deduped_1_2, hoisted_7_1 ) + 1);
+                              local hoisted_1_2;
+                              hoisted_1_2 := (i_2 - 1);
+                              return (REM_INT( hoisted_1_2, hoisted_7_1 ) * hoisted_8_1 + QUO_INT( hoisted_1_2, hoisted_7_1 ) + 1);
                           end ) ), deduped_18_1 ), deduped_18_1, deduped_18_1, deduped_33_1 ) ), deduped_25_1 ) * KroneckerMat( KroneckerMat( (KroneckerMat( deduped_20_1, deduped_26_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_9_1, function ( key_2, i_2 )
-                                    local deduped_1_2;
-                                    deduped_1_2 := (i_2 - 1);
-                                    return (REM_INT( deduped_1_2, hoisted_10_1 ) * hoisted_7_1 + QUO_INT( deduped_1_2, hoisted_10_1 ) + 1);
+                                    local hoisted_1_2;
+                                    hoisted_1_2 := (i_2 - 1);
+                                    return (REM_INT( hoisted_1_2, hoisted_10_1 ) * hoisted_7_1 + QUO_INT( hoisted_1_2, hoisted_10_1 ) + 1);
                                 end ) ), deduped_24_1 ), deduped_24_1, deduped_24_1, deduped_33_1 ), deduped_26_1 ) * KroneckerMat( deduped_27_1, ConvertMatrixToColumn( deduped_26_1 ) )), deduped_21_1 ), deduped_25_1 ) * KroneckerMat( deduped_27_1, (KroneckerMat( deduped_21_1, deduped_25_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_11_1, function ( key_2, i_2 )
-                                local deduped_1_2;
-                                deduped_1_2 := (i_2 - 1);
-                                return (REM_INT( deduped_1_2, hoisted_12_1 ) * hoisted_13_1 + QUO_INT( deduped_1_2, hoisted_12_1 ) + 1);
+                                local hoisted_1_2;
+                                hoisted_1_2 := (i_2 - 1);
+                                return (REM_INT( hoisted_1_2, hoisted_12_1 ) * hoisted_13_1 + QUO_INT( hoisted_1_2, hoisted_12_1 ) + 1);
                             end ) ), deduped_22_1 ), deduped_22_1, deduped_22_1, deduped_33_1 ), deduped_25_1 ) * KroneckerMat( HomalgIdentityMatrix( deduped_30_1, deduped_33_1 ), ConvertMatrixToColumn( deduped_25_1 ) )) )) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5601,13 +5752,13 @@ function ( cat_1, c_1, b_1, g_1 )
     hoisted_3_1 := deduped_11_1;
     hoisted_2_1 := [ 1 .. deduped_6_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_8_1 ), UnderlyingMatrix( g_1 ) ) * (KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_12_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_8_1 ), deduped_9_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5633,13 +5784,13 @@ function ( cat_1, a_1, b_1, f_1 )
     hoisted_3_1 := deduped_10_1;
     hoisted_2_1 := [ 1 .. deduped_6_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_8_1 ), deduped_9_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                     end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ) ) * KroneckerMat( TransposedMatrix( deduped_8_1 ), UnderlyingMatrix( f_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5710,13 +5861,15 @@ function ( cat_1, alpha_1 )
     hoisted_3_1 := deduped_8_1;
     hoisted_2_1 := [ 1 .. deduped_5_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_7_1 ), deduped_9_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                            local deduped_1_2;
-                            deduped_1_2 := (i_2 - 1);
-                            return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                            local hoisted_1_2;
+                            hoisted_1_2 := (i_2 - 1);
+                            return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                         end ) ), deduped_5_1 ), deduped_5_1, deduped_5_1, deduped_10_1 ), deduped_9_1 ) * KroneckerMat( deduped_7_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, 1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, 1 ) + 1);
+                          local hoisted_1_2, hoisted_2_2, deduped_3_2;
+                          deduped_3_2 := (i_2 - 1);
+                          hoisted_2_2 := QUO_INT( deduped_3_2, 1 );
+                          hoisted_1_2 := REM_INT( deduped_3_2, 1 );
+                          return (hoisted_1_2 * hoisted_3_1 + hoisted_2_2 + 1);
                       end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_10_1 ) ) * KroneckerMat( TransposedMatrix( deduped_7_1 ), UnderlyingMatrix( alpha_1 ) ) * ConvertMatrixToColumn( deduped_7_1 );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -5850,9 +6003,11 @@ function ( cat_1, morphisms_1, T_1, tau_1 )
     hoisted_3_1 := List( morphisms_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
     morphism_attr_1_1 := LeftDivide( SyzygiesOfColumns( UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} ) ), UnionOfRows( deduped_11_1, Dimension( T_1 ), ListWithKeys( tau_1, function ( key_2, s_2 )
                 return UnderlyingMatrix( s_2 );
@@ -5881,9 +6036,11 @@ function ( cat_1, morphisms_1, T_1, tau_1, P_1 )
     hoisted_3_1 := List( morphisms_1, UnderlyingMatrix );
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_4_1[logic_new_func_x_2];
-            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_1_2, Sum( hoisted_4_1{[ (logic_new_func_x_2 + 1) .. hoisted_6_1 ]} ), hoisted_5_1 ) );
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_4_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return hoisted_3_1[logic_new_func_x_2] * UnionOfColumns( HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{hoisted_1_2} ), hoisted_5_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_5_1 ), HomalgZeroMatrix( deduped_3_2, Sum( hoisted_4_1{[ hoisted_2_2 .. hoisted_6_1 ]} ), hoisted_5_1 ) );
         end );
     morphism_attr_1_1 := LeftDivide( SyzygiesOfColumns( UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 1 .. deduped_10_1 - 1 ]} ) + -1 * UnionOfRows( deduped_11_1, deduped_8_1, deduped_7_1{[ 2 .. deduped_10_1 ]} ) ), UnionOfRows( deduped_11_1, Dimension( T_1 ), ListWithKeys( tau_1, function ( key_2, s_2 )
                 return UnderlyingMatrix( s_2 );
@@ -6020,9 +6177,11 @@ function ( cat_1, morphisms_1, T_1, tau_1 )
     hoisted_3_1 := deduped_9_1;
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
     morphism_attr_1_1 := RightDivide( UnionOfColumns( deduped_11_1, Dimension( T_1 ), ListWithKeys( tau_1, function ( key_2, s_2 )
                 return UnderlyingMatrix( s_2 );
@@ -6051,9 +6210,11 @@ function ( cat_1, morphisms_1, T_1, tau_1, P_1 )
     hoisted_3_1 := deduped_9_1;
     hoisted_2_1 := [ 1 .. deduped_10_1 ];
     deduped_7_1 := ListWithKeys( hoisted_2_1, function ( key_2, logic_new_func_x_2 )
-            local deduped_1_2;
-            deduped_1_2 := hoisted_3_1[logic_new_func_x_2];
-            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{[ 1 .. (logic_new_func_x_2 - 1) ]} ), deduped_1_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_1_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ (logic_new_func_x_2 + 1) .. hoisted_5_1 ]} ), deduped_1_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
+            local hoisted_1_2, hoisted_2_2, deduped_3_2;
+            deduped_3_2 := hoisted_3_1[logic_new_func_x_2];
+            hoisted_2_2 := logic_new_func_x_2 + 1;
+            hoisted_1_2 := [ 1 .. logic_new_func_x_2 - 1 ];
+            return UnionOfRows( HomalgZeroMatrix( Sum( hoisted_3_1{hoisted_1_2} ), deduped_3_2, hoisted_4_1 ), HomalgIdentityMatrix( deduped_3_2, hoisted_4_1 ), HomalgZeroMatrix( Sum( hoisted_3_1{[ hoisted_2_2 .. hoisted_5_1 ]} ), deduped_3_2, hoisted_4_1 ) ) * hoisted_6_1[logic_new_func_x_2];
         end );
     morphism_attr_1_1 := RightDivide( UnionOfColumns( deduped_11_1, Dimension( T_1 ), ListWithKeys( tau_1, function ( key_2, s_2 )
                 return UnderlyingMatrix( s_2 );
@@ -6130,13 +6291,13 @@ function ( cat_1, t_1, a_1, alpha_1 )
     hoisted_3_1 := deduped_11_1;
     hoisted_2_1 := [ 1 .. deduped_6_1 ];
     morphism_attr_1_1 := KroneckerMat( TransposedMatrix( deduped_8_1 ), UnderlyingMatrix( alpha_1 ) ) * (KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_4_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_12_1 ) ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_5_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( ConvertMatrixToColumn( deduped_8_1 ), deduped_9_1 ));
     return CreateCapCategoryMorphismWithAttributes( cat_1, a_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberColumns( morphism_attr_1_1 ) ), UnderlyingMatrix, morphism_attr_1_1 );
 end
@@ -6162,13 +6323,13 @@ function ( cat_1, t_1, a_1, alpha_1 )
     hoisted_3_1 := deduped_10_1;
     hoisted_2_1 := [ 1 .. deduped_6_1 ];
     morphism_attr_1_1 := KroneckerMat( ConvertMatrixToRow( deduped_8_1 ), deduped_9_1 ) * KroneckerMat( HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_2_1, function ( key_2, i_2 )
-                          local deduped_1_2;
-                          deduped_1_2 := (i_2 - 1);
-                          return (REM_INT( deduped_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_3_1 ) + 1);
+                          local hoisted_1_2;
+                          hoisted_1_2 := (i_2 - 1);
+                          return (REM_INT( hoisted_1_2, hoisted_3_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_3_1 ) + 1);
                       end ) ), deduped_6_1 ), deduped_6_1, deduped_6_1, deduped_12_1 ), deduped_9_1 ) * KroneckerMat( deduped_8_1, HomalgMatrix( PermutationMat( PermList( ListWithKeys( hoisted_4_1, function ( key_2, i_2 )
-                        local deduped_1_2;
-                        deduped_1_2 := (i_2 - 1);
-                        return (REM_INT( deduped_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( deduped_1_2, hoisted_5_1 ) + 1);
+                        local hoisted_1_2;
+                        hoisted_1_2 := (i_2 - 1);
+                        return (REM_INT( hoisted_1_2, hoisted_5_1 ) * hoisted_3_1 + QUO_INT( hoisted_1_2, hoisted_5_1 ) + 1);
                     end ) ), deduped_7_1 ), deduped_7_1, deduped_7_1, deduped_12_1 ) ) * KroneckerMat( TransposedMatrix( deduped_8_1 ), UnderlyingMatrix( alpha_1 ) );
     return CreateCapCategoryMorphismWithAttributes( cat_1, CreateCapCategoryObjectWithAttributes( cat_1, Dimension, NumberRows( morphism_attr_1_1 ) ), a_1, UnderlyingMatrix, morphism_attr_1_1 );
 end
