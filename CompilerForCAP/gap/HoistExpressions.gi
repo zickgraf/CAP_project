@@ -34,21 +34,47 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
     
     #Display( ENHANCED_SYNTAX_TREE_CODE( func ) );
     
-    id := CapJitGetNextUnusedVariableID( func );
-    
     HOIST := function ( tree, func_stack, domains, domain_levels )
         
         pre_func := function ( tree, additional_arguments )
             
-            if CapJitIsCallToGlobalFunction( tree, gvar -> gvar in [ "List", "Sum", "Product", "ForAll" ] ) and tree.args.length = 2 and tree.args.2.type = "EXPR_DECLARATIVE_FUNC" then
+            if tree.type = "EXPR_DECLARATIVE_FUNC" then
                 
-                # TODO not inline?
-                tree.funcref.gvar := Concatenation( tree.funcref.gvar, "WithKeys" );
+                # TODO
+                if Length( func_stack ) > 1 and not (Length( tree.nams ) = tree.narg + 1 and Length( tree.bindings.names ) = 1) then
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    Error( "only fully inlined syntax trees are supported" );
+                    
+                fi;
                 
-                tree.args.2.narg := 2;
-                Add( tree.args.2.nams, "key", 1 );
+                if not IsIdenticalObj( tree, Last( func_stack ) ) then
+                    
+                    return fail;
+                    
+                fi;
                 
-                return fail;
+            fi;
+            
+            if CapJitIsCallToGlobalFunction( tree, gvar -> true ) then
+                
+                if tree.funcref.gvar in [ "List", "Sum", "Product", "ForAll",  "ForAny", "Number", "Filtered", "First", "Last" ] and tree.args.length = 2 and tree.args.2.type = "EXPR_DECLARATIVE_FUNC" then
+                    
+                    # TODO not inline?
+                    tree.funcref.gvar := Concatenation( tree.funcref.gvar, "WithKeys" );
+                    
+                    tree.args.2.narg := 2;
+                    Add( tree.args.2.nams, "key", 1 );
+                    
+                    return fail;
+                    
+                fi;
+                
+                if ForAny( tree.args, a -> a.type = "EXPR_DECLARATIVE_FUNC" ) and not tree.funcref.gvar in [ "ListN" ] then
+                    
+                    Print( "WARNING: Could not detect domain of function in call of ", tree.funcref.gvar, "\n" );
+                    
+                fi;
                 
             fi;
             
@@ -83,19 +109,55 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
             fi;
             
             hoist_expression := function ( expr, levels )
-              local loop_func, domain, args, new_variable_name, new_expr, level, name;
+              local is_cheap_expression, target_level, func, loop_func, domain, asd, args, new_variable_name, new_expr, level, name;
                 
                 if not StartsWith( expr.type, "EXPR_" ) then
                     
                     return expr;
                     
                 fi;
+                
+                # extracted loops are relatively expensive -> if the computation of some value is realtively cheap, do not extract it
+                is_cheap_expression := function ( tree )
                     
-                if expr.type in [ "EXPR_REF_FVAR", "EXPR_REF_GVAR", "EXPR_DECLARATIVE_FUNC", "EXPR_INT", "EXPR_STRING", "EXPR_TRUE", "EXPR_FALSE" ] then
+                    if tree.type in [ "EXPR_REF_FVAR", "EXPR_REF_GVAR", "EXPR_DECLARATIVE_FUNC", "EXPR_INT", "EXPR_STRING", "EXPR_TRUE", "EXPR_FALSE" ] then
+                        
+                        return true;
+                        
+                    fi;
+                    
+                    if CapJitIsCallToGlobalFunction( tree, "[]" ) then
+                        
+                        return is_cheap_expression( tree.args.1 ) and is_cheap_expression( tree.args.2 );
+                        
+                    fi;
+                    
+                    if tree.type = "EXPR_RANGE" then
+                        
+                        return is_cheap_expression( tree.first ) and is_cheap_expression( tree.last );
+                        
+                    fi;
+                    
+                    if tree.type = "EXPR_AND" or tree.type = "EXPR_OR" then
+                        
+                        return is_cheap_expression( tree.left ) and is_cheap_expression( tree.right );
+                        
+                    fi;
+                    
+                    return false;
+                    
+                end;
+                
+                # TODO
+                if is_cheap_expression( expr ) then
                     
                     return expr;
                     
                 fi;
+                
+                #Display( "hoisting:" );
+                #Display( ENHANCED_SYNTAX_TREE_CODE( expr ) );
+                #Display( levels );
                 
                 # TODO
                 levels := ShallowCopy( levels );
@@ -106,17 +168,10 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                 
                 AddSet( levels, 1 );
                 
-                #if Last( levels ) = Length( levels ) then
-                #    
-                #    # this depends on all levels -> let the usual hoisting kick in
-                #    return expr;
-                #    
-                #fi;
-                
                 # find longest prefix without missing levels
                 target_level := Length( levels );
                 
-                while levels[target_level] <> target_level do
+                while levels[target_level] <> target_level and domains[target_level] <> fail do
                     
                     target_level := target_level - 1;
                     
@@ -124,14 +179,6 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                 
                 Assert( 0, target_level > 0 );
                 Assert( 0, levels[target_level] = target_level );
-                
-                #if target_level > 1 then
-                #    
-                #    Error("asd");
-                #    
-                #fi;
-                
-                #RemoveSet( levels, 1 );
                 
                 func := func_stack[target_level];
                 levels := Filtered( levels, l -> l > target_level );
@@ -142,11 +189,30 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                     domain := domains[level];
                     
                     Assert( 0, loop_func.narg = 2 );
-                    #Assert( 0, Length( loop_func.nams ) = 3 );
+                    Assert( 0, Length( loop_func.nams ) >= 3 );
                     Assert( 0, loop_func.nams[1] = "key" );
                     Assert( 0, loop_func.nams[3] = "RETURN_VALUE" );
                     
-                    expr := rec(
+                    # TODO: still valid with missing domains?
+                    # We assume that the syntax tree originally was fully inlined (see check in pre_func).
+                    # Thus, if `loop_func` has proper bindings, the values of those must be hoisted expressions
+                    # and those expressions must depend on all levels until `level`.
+                    # By the construction above, `expr` does not depend on all levels until `level` and thus
+                    # cannot depend on the values of the bindings of `loop_func`.
+                    # Thus, we can simply use the first three nams for the newly created function below.
+                    
+                    # It is very unlikely that someone calls a function argument "hoisted_1", but one never knows.
+                    #if loop_func.nams[2] = "hoisted_1" then
+                    #    
+                    #    new_variable_name := "hoisted_2";
+                    #    
+                    #else
+                    #    
+                    #    new_variable_name := "hoisted_1";
+                    #    
+                    #fi;
+                    
+                    asd := rec(
                         type := "EXPR_FUNCCALL",
                         funcref := rec(
                             type := "EXPR_REF_GVAR",
@@ -159,7 +225,9 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                                 id := loop_func.id,
                                 narg := 2,
                                 variadic := false,
-                                nams := loop_func.nams,
+                                nams := loop_func.nams{[ 1 .. 3 ]},
+                                #nams := StructuralCopy( loop_func.nams ),
+                                #bindings := StructuralCopy( loop_func.bindings ),
                                 bindings := rec(
                                     type := "FVAR_BINDING_SEQ",
                                     names := [ "RETURN_VALUE" ],
@@ -168,6 +236,9 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                             ),
                         ] ),
                     );
+                    #asd.args.2.bindings.names := ShallowCopy( asd.args.2.bindings.names );
+                    asd.args.2.bindings.BINDING_RETURN_VALUE := expr;
+                    expr := asd;
                     
                 od;
                 
@@ -182,7 +253,6 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                         
                     fi;
                     
-                    # TODO: rec( )!
                     if CapJitIsEqualForEnhancedSyntaxTrees( CapJitValueOfBinding( func.bindings, name ), expr ) then
                         
                         new_variable_name := name;
@@ -195,8 +265,11 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                 
                 if new_variable_name = fail then
                     
-                    new_variable_name := Concatenation( "hoisted_", String( id ) );
-                    id := id + 1;
+                    new_variable_name := Concatenation( "hoisted_", String( CapJitGetNextUnusedVariableID( func ) ) );
+                    
+                    #if new_variable_name = "hoisted_24" then
+                    #    Error("asd");
+                    #fi;
                     
                     func.nams := Concatenation( func.nams, [ new_variable_name ] );
                     
@@ -204,7 +277,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                     
                 fi;
                 
-                # TODO: generate this hoisted
+                ## TODO: generate this hoisted
                 new_expr := rec(
                     type := "EXPR_REF_FVAR",
                     func_id := func.id,
@@ -236,9 +309,71 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                 
                 return new_expr;
                 
+                #target_level := Last( levels );
+                #
+                #if target_level < Length( func_stack ) then
+                #    
+                #    return new_expr;
+                #    
+                #    func := func_stack[target_level];
+                #    
+                #    new_variable_name := fail;
+                #    
+                #    for name in func.bindings.names do
+                #        
+                #        # TODO
+                #        if name = "RETURN_VALUE" then
+                #            
+                #            continue;
+                #            
+                #        fi;
+                #        
+                #        if CapJitIsEqualForEnhancedSyntaxTrees( CapJitValueOfBinding( func.bindings, name ), new_expr ) then
+                #            
+                #            new_variable_name := name;
+                #            
+                #            break;
+                #            
+                #        fi;
+                #        
+                #    od;
+                #    
+                #    if new_variable_name = fail then
+                #        
+                #        new_variable_name := Concatenation( "hoisted_", String( CapJitGetNextUnusedVariableID( func ) ) );
+                #        
+                #        #if new_variable_name = "hoisted_23" then
+                #        #    #Error("asd");
+                #        #fi;
+                #        
+                #        func.nams := Concatenation( func.nams, [ new_variable_name ] );
+                #        
+                #        CapJitAddBinding( func.bindings, new_variable_name, CapJitCopyWithNewFunctionIDs( new_expr ) );
+                #        
+                #    fi;
+                #    
+                #    # TODO: generate this hoisted?
+                #    return rec(
+                #        type := "EXPR_REF_FVAR",
+                #        func_id := func.id,
+                #        name := new_variable_name,
+                #    );
+                #
+                #else
+                #    
+                #    return new_expr;
+                #    
+                #fi;
+                
             end;
             
             if result = fail then
+                
+                if tree.type = "EXPR_DECLARATIVE_FUNC" then
+                    
+                    return HOIST( tree, Concatenation( func_stack, [ tree ] ), Concatenation( domains, [ fail ] ), Concatenation( domain_levels, [ [ ] ] ) );
+                    
+                fi;
                 
                 domain_result := HOIST( tree.args.1, func_stack, domains, domain_levels );
                 
@@ -257,16 +392,29 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
                 
                 for key in keys do
                     
+                    #if tree.type = "SYNTAX_TREE_LIST" and CapJitIsCallToGlobalFunction( tree.(key), "[]" ) and key = "1" and tree.1.args.2.type = "EXPR_REF_FVAR" and tree.1.args.2.name = "key" and Last( result.(key).levels ) = 6
+                    #then
+                    #    Display(ENHANCED_SYNTAX_TREE_CODE( tree ));
+                    #    Error("qwe");
+                    #fi;
+                    
                     #Display( "################" );
                     #Display( ENHANCED_SYNTAX_TREE_CODE( func ) );
                     #Display( levels );
-                    if not IsEmpty( Difference( levels, result.(key).levels ) ) then
+                    #if levels <> result.(key).levels then
+                    if not IsEmpty( Difference( levels, Concatenation( result.(key).levels, [ 1 ] ) ) ) then
                         
                         tree.(key) := hoist_expression( tree.(key), result.(key).levels );
                         
                         #Display( ENHANCED_SYNTAX_TREE_CODE( func ) );
                         
                     fi;
+                    
+                    #if tree.type = "SYNTAX_TREE_LIST" and CapJitIsCallToGlobalFunction( tree.(key), "[]" ) and key = "1" and tree.1.args.1.type = "EXPR_REF_FVAR" and tree.1.args.1.name = "hoisted_21" #and 6 in result.(key).levels
+                    #then
+                    #    Display(ENHANCED_SYNTAX_TREE_CODE( tree ));
+                    #    Error("qwe");
+                    #fi;
                     
                 od;
                 
@@ -294,7 +442,9 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_HOISTED_EXPRESSIONS_OR_BINDINGS, functio
     
     HOIST( tree, [ tree ], [ fail ], [ fail ] );
     
-    return tree;
+    #tree := CapJitDroppedUnusedBindings( tree );
+    
+    #return tree;
     
     
     fi;
