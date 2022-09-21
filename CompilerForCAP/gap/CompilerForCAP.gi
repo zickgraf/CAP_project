@@ -436,6 +436,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_POST_PROCESSED_SYNTAX_TREE, function ( t
         fi;
         
         tree := CapJitHoistedExpressions( tree );
+        #tree := CapJitHoistedExpressions( tree );
         
         if debug then
             # COVERAGE_IGNORE_BLOCK_START
