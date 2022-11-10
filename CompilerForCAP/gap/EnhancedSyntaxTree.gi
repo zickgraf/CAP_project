@@ -2569,6 +2569,12 @@ BindGlobal( "ENHANCED_SYNTAX_TREE_CODE_JULIA", function ( tree )
                         
                         return Concatenation( "CapCategoryMorphism(", result.args[2], ", ", result.args[3], ", ", result.args[6], ", ", result.args[4], ")" );
                         
+                    elif tree.funcref.gvar = "CreateCapCategoryMorphismWithAttributes" then
+                        
+                        Assert( 0, Length( result.args ) = 5 );
+                        
+                        return Concatenation( "CapCategoryMorphism(", result.args[1], ", ", result.args[2], ", ", result.args[5], ", ", result.args[3], ")" );
+                        
                     elif tree.funcref.gvar = "List" then
                         
                         Assert( 0, Length( result.args ) = 2 );
@@ -2691,9 +2697,27 @@ BindGlobal( "ENHANCED_SYNTAX_TREE_CODE_JULIA", function ( tree )
 
                         return Concatenation( "vcat(", result.args[1], ")" );
                         
+                    elif tree.funcref.gvar = "DefiningTripleOfQuiver" then
+                        
+                        Assert( 0, Length( result.args ) = 1 );
+
+                        return Concatenation( "DefiningTripleOfQuiver(", result.args[1], ")" );
+                        
+                    elif tree.funcref.gvar = "CAP_JIT_INCOMPLETE_LOGIC" then
+                        
+                        Assert( 0, Length( result.args ) = 1 );
+
+                        return Concatenation( "identity(", result.args[1], ")" );
+                        
+                    elif tree.funcref.gvar = "NTuple" then
+                        
+                        #Assert( 0, Length( result.args ) = 1 );
+                        # TODO: 1-tuple
+                        return Concatenation( "(", JoinStringsWithSeparator( result.args{[ 2 .. Length( result.args ) ]}, ", " ), ")" );
+                        
                     else
                         
-                        Error( "this is not supported" );
+                        Error( tree.funcref.gvar, " is not supported" );
                         
                     fi;
                     
