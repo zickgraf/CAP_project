@@ -320,6 +320,23 @@ end );
 
 InstallGlobalFunction( CapJitIsEqualForEnhancedSyntaxTrees, function ( tree1, tree2 )
     
+    # TODO
+    if IsBound( tree1.local_replacements ) then
+        
+        tree1 := ShallowCopy( tree1 );
+        
+        tree1.local_replacements  := [ ];
+        
+    fi;
+    
+    if IsBound( tree2.local_replacements ) then
+        
+        tree2 := ShallowCopy( tree2 );
+        
+        tree2.local_replacements  := [ ];
+        
+    fi;
+    
     return CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE( tree1, tree2, [ ], false ) <> fail;
     
 end );
@@ -926,3 +943,9 @@ InstallGlobalFunction( "ConcatenationOfStringsAsEnumerationWithAnd", function ( 
     fi;
     
 end );
+
+CapJitAddLocalReplacement := function ( src, dst )
+    
+    Error( "TODO" );
+    
+end;

@@ -694,6 +694,8 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE, function ( func )
         
         if tree.type = "EXPR_FUNC" then
             
+            tree.local_replacements := [ ];
+            
             statements := tree.stats.statements;
             
             bindings := rec(
@@ -826,6 +828,12 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE, function ( func )
                         ErrorWithFuncLocation( "statement type ", Last( statement.branches.1.body.statements ).type, " is not supported by CompilerForCAP" );
                         
                     fi;
+                    
+                elif statement.type = "STAT_PROCCALL" and statement.funcref.type = "EXPR_REF_GVAR" and statement.funcref.gvar = "CapJitAddLocalReplacement" then
+                    
+                    Assert( 0, statement.args.length = 2 );
+                    
+                    Add( tree.local_replacements, rec( src := statement.args.1, dst := statement.args.2 ) );
                     
                 else
                     
@@ -1258,6 +1266,27 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE_CODE, function ( tree )
                 tree.nams := List( tree.nams, name -> Concatenation( name, "_", String( Length( func_stack ) + 1 ) ) );
                 
                 tree.nloc := Length( tree.nams ) - tree.narg;
+                
+                if not IsBound( tree.local_replacements ) then
+                    
+                    Display( "#############################" );
+                    tree.local_replacements := [ ];
+                    
+                fi;
+                
+                tree.stats.statements := ConcatenationForSyntaxTreeLists(
+                    AsSyntaxTreeList(
+                        List( tree.local_replacements, r -> rec(
+                            type := "STAT_PROCCALL",
+                            funcref := rec(
+                                type := "EXPR_REF_GVAR",
+                                gvar := "CapJitAddLocalReplacement",
+                            ),
+                            args := AsSyntaxTreeList( [ r.src, r.dst ] ),
+                        ) )
+                    ),
+                    tree.stats.statements
+                );
                 
             fi;
             
