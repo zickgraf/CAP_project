@@ -926,3 +926,869 @@ InstallGlobalFunction( "ConcatenationOfStringsAsEnumerationWithAnd", function ( 
     fi;
     
 end );
+
+WriteResultToTeXFile := function ( filename, result )
+  local path, fs, content;
+    
+    path := Concatenation( filename, ".gap_autogen.tex" );
+    
+    # check if file already exists with the correct content
+    fs := IO_File( path, "r" );
+    
+    if fs <> fail then
+        
+        IO_Close( fs );
+        
+        content := ReadFileForHomalg( path );
+        
+        if content = result then
+            
+            return;
+            
+        fi;
+        
+    fi;
+    
+    WriteFileForHomalg( path, result );
+    
+end;
+
+FunctionLaTeXString := function ( func )
+  local old_size_screen, string;
+    
+    old_size_screen := SizeScreen( );
+    
+    SizeScreen( [ 70 ] );
+    
+    string := DisplayString( func );
+    
+    # drop trailing new line
+    string := string{[ 1 .. Length( string ) - 1 ]};
+    
+    string := Concatenation(
+        "\\begin{Verbatim}[frame=single]\n",
+        string,
+        "\n\\end{Verbatim}\n"
+    );
+    
+    SizeScreen( old_size_screen );
+    
+    return string;
+    
+end;
+
+prepare_for_tensoring := function ( string, tree )
+    
+    #return string;
+    
+    #if CapJitIsCallToGlobalFunction( tree, gvar -> gvar in [ "TensorProductOnMorphisms", "LeftUnitorInverse", "Braiding", "AssociatorLeftToRight", "AssociatorRightToLeft", "CoevaluationForDual" ] ) then
+    if CapJitIsCallToGlobalFunction( tree, gvar -> gvar in [ "TensorProductOnMorphisms", "TensorProductOnMorphismsWithGivenTensorProducts", "TensorProductOnObjects", "PreComposeList", "PreCompose", "AdditionForMorphisms", "AdditiveInverseForMorphisms" ] ) then
+        
+        return Concatenation( "\\left(", string, "\\right)" );
+        
+    else
+        
+        return string;
+        
+    fi;
+    
+end;
+
+FunctionAsMathString := function ( func, cat, input_filters, args... )
+  local suffix, func_tree, return_value, result_func, left_list, right, latex_string, max_length, mor, i;
+    
+    if IsEmpty( args ) then
+        
+        suffix := "";
+        
+    elif Length( args ) = 1 then
+        
+        suffix := args[1];
+        
+    else
+        
+        Error( "FunctionAsMathString must be called with at most three arguments" );
+        
+    fi;
+    
+    if not IsList( input_filters ) or Length( input_filters ) <> NumberArgumentsFunction( func ) then
+        
+        Error( "<input_filters> must be a list of length `NumberArgumentsFunction( <func> )`" );
+        
+    fi;
+    
+    func_tree := ENHANCED_SYNTAX_TREE( func );
+    
+    if Length( func_tree.bindings.names ) > 1 then
+        
+        Error( "only functions without proper bindings can be displayed as math" );
+        
+    fi;
+    
+    return_value := func_tree.bindings.BINDING_RETURN_VALUE;
+    
+    result_func := function ( tree, result, keys, additional_arguments )
+      local pos, type, name, string, info, object_func_tree, object_func, source_string, range_string, math_record, list, mor, i;
+        
+        if tree.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            Error( "nested functions are currently not supported" );
+            
+        elif tree.type = "SYNTAX_TREE_LIST" then
+            
+            return result;
+            
+        elif tree.type = "EXPR_LIST" then
+            
+            result.list.type := "list";
+            result.list.length := tree.list.length;
+            return result.list;
+            
+        elif tree.type = "EXPR_REF_GVAR" then
+            
+            return rec(
+                type := "var",
+                string := tree.gvar,
+            );
+            
+        elif tree.type = "EXPR_REF_FVAR" then
+            
+            # we currently do not support nested functions (in particular, variable names are unique)
+            Assert( 0, tree.func_id = func_tree.id );
+            
+            pos := Position( func_tree.nams, tree.name );
+            
+            Assert( 0, pos <> fail );
+            
+            type := input_filters[pos];
+            
+            if tree.name = "alpha" then
+                
+                name := "α";
+                
+            elif tree.name = "beta" then
+                
+                name := "β";
+                
+            elif tree.name = "gamma" then
+                
+                name := "γ";
+                
+            else
+                
+                name := tree.name;
+                
+            fi;
+            
+            if type = "category" then
+                
+                return rec(
+                    type := "category",
+                    string := name,
+                );
+                
+            elif type = "object" then
+                
+                return rec(
+                    type := "object",
+                    string := name,
+                );
+                
+            elif type = "morphism" then
+                
+                return rec(
+                    type := "morphism",
+                    source := Concatenation( "s(", name, ")" ),
+                    range := Concatenation( "t(", name, ")" ),
+                    string := name,
+                );
+                
+            elif type = "list_of_objects" then
+                
+                return rec(
+                    type := "list_of_objects",
+                    string := Concatenation( "[", name, "\ldots]" ),
+                );
+                
+            elif type = "list_of_morphisms" then
+                
+                return rec(
+                    type := "list_of_morphisms",
+                    string := Concatenation( "[", name, "\ldots]" ),
+                );
+                
+            else
+                
+                Error( "unkown type ", type );
+                
+            fi;
+            
+        elif CapJitIsCallToGlobalFunction( tree, ReturnTrue ) then
+            
+            #if tree.funcref.gvar = "PreCompose" then
+            #    
+            #    first := result.args.2;
+            #    
+            #    if first.type = "morphism" then
+            #        
+            #        first_list := [ first ];
+            #        
+            #    elif first.type = "PreComposeList" then
+            #        
+            #        first_list := first.list;
+            #        
+            #    else
+            #        
+            #        Error( "unknown type ", first.type, " in PreCompose" );
+            #        
+            #    fi;
+            #    
+            #    second := result.args.3;
+            #    
+            #    if second.type = "morphism" then
+            #        
+            #        second_list := [ second ];
+            #        
+            #    elif second.type = "PreComposeList" then
+            #        
+            #        second_list := second.list;
+            #        
+            #    else
+            #        
+            #        Error( "unknown type ", second.type, " in PreCompose" );
+            #        
+            #    fi;
+            #    
+            #    return rec(
+            #        type := "PreComposeList",
+            #        list := Concatenation( first_list, second_list ),
+            #    );
+            #    
+            #fi;
+            
+            #if tree.funcref.gvar = "TensorProductOnMorphismsWithGivenTensorProducts" then
+            #    
+            #    #if result.args.2.type = "morphism" and result.args.3.type = "morphism" then
+            #    if result.args.3.type = "morphism" and result.args.4.type = "morphism" then
+            #        
+            #        return rec(
+            #            type := "morphism",
+            #            #source := Concatenation( prepare_for_tensoring( result.args.2.source, tree.args.2 ), " ⊗ ", prepare_for_tensoring( result.args.3.source, tree.args.3 ) ),
+            #            #range := Concatenation( prepare_for_tensoring( result.args.2.range, tree.args.2 ), " ⊗ ", prepare_for_tensoring( result.args.3.range, tree.args.3 ) ),
+            #            #string := Concatenation( prepare_for_tensoring( result.args.2.string, tree.args.2 ), " ⊗ ", prepare_for_tensoring( result.args.3.string, tree.args.3 ) ),
+            #            source := result.args.2.string,
+            #            range := result.args.5.string,
+            #            string := Concatenation( prepare_for_tensoring( result.args.3.string, tree.args.3 ), " ⊗ ", prepare_for_tensoring( result.args.4.string, tree.args.4 ) ),
+            #        );
+            #        
+            #    #elif result.args.2.type = "PreComposeList" and result.args.3.type = "morphism" then
+            #    #    
+            #    #    return rec(
+            #    #        type := "PreComposeList",
+            #    #        list := List( result.args.2.list, l -> rec(
+            #    #            type := "morphism",
+            #    #            source := Concatenation( l.source, " ⊗ TODO: ", result.args.3.source ),
+            #    #            range := Concatenation( l.range, " ⊗ TODO: ", result.args.3.range ),
+            #    #            string := Concatenation( l.string, " ⊗ TODO: ", result.args.3.string ),
+            #    #        ) ),
+            #    #    );
+            #    #    
+            #    else
+            #        
+            #        Error( "case not handled yet" );
+            #        
+            #    fi;
+            #    
+            #fi;
+            
+            for i in [ 1 .. tree.args.length ] do
+                
+                if not result.args.(i).type in [ "category", "object", "morphism", "list", "list_of_objects", "list_of_morphisms" ] then
+                    
+                    Error( tree.funcref.gvar, " can only handle categories, objects, morphisms, and literal lists, but not ", result.args.(i).type );
+                    
+                fi;
+                
+            od;
+            
+            if tree.funcref.gvar in RecNames( CAP_INTERNAL_METHOD_NAME_RECORD ) then
+                
+                info := CAP_INTERNAL_METHOD_NAME_RECORD.(tree.funcref.gvar);
+                
+                if info.return_type = "morphism" and tree.args.length = Length( info.filter_list ) then
+                    
+                    if not IsBound( info.output_source_getter ) or not IsBound( info.output_range_getter ) then
+                        
+                        Error( "cannot determine source and/or range of CAP operation ", tree.funcref.gvar );
+                        
+                    fi;
+                    
+                    #Display( "start" );
+                    
+                    # we currently do not support nested functions or bindings
+                    # in particular, the code can only depend on arguments of func_tree
+                    object_func_tree := ShallowCopy( func_tree );
+                    object_func_tree.bindings := ShallowCopy( object_func_tree.bindings );
+                    object_func_tree.bindings.BINDING_RETURN_VALUE := rec(
+                        type := "EXPR_FUNCCALL",
+                        funcref := ENHANCED_SYNTAX_TREE( info.output_source_getter : given_arguments := [ cat ] ), # TODO: types
+                        args := tree.args,
+                    );
+                    
+                    #Display( object_func_tree );
+                    #Display( ENHANCED_SYNTAX_TREE_CODE( object_func_tree ) );
+                    
+                    # TODO types
+                    object_func := CapJitCompiledFunction( ENHANCED_SYNTAX_TREE_CODE( object_func_tree ), cat );
+                    
+                    #Display( object_func );
+                    
+                    source_string := FunctionAsMathString( object_func, cat, input_filters : raw );
+                    
+                    #Display( source_string );
+                    
+                    # we currently do not support nested functions or bindings
+                    # in particular, the code can only depend on arguments of func_tree
+                    object_func_tree := ShallowCopy( func_tree );
+                    object_func_tree.bindings := ShallowCopy( object_func_tree.bindings );
+                    object_func_tree.bindings.BINDING_RETURN_VALUE := rec(
+                        type := "EXPR_FUNCCALL",
+                        funcref := ENHANCED_SYNTAX_TREE( info.output_range_getter : given_arguments := [ cat ] ), # TODO: types
+                        args := tree.args,
+                    );
+                    
+                    # TODO types
+                    object_func := CapJitCompiledFunction( ENHANCED_SYNTAX_TREE_CODE( object_func_tree ), cat );
+                    
+                    range_string := FunctionAsMathString( object_func, cat, input_filters : raw );
+                    
+                    #Display( range_string );
+                    
+                fi;
+                
+            fi;
+            
+            math_record := fail;
+            
+            if tree.funcref.gvar = "PreComposeList" then
+                
+                list := result.args.3;
+                
+                if list.type <> "list" then
+                    
+                    Error( "this case is not handled yet" );
+                    
+                fi;
+                
+                string := "";
+                
+                for i in [ 1 .. list.length ] do
+                    
+                    mor := list.(i);
+                    
+                    string := Concatenation( string, mor.source ); 
+                    string := Concatenation( string, "\\xrightarrow{" ); 
+                    string := Concatenation( string, mor.string ); 
+                    string := Concatenation( string, "}" ); 
+                    
+                    if i < list.length and mor.range <> list.(i + 1).source then
+                        
+                        #Error("range and source are not equal");
+                        
+                        string := Concatenation( string, mor.range ); 
+                        string := Concatenation( string, " = " ); 
+                        
+                    fi;
+                    
+                od;
+                
+                string := Concatenation( string, list.(list.length).range ); 
+            
+                math_record := rec(
+                    type := "morphism",
+                    string := string,
+                );
+                
+            elif tree.funcref.gvar = "IdentityMorphism" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    #string := Concatenation( "id(", result.args.2.string, ")" ),
+                    string := "id",
+                );
+                
+            elif tree.funcref.gvar = "ZeroMorphism" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    #string := Concatenation( "id(", result.args.2.string, ")" ),
+                    string := "0",
+                );
+                
+            elif tree.funcref.gvar = "RangeCategoryOfHomomorphismStructure" then
+                
+                math_record := rec(
+                    type := "category",
+                    string := "D",
+                );
+                
+            elif tree.funcref.gvar = "TensorUnit" then
+                
+                math_record := rec(
+                    type := "object",
+                    string := "1",
+                );
+                
+            elif tree.funcref.gvar = "TensorProductOnObjects" then
+                
+                math_record := rec(
+                    type := "object",
+                    string := Concatenation( prepare_for_tensoring( result.args.2.string, tree.args.2 ), " ⊗ ", prepare_for_tensoring( result.args.3.string, tree.args.3 ) ),
+                );
+                
+            elif tree.funcref.gvar = "TensorProductOnMorphisms" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( prepare_for_tensoring( result.args.2.string, tree.args.2 ), " ⊗ ", prepare_for_tensoring( result.args.3.string, tree.args.3 ) ),
+                );
+                
+            elif tree.funcref.gvar = "LeftUnitor" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := "λ",
+                );
+                
+            elif tree.funcref.gvar = "LeftUnitorInverse" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := "λ⁻¹",
+                );
+                
+            elif tree.funcref.gvar = "RightUnitor" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := "ρ",
+                );
+                
+            elif tree.funcref.gvar = "RightUnitorInverse" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := "ρ⁻¹",
+                );
+                
+            elif tree.funcref.gvar = "AssociatorLeftToRight" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := "α",
+                );
+                
+            elif tree.funcref.gvar = "AssociatorRightToLeft" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := "α⁻¹",
+                );
+                
+            elif tree.funcref.gvar = "Braiding" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := "γ",
+                );
+                
+            elif tree.funcref.gvar = "BraidingInverse" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := "γ⁻¹",
+                );
+                
+            elif tree.funcref.gvar = "Source" then
+                
+                math_record := rec(
+                    type := "object",
+                    string := Concatenation( "s(", result.args.1.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar in [ "Range", "Target" ] then
+                
+                math_record := rec(
+                    type := "object",
+                    string := Concatenation( "t(", result.args.1.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar = "DualOnObjects" then
+                
+                math_record := rec(
+                    type := "object",
+                    string := Concatenation( result.args.2.string, "ᵛ" ),
+                );
+                
+            elif tree.funcref.gvar = "DualOnMorphisms" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( result.args.2.string, "ᵛ" ),
+                );
+                
+            elif tree.funcref.gvar = "EvaluationForDual" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    #string := "ev",
+                    string := "",
+                );
+                
+            elif tree.funcref.gvar = "CoevaluationForDual" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    #string := "coev",
+                    string := "",
+                );
+                
+            elif tree.funcref.gvar = "InternalHomOnObjects" then
+                
+                math_record := rec(
+                    type := "object",
+                    string := Concatenation( "hom(", result.args.2.string, ",", result.args.3.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar = "HomomorphismStructureOnObjects" then
+                
+                math_record := rec(
+                    type := "object",
+                    string := Concatenation( "H(", result.args.2.string, ",", result.args.3.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar = "InternalHomOnMorphisms" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "hom(", result.args.2.string, ",", result.args.3.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar = "HomomorphismStructureOnMorphisms" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "H(", result.args.2.string, ",", result.args.3.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar = "PreCompose" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( prepare_for_tensoring( result.args.2.string, tree.args.2 ), " ⋅ ", prepare_for_tensoring( result.args.3.string, tree.args.3 ) ),
+                );
+                
+            elif tree.funcref.gvar = "AdditionForMorphisms" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( prepare_for_tensoring( result.args.2.string, tree.args.2 ), " + ", prepare_for_tensoring( result.args.3.string, tree.args.3 ) ),
+                );
+                
+            elif tree.funcref.gvar = "AdditiveInverseForMorphisms" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "-", prepare_for_tensoring( result.args.2.string, tree.args.2 ) ),
+                );
+                
+            elif tree.funcref.gvar = "IsCongruentForMorphisms" then
+                
+                math_record := rec(
+                    type := "bool",
+                    string := Concatenation( result.args.2.string, " \\quad ∼ \\quad ", result.args.3.string ),
+                );
+                
+            elif tree.funcref.gvar = "IsEqualForObjects" or tree.funcref.gvar = "IsEqualForMorphisms" then
+                
+                math_record := rec(
+                    type := "bool",
+                    string := Concatenation( result.args.2.string, " = ", result.args.3.string ),
+                );
+                
+            elif tree.funcref.gvar = "IsWellDefinedForMorphisms" then
+                
+                math_record := rec(
+                    type := "bool",
+                    string := Concatenation( "IsWellDefined(", result.args.2.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar = "IsZeroForMorphisms" then
+                
+                math_record := rec(
+                    type := "bool",
+                    string := Concatenation( "IsZero(", result.args.2.string, ")" ),
+                );
+                
+            fi;
+            
+            if math_record = fail then
+                
+                Error( tree.funcref.gvar, " is not yet handled" );
+                
+            fi;
+            
+            if tree.funcref.gvar in RecNames( CAP_INTERNAL_METHOD_NAME_RECORD ) then
+                
+                info := CAP_INTERNAL_METHOD_NAME_RECORD.(tree.funcref.gvar);
+                
+                if info.return_type = "morphism" then
+                    
+                    math_record.source := source_string;
+                    math_record.range := range_string;
+                    
+                fi;
+                
+            fi;
+            
+            return math_record;
+            
+        fi;
+        
+        Error( tree.type, " is not yet handled" );
+        
+    end;
+    
+    if CapJitIsCallToGlobalFunction( return_value, "IsCongruentForMorphisms" ) and CapJitIsCallToGlobalFunction( return_value.args.2, "PreComposeList" ) and return_value.args.3.type = "EXPR_REF_FVAR" then
+        
+        #Error( "only functions returning the result of a call to IsCongruentForMorphisms can be displayed as math" );
+        
+        left_list := CapJitIterateOverTree( return_value.args.2.args.3, ReturnFirst, result_func, ReturnTrue, true );
+        right := CapJitIterateOverTree( return_value.args.3, ReturnFirst, result_func, ReturnTrue, true );
+        
+        Assert( 0, left_list.type = "list" );
+        
+        left_list.type := "SYNTAX_TREE_LIST";
+        
+        left_list := AsListMut( left_list );
+        
+        latex_string := "";
+        
+        max_length := Maximum( List( left_list, mor -> Maximum( WidthUTF8String( mor.source ), WidthUTF8String( mor.range ) ) ) );
+        
+        #if IsEven( max_length ) then
+        #    max_length := max_length + 1;
+        #fi;
+        
+        for i in [ 1 .. Length( left_list ) ] do
+            
+            mor := left_list[i];
+            
+            #DisplayCentered( mor.source, max_length, "" );
+            #DisplayCentered( "│", max_length, TextAttr.7 );
+            #PrintCentered( "│", max_length, TextAttr.7 );
+            #Print( " ", TextAttr.bold, " ", mor.string, " ", TextAttr.reset, "\n" );
+            #DisplayCentered( "∨", max_length, TextAttr.7 );
+            
+            latex_string := Concatenation( latex_string, mor.source ); 
+            latex_string := Concatenation( latex_string, "\\arrow[dd, \"" ); 
+            latex_string := Concatenation( latex_string, mor.string ); 
+            latex_string := Concatenation( latex_string, "\"] \\\\\n\\\\\n" ); 
+            
+            if i < Length( left_list ) and mor.range <> left_list[i + 1].source then
+                
+                #DisplayCentered( mor.range, max_length, "" );
+                #DisplayCentered( "∥", max_length, TextAttr.7 );
+                
+                latex_string := Concatenation( latex_string, mor.range ); 
+                latex_string := Concatenation( latex_string, "\\arrow[d, Rightarrow, no head] \\\\\n" ); 
+                
+            fi;
+            
+        od;
+        
+        #DisplayCentered( Last( left_list ).range, max_length, "" );
+        latex_string := Concatenation( latex_string, Last( left_list ).range, "\\arrow[dd, phantom, \"\\sim\"]\\\\\n\\\\\n" ); 
+        
+        #Display( "∼" );
+        #Display( right.string );
+        latex_string := Concatenation( latex_string, right.string );
+        
+        #LoadPackage( "ToolsForHigher" );
+        
+        if ValueOption( "raw" ) = true then
+            
+            Error( "raw not supported" );
+            
+        fi;
+        
+        latex_string := ReplacedString( latex_string, "⁻¹", """^{-1}""" );
+        latex_string := ReplacedString( latex_string, "ᵛ", """^{\vee}""" );
+        latex_string := ReplacedString( latex_string, "⊗", """\otimes""" );
+        latex_string := ReplacedString( latex_string, "id", """\mathrm{id}""" );
+        latex_string := ReplacedString( latex_string, "ev", """\mathrm{ev}""" );
+        latex_string := ReplacedString( latex_string, "coev", """\mathrm{coev}""" );
+        latex_string := ReplacedString( latex_string, "hom", """\mathrm{hom}""" );
+        latex_string := ReplacedString( latex_string, "", """\mathrm{ev}""" );
+        latex_string := ReplacedString( latex_string, "", """\mathrm{coev}""" );
+        latex_string := ReplacedString( latex_string, "α", """\alpha""" );
+        latex_string := ReplacedString( latex_string, "β", """\beta""" );
+        latex_string := ReplacedString( latex_string, "γ", """\gamma""" );
+        latex_string := ReplacedString( latex_string, "λ", """\lambda""" );
+        latex_string := ReplacedString( latex_string, "ρ", """\rho""" );
+        latex_string := ReplacedString( latex_string, "IsWellDefined", """\mathrm{IsWellDefined}""" );
+        latex_string := ReplacedString( latex_string, "IsZero", """\mathrm{IsZero}""" );
+        
+        #Error("here");
+        
+        #return Concatenation( "\\[\n    ", latex_string, "\n\\]\n" );
+        
+        latex_string := Concatenation( "\\begin{tikzcd}\n", latex_string, "\\end{tikzcd}\n" );
+        #return Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}\n" );
+        return Concatenation( "\\begin{center}\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}}\\end{center}\n" );
+        
+    elif CapJitIsCallToGlobalFunction( return_value, "PreComposeList" ) and ValueOption( "raw" ) <> true then
+        
+        #Error( "only functions returning the result of a call to IsCongruentForMorphisms can be displayed as math" );
+        
+        left_list := CapJitIterateOverTree( return_value.args.3, ReturnFirst, result_func, ReturnTrue, true );
+        
+        Assert( 0, left_list.type = "list" );
+        
+        left_list.type := "SYNTAX_TREE_LIST";
+        
+        left_list := AsListMut( left_list );
+        
+        latex_string := "";
+        
+        max_length := Maximum( List( left_list, mor -> Maximum( WidthUTF8String( mor.source ), WidthUTF8String( mor.range ) ) ) );
+        
+        #if IsEven( max_length ) then
+        #    max_length := max_length + 1;
+        #fi;
+        
+        for i in [ 1 .. Length( left_list ) ] do
+            
+            mor := left_list[i];
+            
+            #DisplayCentered( mor.source, max_length, "" );
+            #DisplayCentered( "│", max_length, TextAttr.7 );
+            #PrintCentered( "│", max_length, TextAttr.7 );
+            #Print( " ", TextAttr.bold, " ", mor.string, " ", TextAttr.reset, "\n" );
+            #DisplayCentered( "∨", max_length, TextAttr.7 );
+            
+            latex_string := Concatenation( latex_string, mor.source ); 
+            latex_string := Concatenation( latex_string, "\\arrow[dd, \"" ); 
+            latex_string := Concatenation( latex_string, mor.string ); 
+            latex_string := Concatenation( latex_string, "\"] \\\\\n\\\\\n" ); 
+            
+            if i < Length( left_list ) and mor.range <> left_list[i + 1].source then
+                
+                #DisplayCentered( mor.range, max_length, "" );
+                #DisplayCentered( "∥", max_length, TextAttr.7 );
+                
+                latex_string := Concatenation( latex_string, mor.range ); 
+                latex_string := Concatenation( latex_string, "\\arrow[d, Rightarrow, no head] \\\\\n" ); 
+                
+            fi;
+            
+        od;
+        
+        #DisplayCentered( Last( left_list ).range, max_length, "" );
+        latex_string := Concatenation( latex_string, Last( left_list ).range, "\n" ); 
+        
+        if ValueOption( "raw" ) = true then
+            
+            Error( "raw not supported" );
+            
+        fi;
+        
+        #Display( "∼" );
+        
+        #LoadPackage( "ToolsForHigher" );
+        
+        latex_string := ReplacedString( latex_string, "⁻¹", """^{-1}""" );
+        latex_string := ReplacedString( latex_string, "ᵛ", """^{\vee}""" );
+        latex_string := ReplacedString( latex_string, "⊗", """\otimes""" );
+        latex_string := ReplacedString( latex_string, "id", """\mathrm{id}""" );
+        latex_string := ReplacedString( latex_string, "ev", """\mathrm{ev}""" );
+        latex_string := ReplacedString( latex_string, "coev", """\mathrm{coev}""" );
+        latex_string := ReplacedString( latex_string, "hom", """\mathrm{hom}""" );
+        latex_string := ReplacedString( latex_string, "", """\mathrm{ev}""" );
+        latex_string := ReplacedString( latex_string, "", """\mathrm{coev}""" );
+        latex_string := ReplacedString( latex_string, "α", """\alpha""" );
+        latex_string := ReplacedString( latex_string, "β", """\beta""" );
+        latex_string := ReplacedString( latex_string, "γ", """\gamma""" );
+        latex_string := ReplacedString( latex_string, "λ", """\lambda""" );
+        latex_string := ReplacedString( latex_string, "ρ", """\rho""" );
+        latex_string := ReplacedString( latex_string, "IsWellDefined", """\mathrm{IsWellDefined}""" );
+        latex_string := ReplacedString( latex_string, "IsZero", """\mathrm{IsZero}""" );
+        
+        #Error("here");
+        
+        #return Concatenation( "\\[\n    ", latex_string, "\n\\]\n" );
+    
+        latex_string := Concatenation( "\\begin{tikzcd}\n", latex_string, "\\end{tikzcd}\n" );
+        return Concatenation( "\\begin{center}\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}}\\end{center}\n" );
+        
+    else
+        
+        #Error("TODO");
+        
+        latex_string := CapJitIterateOverTree( return_value, ReturnFirst, result_func, ReturnTrue, true );
+        
+        if latex_string.type in [ "object", "bool" ] then
+            
+            latex_string := latex_string.string;
+            
+        elif latex_string.type = "morphism" then
+            
+            if CapJitIsCallToGlobalFunction( return_value, gvar -> gvar in [ "PreCompose", "PreComposeList" ] ) then
+                
+                # PreCompose already encodes source and range
+                latex_string := latex_string.string;
+                
+            else
+                
+                latex_string := Concatenation( latex_string.source, "\\xrightarrow{", latex_string.string, "}", latex_string.range );
+                
+            fi;
+            
+        else
+            
+            Error( "type ", latex_string.type, " not yet supported" );
+            
+        fi;
+        
+        if ValueOption( "raw" ) = true then
+            
+            return latex_string;
+            
+        fi;
+        
+        latex_string := ReplacedString( latex_string, "⁻¹", """^{-1}""" );
+        latex_string := ReplacedString( latex_string, "ᵛ", """^{\vee}""" );
+        latex_string := ReplacedString( latex_string, "⊗", """\otimes""" );
+        latex_string := ReplacedString( latex_string, "id", """\mathrm{id}""" );
+        latex_string := ReplacedString( latex_string, "ev", """\mathrm{ev}""" );
+        latex_string := ReplacedString( latex_string, "coev", """\mathrm{coev}""" );
+        latex_string := ReplacedString( latex_string, "hom", """\mathrm{hom}""" );
+        latex_string := ReplacedString( latex_string, "", """\mathrm{ev}""" );
+        latex_string := ReplacedString( latex_string, "", """\mathrm{coev}""" );
+        latex_string := ReplacedString( latex_string, "α", """\alpha""" );
+        latex_string := ReplacedString( latex_string, "β", """\beta""" );
+        latex_string := ReplacedString( latex_string, "γ", """\gamma""" );
+        latex_string := ReplacedString( latex_string, "λ", """\lambda""" );
+        latex_string := ReplacedString( latex_string, "ρ", """\rho""" );
+        latex_string := ReplacedString( latex_string, "IsWellDefined", """\mathrm{IsWellDefined}""" );
+        latex_string := ReplacedString( latex_string, "IsZero", """\mathrm{IsZero}""" );
+        
+        latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
+        
+        return Concatenation( "\\[", latex_string, "\\]\n" );
+        
+        #return latex_string;
+        
+    fi;
+    
+end;

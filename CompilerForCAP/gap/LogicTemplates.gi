@@ -13,6 +13,71 @@ InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
     
 end );
 
+CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_filters, connecting_symbol, args... )
+  local suffix, src_template, dst_template, src_func, dst_func, src_string, dst_string, latex_string, name;
+    
+    if IsEmpty( args ) then
+        
+        suffix := "";
+        
+    elif Length( args ) = 1 then
+        
+        suffix := args[1];
+        
+    else
+        
+        Error( "CapJitAddLogicTemplateAndReturnLaTeXString must be called with at most two arguments" );
+        
+    fi;
+    
+    CapJitAddLogicTemplate( template );
+    
+    src_template := template.src_template;
+    dst_template := template.dst_template;
+    
+    if IsBound( template.sublist_variable_names ) then
+        
+        # remove sublist variables
+        for name in template.sublist_variable_names do
+            
+            src_template := ReplacedString( src_template, Concatenation( name, "...," ), "" );
+            src_template := ReplacedString( src_template, Concatenation( name, "..." ), "" );
+            dst_template := ReplacedString( dst_template, Concatenation( name, "...," ), "" );
+            dst_template := ReplacedString( dst_template, Concatenation( name, "..." ), "" );
+            
+        od;
+        
+    fi;
+    
+    src_func := EvalString( Concatenation( "{ ", JoinStringsWithSeparator( template.variable_names, ", " ), " } -> ", src_template ) );
+    dst_func := EvalString( Concatenation( "{ ", JoinStringsWithSeparator( template.variable_names, ", " ), " } -> ", dst_template ) );
+    
+    src_string := FunctionAsMathString( src_func, cat, input_filters : raw );
+    dst_string := FunctionAsMathString( dst_func, cat, input_filters : raw );
+    
+    latex_string := Concatenation( src_string, " \\quad ", connecting_symbol, " \\quad ", dst_string );
+    
+    latex_string := ReplacedString( latex_string, "⁻¹", """^{-1}""" );
+    latex_string := ReplacedString( latex_string, "ᵛ", """^{\vee}""" );
+    latex_string := ReplacedString( latex_string, "⊗", """\otimes""" );
+    latex_string := ReplacedString( latex_string, "id", """\mathrm{id}""" );
+    latex_string := ReplacedString( latex_string, "ev", """\mathrm{ev}""" );
+    latex_string := ReplacedString( latex_string, "coev", """\mathrm{coev}""" );
+    latex_string := ReplacedString( latex_string, "hom", """\mathrm{hom}""" );
+    latex_string := ReplacedString( latex_string, "", """\mathrm{ev}""" );
+    latex_string := ReplacedString( latex_string, "", """\mathrm{coev}""" );
+    latex_string := ReplacedString( latex_string, "α", """\alpha""" );
+    latex_string := ReplacedString( latex_string, "β", """\beta""" );
+    latex_string := ReplacedString( latex_string, "γ", """\gamma""" );
+    latex_string := ReplacedString( latex_string, "λ", """\lambda""" );
+    latex_string := ReplacedString( latex_string, "ρ", """\rho""" );
+    
+    latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
+    
+    return Concatenation( "\\[", latex_string, "\\]\n" );
+    
+end;
+
 InstallGlobalFunction( CAP_JIT_INTERNAL_ENHANCE_LOGIC_TEMPLATE, function ( template )
   local diff, variable_name, unbound_global_variable_names, syntax_tree_variables_ids, pre_func_identify_syntax_tree_variables, additional_arguments_func_identify_syntax_tree_variables, tmp_tree, pre_func, additional_arguments_func, i;
     
