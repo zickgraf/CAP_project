@@ -931,15 +931,35 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_TREE_MATCHES_TEMPLATE_TREE, function ( t
 end );
 
 InstallGlobalFunction( CapJitAppliedLogicTemplates, function ( tree )
-  local template;
+  local global_templates, local_templates, template;
     
     Info( InfoCapJit, 1, "####" );
     Info( InfoCapJit, 1, "Apply logic templates." );
     
-    tree := CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES( tree, Filtered( CAP_JIT_LOGIC_TEMPLATES, t ->
+    global_templates := Filtered( CAP_JIT_LOGIC_TEMPLATES, t ->
         (CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED and t.apply_in_proof_assistant_mode <> "no") or
         (not CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED and t.apply_in_proof_assistant_mode <> "only")
+    );
+    
+    if Length( tree.local_replacements ) > 0 then
+        
+        #Error("qwe");
+        
+    fi;
+    
+    local_templates := List( tree.local_replacements, x -> rec(
+        variable_names := [ ],
+        variable_filters := [ ],
+        src_template := "local template",
+        src_template_tree := x.src,
+        dst_template := "local template",
+        dst_template_tree := x.dst,
+        new_funcs := [ ],
+        number_of_applications := infinity,
+        is_fully_enhanced := true,
     ) );
+    
+    tree := CAP_JIT_INTERNAL_APPLIED_LOGIC_TEMPLATES( tree, Concatenation( global_templates, local_templates ) );
     
     MakeReadWriteGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
     
