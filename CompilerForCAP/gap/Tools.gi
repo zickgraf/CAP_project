@@ -1028,7 +1028,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     return_value := func_tree.bindings.BINDING_RETURN_VALUE;
     
     result_func := function ( tree, result, keys, additional_arguments )
-      local pos, type, name, string, info, object_func_tree, object_func, source_string, range_string, math_record, list, mor, i;
+      local pos, type, GREEK_LETTERS, name, string, info, local_cat, object_func_tree, object_func, source_string, range_string, math_record, list, mor, letter_name, i;
         
         if tree.type = "EXPR_DECLARATIVE_FUNC" then
             
@@ -1037,6 +1037,27 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         elif tree.type = "SYNTAX_TREE_LIST" then
             
             return result;
+            
+        elif tree.type = "EXPR_TRUE" then
+            
+            return rec(
+                type := "bool",
+                string := "\\top",
+            );
+            
+        elif tree.type = "EXPR_INT" then
+            
+            return rec(
+                type := "integer",
+                string := String( tree.value ),
+            );
+            
+        elif tree.type = "EXPR_FALSE" then
+            
+            return rec(
+                type := "bool",
+                string := "\\bottom",
+            );
             
         elif tree.type = "EXPR_LIST" then
             
@@ -1062,23 +1083,26 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             type := input_filters[pos];
             
-            if tree.name = "alpha" then
+            GREEK_LETTERS := rec(
+                alpha := "α",
+                beta := "β",
+                gamma := "γ",
+                delta := "δ",
+                epsilon := "ε",
+            );
+            
+            name := tree.name;
+            
+            for letter_name in RecNames( GREEK_LETTERS ) do
                 
-                name := "α";
+                if StartsWith( tree.name, letter_name ) then
+                    
+                    name := Concatenation( GREEK_LETTERS.(letter_name), tree.name{[ Length( letter_name ) + 1 .. Length( tree.name ) ]} );
+                    break;
+                    
+                fi;
                 
-            elif tree.name = "beta" then
-                
-                name := "β";
-                
-            elif tree.name = "gamma" then
-                
-                name := "γ";
-                
-            else
-                
-                name := tree.name;
-                
-            fi;
+            od;
             
             if type = "category" then
                 
@@ -1201,9 +1225,33 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             #    
             #fi;
             
+            if tree.funcref.gvar = "CreateCapCategoryObjectWithAttributes" then
+                
+                if tree.args.length <> 3 then
+                    
+                    Error( "Cannot handle CreateCapCategoryObjectWithAttributes with less or more than three arguments yet." );
+                    
+                fi;
+                
+                return rec(
+                    type := "object",
+                    string := Concatenation( "\\boxed{", result.args.3.string, "}" ),
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "*" and result.args.1.type = "integer" and result.args.2.type = "integer" then
+                
+                return rec(
+                    type := "integer",
+                    string := Concatenation( result.args.1.string, " ⋅ ", result.args.2.string ),
+                );
+                
+            fi;
+            
             for i in [ 1 .. tree.args.length ] do
                 
-                if not result.args.(i).type in [ "category", "object", "morphism", "list", "list_of_objects", "list_of_morphisms" ] then
+                if not result.args.(i).type in [ "category", "object", "object_in_range_category_of_homomorphism_structure", "morphism", "morphism_in_range_category_of_homomorphism_structure", "list", "list_of_objects", "list_of_morphisms" ] then
                     
                     Error( tree.funcref.gvar, " can only handle categories, objects, morphisms, and literal lists, but not ", result.args.(i).type );
                     
@@ -1215,11 +1263,25 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 info := CAP_INTERNAL_METHOD_NAME_RECORD.(tree.funcref.gvar);
                 
-                if info.return_type = "morphism" and tree.args.length = Length( info.filter_list ) then
+                if info.return_type in [ "morphism", "morphism_in_range_category_of_homomorphism_structure" ] and tree.args.length = Length( info.filter_list ) then
                     
                     if not IsBound( info.output_source_getter ) or not IsBound( info.output_range_getter ) then
                         
                         Error( "cannot determine source and/or range of CAP operation ", tree.funcref.gvar );
+                        
+                    fi;
+                    
+                    if info.return_type = "morphism" then
+                        
+                        local_cat := cat;
+                        
+                    elif info.return_type = "morphism_in_range_category_of_homomorphism_structure" then
+                        
+                        local_cat := RangeCategoryOfHomomorphismStructure( cat );
+                        
+                    else
+                        
+                        Error( "this should never happen" );
                         
                     fi;
                     
@@ -1231,7 +1293,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     object_func_tree.bindings := ShallowCopy( object_func_tree.bindings );
                     object_func_tree.bindings.BINDING_RETURN_VALUE := rec(
                         type := "EXPR_FUNCCALL",
-                        funcref := ENHANCED_SYNTAX_TREE( info.output_source_getter : given_arguments := [ cat ] ), # TODO: types
+                        funcref := ENHANCED_SYNTAX_TREE( info.output_source_getter : given_arguments := [ local_cat ] ), # TODO: types
                         args := tree.args,
                     );
                     
@@ -1239,11 +1301,11 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     #Display( ENHANCED_SYNTAX_TREE_CODE( object_func_tree ) );
                     
                     # TODO types
-                    object_func := CapJitCompiledFunction( ENHANCED_SYNTAX_TREE_CODE( object_func_tree ), cat );
+                    object_func := CapJitCompiledFunction( ENHANCED_SYNTAX_TREE_CODE( object_func_tree ), local_cat );
                     
                     #Display( object_func );
                     
-                    source_string := FunctionAsMathString( object_func, cat, input_filters : raw );
+                    source_string := FunctionAsMathString( object_func, local_cat, input_filters : raw );
                     
                     #Display( source_string );
                     
@@ -1253,14 +1315,14 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     object_func_tree.bindings := ShallowCopy( object_func_tree.bindings );
                     object_func_tree.bindings.BINDING_RETURN_VALUE := rec(
                         type := "EXPR_FUNCCALL",
-                        funcref := ENHANCED_SYNTAX_TREE( info.output_range_getter : given_arguments := [ cat ] ), # TODO: types
+                        funcref := ENHANCED_SYNTAX_TREE( info.output_range_getter : given_arguments := [ local_cat ] ), # TODO: types
                         args := tree.args,
                     );
                     
                     # TODO types
-                    object_func := CapJitCompiledFunction( ENHANCED_SYNTAX_TREE_CODE( object_func_tree ), cat );
+                    object_func := CapJitCompiledFunction( ENHANCED_SYNTAX_TREE_CODE( object_func_tree ), local_cat );
                     
-                    range_string := FunctionAsMathString( object_func, cat, input_filters : raw );
+                    range_string := FunctionAsMathString( object_func, local_cat, input_filters : raw );
                     
                     #Display( range_string );
                     
@@ -1307,6 +1369,20 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 math_record := rec(
                     type := "morphism",
                     string := string,
+                );
+                
+            elif tree.funcref.gvar = "Length" then
+                
+                math_record := rec(
+                    type := "integer",
+                    string := Concatenation( "Length(", result.args.1.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar = "RankOfObject" then
+                
+                math_record := rec(
+                    type := "integer",
+                    string := Concatenation( "RankOfObject(", result.args.1.string, ")" ),
                 );
                 
             elif tree.funcref.gvar = "IdentityMorphism" then
@@ -1481,6 +1557,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := Concatenation( "H(", result.args.2.string, ",", result.args.3.string, ")" ),
                 );
                 
+            elif tree.funcref.gvar = "BasisOfExternalHom" then
+                
+                math_record := rec(
+                    type := "list_of_morphisms",
+                    string := Concatenation( "\\mathcal{B}(\\operatorname{Hom}(", result.args.2.string, ",", result.args.3.string, "))" ),
+                );
+                
             elif tree.funcref.gvar = "PreCompose" then
                 
                 math_record := rec(
@@ -1532,22 +1615,31 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             fi;
             
-            if math_record = fail then
-                
-                Error( tree.funcref.gvar, " is not yet handled" );
-                
-            fi;
-            
             if tree.funcref.gvar in RecNames( CAP_INTERNAL_METHOD_NAME_RECORD ) then
                 
                 info := CAP_INTERNAL_METHOD_NAME_RECORD.(tree.funcref.gvar);
                 
-                if info.return_type = "morphism" then
+                if math_record = fail then
+                    
+                    math_record := rec(
+                        type := info.return_type,
+                        string := Concatenation( "\\mathrm{", tree.funcref.gvar, "}(", JoinStringsWithSeparator( List( [ 1 .. tree.args.length ], i -> result.args.(i).string ), ", " ), ")" ),
+                    );
+                    
+                fi;
+                
+                if info.return_type in [ "morphism", "morphism_in_range_category_of_homomorphism_structure" ] then
                     
                     math_record.source := source_string;
                     math_record.range := range_string;
                     
                 fi;
+                
+            fi;
+            
+            if math_record = fail then
+                
+                Error( tree.funcref.gvar, " is not yet handled" );
                 
             fi;
             
@@ -1792,3 +1884,23 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     fi;
     
 end;
+
+BindGlobal( "CapJitCompiledFunctionAsMathString", function ( func, cat, input_filters, return_type )
+  local compiled_func;
+    
+    compiled_func := CapJitCompiledFunction( func, cat, input_filters, return_type );
+    
+    return FunctionAsMathString( compiled_func, cat, input_filters );
+    
+end );
+
+BindGlobal( "CapJitCompiledFunctionAsMathStringAssert", function ( func, cat, input_filters, return_type )
+  local tree, string;
+    
+    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( func, "with_post_processing", cat, input_filters, return_type );
+    
+    Assert( 0, tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" );
+    
+    return FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( tree ), cat, input_filters );
+    
+end );
