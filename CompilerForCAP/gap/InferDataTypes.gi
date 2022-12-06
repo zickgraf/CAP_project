@@ -253,6 +253,49 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_INFERRED_DATA_TYPES_OF_FUNCTION_BY_ARGU
         
         return rec( funcref := func, args := args, output_type := func.data_type.signature[2] );
         
+    elif funcref.type = "EXPR_REF_FVAR" then
+        
+        func := SafeUniqueEntry( func_stack, func -> func.id = funcref.func_id );
+        
+        if func.variadic then
+            
+            #Error( "cannot handle variadic functions yet" );
+            return fail;
+            
+        fi;
+        
+        pos := SafePosition( func.nams, funcref.name );
+        
+        if pos <= func.narg then
+            
+            if not IsBound( func.data_type ) then
+                
+                #Error( "function does not have a data type yet" );
+                return false;
+                
+            fi;
+            
+            funcref_data_type := func.data_type.signature[1][pos];
+            
+            if not IsSpecializationOfFilter( IsFunction, funcref_data_type.filter ) then
+                
+                # this is a non-function applied as a function -> defer to CallFuncList
+                
+                
+            else
+                
+                #Error( "cannot compute data type of the application of an argument of type IsFunction as a function yet" );
+                return fail;
+                
+            fi;
+            
+        else
+            
+            #Error( "cannot compute data type of the application of a binding as a function yet" );
+            return fail;
+            
+        fi;
+        
     else
         
         #Error( "can only handle EXPR_DECLARATIVE_FUNC and EXPR_REF_GVAR" );
