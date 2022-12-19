@@ -994,6 +994,36 @@ prepare_for_tensoring := function ( string, tree )
     
 end;
 
+BindGlobal( "LaTeXName", function ( name )
+  local GREEK_LETTERS, letter_name;
+    
+    GREEK_LETTERS := rec(
+        alpha := "α",
+        beta := "β",
+        gamma := "γ",
+        delta := "δ",
+        epsilon := "ε",
+        zeta := "ζ",
+        eta := "η",
+        theta := "θ",
+        iota := "ι",
+    );
+    
+    for letter_name in RecNames( GREEK_LETTERS ) do
+        
+        if StartsWith( name, letter_name ) then
+            
+            name := Concatenation( GREEK_LETTERS.(letter_name), name{[ Length( letter_name ) + 1 .. Length( name ) ]} );
+            break;
+            
+        fi;
+        
+    od;
+    
+    return name;
+            
+end );
+
 FunctionAsMathString := function ( func, cat, input_filters, args... )
   local suffix, arguments_data_types, type_signature, func_tree, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i;
     
@@ -1032,6 +1062,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     func_tree := ENHANCED_SYNTAX_TREE( func );
     func_tree.data_type := rec( filter := IsFunction, signature := type_signature );
     
+    # TODO: populate CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK
     func_tree := CapJitInferredDataTypes( func_tree );
     
     if Length( func_tree.bindings.names ) > 1 then
@@ -1138,26 +1169,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             fi;
             
-            GREEK_LETTERS := rec(
-                alpha := "α",
-                beta := "β",
-                gamma := "γ",
-                delta := "δ",
-                epsilon := "ε",
-            );
-            
-            name := tree.name;
-            
-            for letter_name in RecNames( GREEK_LETTERS ) do
-                
-                if StartsWith( tree.name, letter_name ) then
-                    
-                    name := Concatenation( GREEK_LETTERS.(letter_name), tree.name{[ Length( letter_name ) + 1 .. Length( tree.name ) ]} );
-                    break;
-                    
-                fi;
-                
-            od;
+            name := LaTeXName( tree.name );
             
             if type = "category" then
                 
@@ -1501,6 +1513,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 fi;
                 
+            elif tree.funcref.gvar = "=" then
+                
+                math_record := rec(
+                    type := "bool",
+                    string := Concatenation( result.args.1.string, " \\quad = \\quad ", result.args.2.string ),
+                );
+                
             elif tree.funcref.gvar = "Length" then
                 
                 math_record := rec(
@@ -1540,16 +1559,14 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 math_record := rec(
                     type := "morphism",
-                    #string := Concatenation( "id(", result.args.2.string, ")" ),
-                    string := "id",
+                    string := Concatenation( "id_{", result.args.2.string, "}" ),
                 );
                 
             elif tree.funcref.gvar = "ZeroMorphism" then
                 
                 math_record := rec(
                     type := "morphism",
-                    #string := Concatenation( "id(", result.args.2.string, ")" ),
-                    string := "0",
+                    string := Concatenation( "0_{", result.args.2.string, ", ", result.args.3.string, "}" ),
                 );
                 
             elif tree.funcref.gvar = "RangeCategoryOfHomomorphismStructure" then
@@ -1680,6 +1697,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := "",
                 );
                 
+            elif tree.funcref.gvar = "DistinguishedObjectOfHomomorphismStructure" then
+                
+                math_record := rec(
+                    type := "object",
+                    string := "1",
+                );
+                
             elif tree.funcref.gvar = "InternalHomOnObjects" then
                 
                 math_record := rec(
@@ -1768,14 +1792,14 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 math_record := rec(
                     type := "morphism_in_range_category_of_homomorphism_structure",
-                    string := Concatenation( "\\nu(", result.args.2.string, ")" ),
+                    string := Concatenation( "\\nu_{", result.args.2.source, ", ", result.args.2.range, "}(", result.args.2.string, ")" ),
                 );
                 
             elif tree.funcref.gvar = "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" then
                 
                 math_record := rec(
                     type := "morphism",
-                    string := Concatenation( "\\nu^{-1}(", result.args.4.string, ")" ),
+                    string := Concatenation( "\\nu_{", result.args.2.string, ", ", result.args.3.string, "}^{-1}(", result.args.4.string, ")" ),
                 );
                 
             fi;
@@ -1788,7 +1812,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     math_record := rec(
                         type := info.return_type,
-                        string := Concatenation( "\\mathrm{", tree.funcref.gvar, "}(", JoinStringsWithSeparator( List( [ 1 .. tree.args.length ], i -> result.args.(i).string ), ", " ), ")" ),
+                        string := Concatenation( "\\mathrm{", tree.funcref.gvar, "}(", JoinStringsWithSeparator( List( [ 2 .. tree.args.length ], i -> result.args.(i).string ), ", " ), ")" ),
                     );
                     
                 fi;
