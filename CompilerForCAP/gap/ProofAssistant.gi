@@ -2400,8 +2400,48 @@ BindGlobal( "SetCategoryDescription", function ( string )
     
 end );
 
+BindGlobal( "PhraseEnumeration", function ( parts )
+    
+    Assert( 0, Length( parts ) > 0 );
+    
+    if Length( parts ) = 1 then
+        
+        return parts[1];
+        
+    elif Length( parts ) = 2 then
+        
+        return Concatenation( parts[1], " and ", parts[2] );
+        
+    else
+        
+        return Concatenation( JoinStringsWithSeparator( parts{[ 1 .. Length( parts ) - 1 ]}, ", " ), " and ", Last( parts ) );
+        
+    fi;
+    
+end );
+
+BindGlobal( "PhraseEnumerationWithOxfordComma", function ( parts )
+    
+    Assert( 0, Length( parts ) > 0 );
+    
+    if Length( parts ) = 1 then
+        
+        return parts[1];
+        
+    elif Length( parts ) = 2 then
+        
+        return Concatenation( parts[1], " and ", parts[2] );
+        
+    else
+        
+        return Concatenation( JoinStringsWithSeparator( parts{[ 1 .. Length( parts ) - 1 ]}, ", " ), ", and ", Last( parts ) );
+        
+    fi;
+    
+end );
+
 BindGlobal( "StateLemma", function ( proposition, cat, input_filters )
-  local text, names, filter, name, result, i;
+  local text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, tree, local_replacements_strings, func, args, result, i, replacement;
     
     if Length( input_filters ) = 0 then
         
@@ -2419,38 +2459,124 @@ BindGlobal( "StateLemma", function ( proposition, cat, input_filters )
         
         Assert( 0, Length( names ) >= Length( input_filters ) );
         
+        handled_input_filters := [ ];
+        
+        parts := [ ];
+        
         for i in [ 2 .. Length( input_filters ) ] do
             
-            if i > 2 and (i < Length( input_filters ) or Length( input_filters ) > 3) then
-                
-                text := Concatenation( text, "," );
-                
-            fi;
-            
-            if i = Length( input_filters ) then
-                
-                text := Concatenation( text, " and" );
-                
-            fi;
+            #if i > 2 and (i < Length( input_filters ) or Length( input_filters ) > 3) then
+            #    
+            #    text := Concatenation( text, "," );
+            #    
+            #fi;
+            #
+            #if i = Length( input_filters ) then
+            #    
+            #    text := Concatenation( text, " and" );
+            #    
+            #fi;
             
             filter := input_filters[i];
-            name := names[i];
             
-            if filter = "object" then
+            if filter in handled_input_filters then
                 
-                text := Concatenation( text, " an object ", name );
+                continue;
                 
-            elif filter = "morphism" then
+            fi;
+            
+            positions := Positions( input_filters, filter );
+            
+            Assert( 0, i in positions );
+            
+            if Length( positions ) = 1 then
                 
-                text := Concatenation( text, " a morphism ", name );
+                plural := "";
                 
             else
                 
-                text := Concatenation( text, " an unhandled filter" );
+                plural := "s";
                 
             fi;
             
+            numerals := [ "a", "two", "three", "four", "five", "six", "seven", "eight", "nine" ];
+            
+            if Length( positions ) <= Length( numerals ) then
+                
+                numeral := numerals[Length( positions )];
+                
+            else
+                
+                numeral := String( Length( positions ) );
+                
+            fi;
+            
+            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" )  ));
+            
+            if filter = "object" then
+                
+                part := Concatenation( numeral, " object", plural, " ", current_names );
+                
+            elif filter = "morphism" then
+                
+                part := Concatenation( numeral, " morphism", plural, " ", current_names );
+                
+            elif filter = "object_in_range_category_of_homomorphism_structure" then
+                
+                part := Concatenation( numeral, " object", plural, " ", current_names, " in the range category of the homomorphism structure" );
+                
+            elif filter = "morphism_in_range_category_of_homomorphism_structure" then
+                
+                part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
+                
+            else
+                
+                part := "an unhandled filter";
+                
+            fi;
+            
+            part := ReplacedString( part, "a object ", "an object " );
+            
+            Add( parts, part );
+            
+            Add( handled_input_filters, filter );
+            
         od;
+        
+        text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ) );
+        
+        tree := ENHANCED_SYNTAX_TREE( proposition );
+        
+        local_replacements_strings := [ ];
+        
+        for replacement in tree.local_replacements do
+            
+            func := StructuralCopy( tree );
+            func.local_replacements := [ ];
+            
+            Assert( 0, Length( func.bindings.names ) = 1 );
+            
+            func.bindings.BINDING_RETURN_VALUE := rec(
+                type := "EXPR_FUNCCALL",
+                funcref := rec(
+                    type := "EXPR_REF_GVAR",
+                    gvar := "=",
+                ),
+                args := AsSyntaxTreeList( [
+                    StructuralCopy( replacement.src ),
+                    StructuralCopy( replacement.dst),
+                ] ),
+            );
+            
+            Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( func ), cat, input_filters ) );
+            
+        od;
+        
+        if not IsEmpty( local_replacements_strings ) then
+            
+            text := Concatenation( text, " such that ", JoinStringsWithSeparator( local_replacements_strings, "\n" ) );
+            
+        fi;
         
         text := Concatenation( text, " we have" );
         
