@@ -928,16 +928,18 @@ InstallGlobalFunction( "ConcatenationOfStringsAsEnumerationWithAnd", function ( 
 end );
 
 WriteResultToTeXFile := function ( filename, result )
-  local path, fs, content;
+  local path, content;
     
     path := Concatenation( filename, ".gap_autogen.tex" );
     
-    # check if file already exists with the correct content
-    fs := IO_File( path, "r" );
+    result := Concatenation(
+        "\\begin{autogen}\n",
+        result,
+        "\n\\end{autogen}\n"
+    );
     
-    if fs <> fail then
-        
-        IO_Close( fs );
+    # check if file already exists with the correct content
+    if IsExistingFile( path ) then
         
         content := ReadFileForHomalg( path );
         
@@ -1940,7 +1942,8 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         
         latex_string := Concatenation( "\\begin{tikzcd}\n", latex_string, "\\end{tikzcd}\n" );
         #return Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}\n" );
-        return Concatenation( "\\begin{center}\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}}\\end{center}\n" );
+        #return Concatenation( "\\begin{center}\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}}\\end{center}\n" );
+        return Concatenation( "\\begin{center}\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}\\end{center}\n" );
         
     elif CapJitIsCallToGlobalFunction( return_value, "PreComposeList" ) and ValueOption( "raw" ) <> true then
         
@@ -2024,7 +2027,8 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         #return Concatenation( "\\[\n    ", latex_string, "\n\\]\n" );
     
         latex_string := Concatenation( "\\begin{tikzcd}\n", latex_string, "\\end{tikzcd}\n" );
-        return Concatenation( "\\begin{center}\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}}\\end{center}\n" );
+        #return Concatenation( "\\begin{center}\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}}\\end{center}\n" );
+        return Concatenation( "\\begin{center}\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}\\end{center}\n" );
         
     else
         
@@ -2078,7 +2082,8 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         latex_string := ReplacedString( latex_string, "IsWellDefined", """\mathrm{IsWellDefined}""" );
         latex_string := ReplacedString( latex_string, "IsZero", """\mathrm{IsZero}""" );
         
-        latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
+        #latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
+        latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}\n" );
         
         return Concatenation( "\\[", latex_string, "\\]\n" );
         
