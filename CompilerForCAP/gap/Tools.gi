@@ -1336,6 +1336,15 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             fi;
             
+            if tree.funcref.gvar = "-" and result.args.1.type = "integer" and result.args.2.type = "integer" then
+                
+                return rec(
+                    type := "integer",
+                    string := Concatenation( result.args.1.string, " - ", result.args.2.string ),
+                );
+                
+            fi;
+            
             if tree.funcref.gvar = "*" and result.args.1.type = "integer" and result.args.2.type = "integer" then
                 
                 return rec(
@@ -1358,7 +1367,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "integer",
-                    string := Concatenation(  "NumberRows(", result.args.1.string, ")" ),
+                    string := Concatenation( "NumberRows(", result.args.1.string, ")" ),
                 );
                 
             fi;
@@ -1367,7 +1376,16 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "integer",
-                    string := Concatenation(  "NumberColumns(", result.args.1.string, ")" ),
+                    string := Concatenation( "NumberColumns(", result.args.1.string, ")" ),
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "RowRankOfMatrix" and result.args.1.type = "homalg_matrix" then
+                
+                return rec(
+                    type := "integer",
+                    string := Concatenation( "RowRankOfMatrix(", result.args.1.string, ")" ),
                 );
                 
             fi;
@@ -1541,6 +1559,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 math_record := rec(
                     type := "integer",
                     string := Concatenation( "RankOfObject(", result.args.1.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar = "Dimension" then
+                
+                math_record := rec(
+                    type := "integer",
+                    string := Concatenation( "Dimension(", result.args.1.string, ")" ),
                 );
                 
             elif tree.funcref.gvar = "UnderlyingMatrix" then
