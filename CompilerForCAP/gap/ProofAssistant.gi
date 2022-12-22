@@ -2392,7 +2392,7 @@ InstallMethod( AssertProposition,
     
 end );
 
-CAP_JIT_PROOF_ASSISTANT_MODE_CATEGORY_DESCRIPTION := "not set";
+CAP_JIT_PROOF_ASSISTANT_MODE_CATEGORY_DESCRIPTION := fail;
 
 BindGlobal( "SetCategoryDescription", function ( string )
     
@@ -2440,12 +2440,42 @@ BindGlobal( "PhraseEnumerationWithOxfordComma", function ( parts )
     
 end );
 
-BindGlobal( "StateLemma", function ( proposition, cat, input_filters )
-  local text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, tree, local_replacements_strings, func, args, result, i, replacement;
+CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
+
+BindGlobal( "StateTheorem", function ( func, cat, input_filters, args... )
+  local type, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, tree, local_replacements_strings, replacement_func, result, i, replacement;
+    
+    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail then
+        
+        Display( "WARNING: overwriting existing active theorem" );
+        
+    fi;
+    
+    if Length( args ) = 0 then
+        
+        type := "theorem";
+        
+    elif Length( args ) = 1 then
+        
+        type := args[1];
+        
+    else
+        
+        Error( "StateTheorem must be called with at most 4 arguments" );
+        
+    fi;
+    
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := rec(
+        type := type,
+        claim := func,
+        func := func,
+        cat := cat,
+        input_filters := input_filters,
+    );
     
     if Length( input_filters ) = 0 then
         
-        Error( "cannot handle statements without input" );
+        Error( "cannot handle theorems without input" );
         
     elif Length( input_filters ) = 1 then
         
@@ -2455,7 +2485,7 @@ BindGlobal( "StateLemma", function ( proposition, cat, input_filters )
         
         text := "For";
         
-        names := NamesLocalVariablesFunction( proposition );
+        names := NamesLocalVariablesFunction( func );
         
         Assert( 0, Length( names ) >= Length( input_filters ) );
         
@@ -2464,18 +2494,6 @@ BindGlobal( "StateLemma", function ( proposition, cat, input_filters )
         parts := [ ];
         
         for i in [ 2 .. Length( input_filters ) ] do
-            
-            #if i > 2 and (i < Length( input_filters ) or Length( input_filters ) > 3) then
-            #    
-            #    text := Concatenation( text, "," );
-            #    
-            #fi;
-            #
-            #if i = Length( input_filters ) then
-            #    
-            #    text := Concatenation( text, " and" );
-            #    
-            #fi;
             
             filter := input_filters[i];
             
@@ -2545,18 +2563,18 @@ BindGlobal( "StateLemma", function ( proposition, cat, input_filters )
         
         text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ) );
         
-        tree := ENHANCED_SYNTAX_TREE( proposition );
+        tree := ENHANCED_SYNTAX_TREE( func );
         
         local_replacements_strings := [ ];
         
         for replacement in tree.local_replacements do
             
-            func := StructuralCopy( tree );
-            func.local_replacements := [ ];
+            replacement_func := StructuralCopy( tree );
+            replacement_func.local_replacements := [ ];
             
-            Assert( 0, Length( func.bindings.names ) = 1 );
+            Assert( 0, Length( replacement_func.bindings.names ) = 1 );
             
-            func.bindings.BINDING_RETURN_VALUE := rec(
+            replacement_func.bindings.BINDING_RETURN_VALUE := rec(
                 type := "EXPR_FUNCCALL",
                 funcref := rec(
                     type := "EXPR_REF_GVAR",
@@ -2568,7 +2586,7 @@ BindGlobal( "StateLemma", function ( proposition, cat, input_filters )
                 ] ),
             );
             
-            Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( func ), cat, input_filters ) );
+            Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( replacement_func ), cat, input_filters ) );
             
         od;
         
@@ -2582,8 +2600,107 @@ BindGlobal( "StateLemma", function ( proposition, cat, input_filters )
         
     fi;
     
-    result := FunctionAsMathString( proposition, cat, input_filters );
+    result := FunctionAsMathString( func, cat, input_filters );
     
-    return Concatenation( "\\begin{lemma}\n", text, "\n", result, "\\end{lemma}\n" );
+    return Concatenation(
+        "\\begin{", type, "}\n",
+        text, "\n",
+        result, "\n",
+        "\\end{", type, "}"
+    );
+    
+end );
+
+BindGlobal( "StateLemma", function ( func, cat, input_filters )
+    
+    return StateTheorem( func, cat, input_filters, "lemma" );
+    
+end );
+
+BindGlobal( "ApplyLogicTemplate", function ( logic_template )
+  local func, cat, input_filters, old_logic_templates, old_tree, new_tree;
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    
+    func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
+    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
+    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
+    
+    old_logic_templates := StructuralCopy( CAP_JIT_LOGIC_TEMPLATES );
+    
+    CapJitAddLogicTemplate( logic_template );
+    
+    old_tree := ENHANCED_SYNTAX_TREE( func );
+    
+    func := CapJitCompiledFunction( func, cat, input_filters, "bool" );
+    
+    new_tree := ENHANCED_SYNTAX_TREE( func );
+    
+    if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
+        
+        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
+        
+        Error( "applying the logic template did not have an effect" );
+        
+    fi;
+    
+    MakeReadWriteGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
+    
+    CAP_JIT_LOGIC_TEMPLATES := old_logic_templates;
+    
+    MakeReadOnlyGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
+    
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
+    
+end );
+
+BindGlobal( "AssertTheorem", function ( args... )
+  local type, func, cat, input_filters, tree;
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    
+    if Length( args ) = 0 then
+        
+        type := "theorem";
+        
+    elif Length( args ) = 1 then
+        
+        type := args[1];
+        
+    else
+        
+        Error( "AssertTheorem must be called with at most one argument" );
+        
+    fi;
+    
+    Assert( 0, type = CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type );
+    
+    func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
+    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
+    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
+    
+    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( func, "with_post_processing", cat, input_filters, "bool" );
+    
+    if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
+        
+        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
+        
+        return "\\qedhere";
+        
+    else
+        
+        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+        
+        Error( "function is not true, not resetting theorem" );
+        
+        return FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( tree ), cat, input_filters );
+        
+    fi;
+    
+end );
+
+BindGlobal( "AssertLemma", function ( )
+    
+    return AssertTheorem( "lemma" );
     
 end );
