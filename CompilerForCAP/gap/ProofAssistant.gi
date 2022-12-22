@@ -2704,3 +2704,40 @@ BindGlobal( "AssertLemma", function ( )
     return AssertTheorem( "lemma" );
     
 end );
+
+BindGlobal( "PrintTheorem", function ( args... )
+  local type, func, cat, input_filters, tree;
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    
+    if Length( args ) = 0 then
+        
+        type := "theorem";
+        
+    elif Length( args ) = 1 then
+        
+        type := args[1];
+        
+    else
+        
+        Error( "PrintTheorem must be called with at most one argument" );
+        
+    fi;
+    
+    Assert( 0, type = CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type );
+    
+    func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
+    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
+    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
+    
+    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( func, "with_post_processing", cat, input_filters, "bool" );
+    
+    return FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( tree ), cat, input_filters );
+    
+end );
+
+BindGlobal( "PrintLemma", function ( )
+    
+    return PrintTheorem( "lemma" );
+    
+end );
