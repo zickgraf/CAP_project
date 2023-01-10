@@ -1206,7 +1206,14 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             name := LaTeXName( tree.name );
             
-            if type = "category" then
+            if type = "homalg_matrix" then
+                
+                return rec(
+                    type := "homalg_matrix",
+                    string := name,
+                );
+                
+            elif type = "category" then
                 
                 return rec(
                     type := "category",
@@ -1419,6 +1426,24 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 return rec(
                     type := "integer",
                     string := Concatenation( "RowRankOfMatrix(", result.args.1.string, ")" ),
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "SyzygiesOfRows" and result.args.1.type = "homalg_matrix" then
+                
+                return rec(
+                    type := "homalg_matrix",
+                    string := Concatenation( "\\mathrm{SyzygiesOfRows}(", result.args.1.string, ")" ),
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "UniqueRightDivide" and result.args.1.type = "homalg_matrix" and result.args.2.type = "homalg_matrix" then
+                
+                return rec(
+                    type := "homalg_matrix",
+                    string := Concatenation( "\\mathrm{UniqueRightDivide}(", result.args.1.string, ", ", result.args.2.string, ")" ),
                 );
                 
             fi;
@@ -2094,7 +2119,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         
         latex_string := CapJitIterateOverTree( return_value, ReturnFirst, result_func, additional_arguments_func, [ func_tree ] );
         
-        if latex_string.type in [ "object", "bool" ] then
+        if latex_string.type in [ "object", "bool", "homalg_matrix" ] then
             
             latex_string := latex_string.string;
             

@@ -2445,6 +2445,8 @@ CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 BindGlobal( "StateTheorem", function ( func, cat, input_filters, args... )
   local type, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, tree, local_replacements_strings, replacement_func, result, i, replacement;
     
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
+    
     if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail then
         
         Display( "WARNING: overwriting existing active theorem" );
@@ -2651,6 +2653,45 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     MakeReadOnlyGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
+    
+end );
+
+BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template, args... )
+  local func, cat, input_filters, old_logic_templates, latex_string, old_tree, new_tree;
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    
+    func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
+    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
+    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
+    
+    old_logic_templates := StructuralCopy( CAP_JIT_LOGIC_TEMPLATES );
+    
+    latex_string := CallFuncList( CapJitAddLogicTemplateAndReturnLaTeXString, Concatenation( [ logic_template ], args ) );
+    
+    old_tree := ENHANCED_SYNTAX_TREE( func );
+    
+    func := CapJitCompiledFunction( func, cat, input_filters, "bool" );
+    
+    new_tree := ENHANCED_SYNTAX_TREE( func );
+    
+    if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
+        
+        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
+        
+        Error( "applying the logic template did not have an effect" );
+        
+    fi;
+    
+    MakeReadWriteGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
+    
+    CAP_JIT_LOGIC_TEMPLATES := old_logic_templates;
+    
+    MakeReadOnlyGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
+    
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
+    
+    return latex_string;
     
 end );
 
