@@ -2394,9 +2394,9 @@ end );
 
 CAP_JIT_PROOF_ASSISTANT_MODE_CATEGORY_DESCRIPTION := fail;
 
-BindGlobal( "SetCategoryDescription", function ( string )
+BindGlobal( "SetCurrentCategory", function ( category, description )
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_CATEGORY_DESCRIPTION := string;
+    CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY := rec( category := category, description := description );
     
 end );
 
@@ -2442,8 +2442,8 @@ end );
 
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
-BindGlobal( "StateTheorem", function ( func, cat, input_filters, args... )
-  local type, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, tree, local_replacements_strings, replacement_func, result, i, replacement;
+BindGlobal( "StateTheorem", function ( func, args... )
+  local cat, input_filters, type, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, tree, local_replacements_strings, replacement_func, result, i, replacement;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2452,6 +2452,21 @@ BindGlobal( "StateTheorem", function ( func, cat, input_filters, args... )
         Display( "WARNING: overwriting existing active theorem" );
         
     fi;
+    
+    if not IsCapCategory( args[1] ) then
+        
+        if CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY = fail then
+            
+            Error( "The category can only be omitted if `SetCurrentCategory` has been called before." );
+            
+        fi;
+        
+        Add( args, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category, 1 );
+        
+    fi;
+    
+    cat := Remove( args, 1 );
+    input_filters := Remove( args, 1 );
     
     if Length( args ) = 0 then
         
@@ -2485,7 +2500,17 @@ BindGlobal( "StateTheorem", function ( func, cat, input_filters, args... )
         
     else
         
-        text := "For";
+        if CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY = fail then
+            
+            text := "";
+            
+        else
+            
+            text := Concatenation( "In ", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.description, " the following statement holds true: " );
+            
+        fi;
+        
+        text := Concatenation( text, "For" );
         
         names := NamesLocalVariablesFunction( func );
         
@@ -2613,9 +2638,9 @@ BindGlobal( "StateTheorem", function ( func, cat, input_filters, args... )
     
 end );
 
-BindGlobal( "StateLemma", function ( func, cat, input_filters )
+BindGlobal( "StateLemma", function ( args... )
     
-    return StateTheorem( func, cat, input_filters, "lemma" );
+    return CallFuncList( StateTheorem, Concatenation( args, [ "lemma" ] ) );
     
 end );
 
