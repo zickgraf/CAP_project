@@ -2442,8 +2442,8 @@ end );
 
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
-BindGlobal( "StateTheorem", function ( func, args... )
-  local cat, input_filters, type, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, tree, local_replacements_strings, replacement_func, result, i, replacement;
+BindGlobal( "STATE_THEOREM", function ( type, func, args... )
+  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, tree, local_replacements_strings, replacement_func, result, i, replacement;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2453,7 +2453,11 @@ BindGlobal( "StateTheorem", function ( func, args... )
         
     fi;
     
-    if not IsCapCategory( args[1] ) then
+    if Length( args ) = 0 then
+        
+        Error( "STATE_THEOREM must be called with at least three arguments" );
+        
+    elif Length( args ) = 1 then
         
         if CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY = fail then
             
@@ -2461,24 +2465,17 @@ BindGlobal( "StateTheorem", function ( func, args... )
             
         fi;
         
-        Add( args, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category, 1 );
+        cat := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category;
+        input_filters := args[1];
         
-    fi;
-    
-    cat := Remove( args, 1 );
-    input_filters := Remove( args, 1 );
-    
-    if Length( args ) = 0 then
+    elif Length( args ) = 2 then
         
-        type := "theorem";
-        
-    elif Length( args ) = 1 then
-        
-        type := args[1];
+        cat := args[1];
+        input_filters := args[2];
         
     else
         
-        Error( "StateTheorem must be called with at most 4 arguments" );
+        Error( "STATE_THEOREM must be called with at most 4 arguments" );
         
     fi;
     
@@ -2640,7 +2637,7 @@ end );
 
 BindGlobal( "StateLemma", function ( args... )
     
-    return CallFuncList( StateTheorem, Concatenation( args, [ "lemma" ] ) );
+    return CallFuncList( STATE_THEOREM, Concatenation( [ "lemma" ], args ) );
     
 end );
 
