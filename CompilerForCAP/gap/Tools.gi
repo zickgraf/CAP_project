@@ -927,15 +927,16 @@ InstallGlobalFunction( "ConcatenationOfStringsAsEnumerationWithAnd", function ( 
     
 end );
 
-WriteResultToTeXFile := function ( filename, result )
+WriteResultToTeXFile := function ( filename, label, result )
   local path, content;
     
     path := Concatenation( filename, ".gap_autogen.tex" );
     
     result := Concatenation(
-        "\\begin{autogen}\n",
+        "\\begin{autogen-with-ref}{", label, "}\n",
+        #"\\label{src:", label, "}\n",
         result,
-        "\n\\end{autogen}\n"
+        "\n\\end{autogen-with-ref}\n"
     );
     
     # check if file already exists with the correct content
@@ -997,7 +998,7 @@ prepare_for_tensoring := function ( string, tree )
 end;
 
 BindGlobal( "LaTeXName", function ( name )
-  local GREEK_LETTERS, pos, letter_name;
+  local GREEK_LETTERS, pos, underscore, letter_name;
     
     GREEK_LETTERS := rec(
         alpha := "α",
@@ -1043,7 +1044,17 @@ BindGlobal( "LaTeXName", function ( name )
     
     if pos < Length( name ) then
         
-        name := Concatenation( name{[ 1 .. pos ]}, "_{", name{[ pos + 1 .. Length( name ) ]}, "}" );
+        if name[pos] = '_' then
+            
+            underscore := "";
+            
+        else
+            
+            underscore := "_";
+            
+        fi;
+        
+        name := Concatenation( name{[ 1 .. pos ]}, underscore, "{", name{[ pos + 1 .. Length( name ) ]}, "}" );
         
     fi;
     
@@ -1052,7 +1063,7 @@ BindGlobal( "LaTeXName", function ( name )
 end );
 
 FunctionAsMathString := function ( func, cat, input_filters, args... )
-  local suffix, arguments_data_types, type_signature, func_tree, old_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i;
+  local suffix, arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i;
     
     if IsEmpty( args ) then
         
@@ -1098,8 +1109,27 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         old_stop_compilation := false;
     fi;
     cat!.stop_compilation := true;
+    
+    if HasRangeCategoryOfHomomorphismStructure( cat ) and not IsIdenticalObj( RangeCategoryOfHomomorphismStructure( cat ), cat ) then
+        
+        if IsBound( RangeCategoryOfHomomorphismStructure( cat )!.stop_compilation ) then
+            old_range_stop_compilation := RangeCategoryOfHomomorphismStructure( cat )!.stop_compilation;
+        else
+            old_range_stop_compilation := false;
+        fi;
+        
+        RangeCategoryOfHomomorphismStructure( cat )!.stop_compilation := true;
+        
+    fi;
+    
+    # why is this needed?
     func_tree := CapJitResolvedOperations( func_tree );
+    
     cat!.stop_compilation := old_stop_compilation;
+    if HasRangeCategoryOfHomomorphismStructure( cat ) and not IsIdenticalObj( RangeCategoryOfHomomorphismStructure( cat ), cat ) then
+        RangeCategoryOfHomomorphismStructure( cat )!.stop_compilation := old_range_stop_compilation;
+    fi;
+    
     func_tree := CapJitReplacedGlobalVariablesByCategoryAttributes( func_tree, cat );
     func_tree := CapJitInlinedBindingsFully( func_tree );
     
@@ -1391,6 +1421,23 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             fi;
             
+            if tree.funcref.gvar = "CreateCapCategoryMorphismWithAttributes" then
+                
+                if tree.args.length <> 5 then
+                    
+                    Error( "Cannot handle CreateCapCategoryMorphismWithAttributes with less or more than five arguments yet." );
+                    
+                fi;
+                
+                return rec(
+                    type := "morphism",
+                    string := Concatenation( "\\boxed{", result.args.5.string, "}" ),
+                    source := result.args.2.string,
+                    range := result.args.3.string,
+                );
+                
+            fi;
+            
             if tree.funcref.gvar = "-" and result.args.1.type = "integer" and result.args.2.type = "integer" then
                 
                 return rec(
@@ -1468,6 +1515,15 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 return rec(
                     type := "homalg_matrix",
                     string := Concatenation( "\\mathrm{IsZero}(", result.args.1.string, ")" ),
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "HomalgIdentityMatrix" and result.args.1.type = "integer" and result.args.2.type = "homalg_ring" then
+                
+                return rec(
+                    type := "homalg_matrix",
+                    string := Concatenation( "\\mathrm{HomalgIdentityMatrix}(", result.args.1.string, ")" ),
                 );
                 
             fi;
@@ -1636,6 +1692,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := Concatenation( "\\mathrm{UnderlyingCategory}(", result.args.1.string, ")" ),
                 );
                 
+            elif tree.funcref.gvar = "UnderlyingRing" then
+                
+                math_record := rec(
+                    type := "homalg_ring",
+                    string := Concatenation( "\\mathrm{UnderlyingRing}(", result.args.1.string, ")" ),
+                );
+                
             elif tree.funcref.gvar = "RankOfObject" then
                 
                 math_record := rec(
@@ -1654,7 +1717,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 math_record := rec(
                     type := "homalg_matrix",
-                    string := Concatenation( "\\mathrm{UnderlyingMatrix}(", result.args.1.string, ")" ),
+                    string := Concatenation( "\\mathrm{U}(", result.args.1.string, ")" ),
                 );
                 
             elif tree.funcref.gvar = "ObjectList" then

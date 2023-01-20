@@ -2624,7 +2624,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         
     fi;
     
-    result := FunctionAsMathString( func, cat, input_filters );
+    result := FunctionAsMathString( func, cat, input_filters, "." );
     
     return Concatenation(
         "\\begin{", type, "}\n",
