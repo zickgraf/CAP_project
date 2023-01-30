@@ -110,7 +110,7 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE, function ( func )
     fi;
     
     pre_func := function ( tree, additional_arguments )
-      local path, func_stack, new_tree, statements, i, statement, level, pos, lvars, value, to_delete, next_statement, funccall, translation, operation_name, can_possibly_be_resolved, info, case_expression, branch;
+      local path, func_stack, new_tree, statements, i, statement, level, pos, lvars, value, to_delete, next_statement, funccall, translation, operation_name, can_possibly_be_resolved, info, case_expression, data_type_getter, branch;
         
         path := additional_arguments[1];
         func_stack := additional_arguments[2];
@@ -141,6 +141,59 @@ InstallGlobalFunction( ENHANCED_SYNTAX_TREE, function ( func )
         elif IsRecord( tree ) then
             
             Assert( 0, IsBound( tree.type ) );
+            
+            # handle CapJitTypedExpression, must be done at the beginning because we return the first argument
+            if StartsWith( tree.type, "EXPR_FUNCCALL_" ) and tree.funcref.type = "EXPR_REF_GVAR" and tree.funcref.gvar = "CapJitTypedExpression" then
+                
+                if Length( given_arguments ) = 0 or not IsCapCategory( given_arguments[1] ) then
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    ErrorWithFuncLocation( "CapJitTypedExpression can only be used inside CAP operations or methods known to CompilerForCAP which are compiled with a CAP category as first argument" );
+                    
+                fi;
+                
+                if Length( tree.args ) <> 2 then
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    ErrorWithFuncLocation( "CapJitTypedExpression must be called with exactly two arguments" );
+                    
+                fi;
+                
+                if tree.args[2].type = "EXPR_FUNC" then
+                    
+                    data_type_getter := SYNTAX_TREE_CODE( tree.args[2] );
+                    
+                elif tree.args[2].type = "EXPR_REF_GVAR" then
+                    
+                    data_type_getter := ValueGlobal( tree.args[2].gvar );
+                    
+                else
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    ErrorWithFuncLocation( "the second argument of CapJitTypedExpression must be a literal function or a reference to a global variable pointing to a function" );
+                    
+                fi;
+                
+                tree := ShallowCopy( tree.args[1] );
+                tree.data_type := data_type_getter( given_arguments[1] );
+                
+                if not IsRecord( tree.data_type ) or not IsBound( tree.data_type.filter ) then
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    ErrorWithFuncLocation( "CapJitTypedExpression has returned ", tree.data_type, " which is not a valid data type" );
+                    
+                fi;
+                
+            fi;
+            
+            # check for empty lists without type
+            if tree.type = "EXPR_LIST" and Length( tree.list ) = 0 and not IsBound( tree.data_type ) then
+                
+                # COVERAGE_IGNORE_NEXT_LINE
+                Print( "WARNING: Found empty list without data type in function at ", FilenameFunc( func ), ":", StartlineFunc( func ), " with name ", NameFunction( func ), ". Use CapJitTypedExpression for better compilation results.\n" );
+                Display( func );
+                
+            fi;
             
             # check for unsupported stuff
             if tree.type = "STAT_EMPTY" then

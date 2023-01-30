@@ -53,6 +53,7 @@ CapJitAddLogicFunction( function ( tree )
             
             return rec(
                 type := "EXPR_LIST",
+                data_type := rec( filter := IsList, element_type := rec( filter := IsInt ) ),
                 list := AsSyntaxTreeList( List(
                     [ tree.first.value .. tree.last.value ],
                     int -> rec(
@@ -224,7 +225,12 @@ CapJitAddLogicFunction( function ( tree )
             
             args := tree.args.1.args;
             
-            if args.length = 1 then
+            if args.length = 0 then
+                
+                # COVERAGE_IGNORE_NEXT_LINE
+                Error( "`Concatenation` with zero arguments is not supported by CompilerForCAP" );
+                
+            elif args.length = 1 then
                 
                 # Length( Concatenation( list ) ) -> Sum( List( list, Length ) )
                 
@@ -253,6 +259,8 @@ CapJitAddLogicFunction( function ( tree )
                 );
                 
             else
+                
+                Assert( 0, args.length > 1 );
                 
                 # Length( Concatenation( list1, list2, ... ) ) -> Sum( [ Length( list1 ), Length( list2 ), ... ] )
                 
@@ -310,7 +318,20 @@ CapJitAddLogicFunction( function ( tree )
             
             args := tree.args;
             
-            if args.1.list.length = 1 then
+            if args.1.list.length = 0 then
+                
+                tree := rec(
+                    type := "EXPR_LIST",
+                    list := AsSyntaxTreeList( [ ] ),
+                );
+                
+                if IsBound( args.1.list.data_type ) then
+                    
+                    tree.data_type := args.1.list.data_type.element_type;
+                    
+                fi;
+                
+            elif args.1.list.length = 1 then
                 
                 tree := args.1.list.1;
                 
@@ -332,10 +353,16 @@ CapJitAddLogicFunction( function ( tree )
             
             if args.length > 1 and ForAll( args, a -> a.type = "EXPR_LIST" ) then
                 
-                return rec(
+                tree := rec(
                     type := "EXPR_LIST",
                     list := ConcatenationForSyntaxTreeLists( AsListMut( List( args, a -> a.list ) ) ),
                 );
+                
+                if IsBound( args.1.data_type ) then
+                    
+                    tree.data_type := args.1.data_type;
+                    
+                fi;
                 
             fi;
             
@@ -391,7 +418,7 @@ CapJitAddLogicFunction( function ( tree )
     Info( InfoCapJit, 1, "Apply logic for List applied to a literal list." );
     
     pre_func := function ( tree, additional_arguments )
-      local args;
+      local args, new_tree;
         
         if CapJitIsCallToGlobalFunction( tree, "List" ) then
             
@@ -399,7 +426,7 @@ CapJitAddLogicFunction( function ( tree )
             
             if args.length = 2 and args.1.type = "EXPR_LIST" then
                 
-                return rec(
+                new_tree := rec(
                     type := "EXPR_LIST",
                     list := List(
                         args.1.list,
@@ -410,6 +437,14 @@ CapJitAddLogicFunction( function ( tree )
                         )
                     ),
                 );
+                
+                if IsBound( tree.data_type ) then
+                    
+                    new_tree.data_type := tree.data_type;
+                    
+                fi;
+                
+                tree := new_tree;
                 
             fi;
             

@@ -830,7 +830,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
     AddZeroObject( category,
       function( cat )
         
-        return AdditiveClosureObject( cat, [ ] );
+        return AdditiveClosureObject( cat, CapJitTypedExpression( [ ], { cat } -> rec( filter := IsList, element_type := rec( filter := UnderlyingCategory( cat )!.object_representation, category := UnderlyingCategory( cat ) ) ) ) );
         
     end );
     

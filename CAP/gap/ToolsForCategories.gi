@@ -1352,6 +1352,9 @@ InstallGlobalFunction( CapJitDataTypeOfTwoCellOfCategory, function ( cat )
 end );
 
 ##
+InstallGlobalFunction( CapJitTypedExpression, ReturnFirst );
+
+##
 InstallGlobalFunction( CapFixpoint, function ( predicate, func, initial_value )
   local x, y;
     
