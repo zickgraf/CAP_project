@@ -141,7 +141,7 @@ InstallGlobalFunction( CapJitResolvedOperations, function ( tree )
                         
                     fi;
                     
-                    Assert( 0, CanCompute( category, operation_name ) );
+                    #Assert( 0, CanCompute( category, operation_name ) );
                     Assert( 0, tree.args.length = Length( info.filter_list ) );
                     
                     if IsBound( category!.stop_compilation ) and category!.stop_compilation = true then
@@ -155,6 +155,8 @@ InstallGlobalFunction( CapJitResolvedOperations, function ( tree )
                         return tree;
                         
                     fi;
+                    
+                    Assert( 0, CanCompute( category, operation_name ) );
                     
                     Info( InfoCapJit, 1, "####" );
                     Info( InfoCapJit, 1, Concatenation( "Resolve CAP operation ", operation_name, ", recurse compilation." ) );
