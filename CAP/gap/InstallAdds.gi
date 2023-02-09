@@ -419,6 +419,16 @@ InstallGlobalFunction( CapInternalInstallAdd,
                         
                     fi;
                     
+                    if not IsFinalized( category ) then
+                        
+                        if not CanCompute( category, "IsEqualForCacheForObjects" ) or not CanCompute( category, "IsEqualForCacheForMorphisms" ) then
+                            
+                            Print( "You might run into caching related errors because IsEqualForCacheForObjects and/or IsEqualForCacheForMorphisms are not yet installed for this category.\n" );
+                            
+                        fi;
+                        
+                    fi;
+                    
                     if redirect_function <> false then
                         redirect_return := CallFuncList( redirect_function, arg );
                         if redirect_return[ 1 ] = true then
