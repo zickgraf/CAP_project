@@ -199,7 +199,7 @@ InstallGlobalFunction( CapInternalInstallAdd,
         [ "IsPrecompiledDerivation", false ],
       ],
       function( CAP_NAMED_ARGUMENTS, category, method_list, weight )
-        local is_derivation, is_final_derivation, is_precompiled_derivation, replaced_filter_list, needs_wrapping,
+        local is_derivation, is_final_derivation, is_precompiled_derivation, needs_wrapping,
             number_of_proposed_arguments, current_function_argument_number, current_additional_filter_list_length,
             input_sanity_check_functions, output_human_readable_identifier_list, output_sanity_check_function,
             output_data_type, assert_is_value_of_return_type, install_func, name, current_function_number, i;
@@ -282,8 +282,6 @@ InstallGlobalFunction( CapInternalInstallAdd,
             fi;
             
         fi;
-        
-        replaced_filter_list := CAP_INTERNAL_REPLACED_STRINGS_WITH_FILTERS( filter_list, category );
         
         ## Nr arguments sanity check
         
@@ -398,9 +396,17 @@ InstallGlobalFunction( CapInternalInstallAdd,
         install_func := function( func_to_install, additional_filters )
           local new_filter_list, index;
             
+            Assert( 0, filter_list[1] = "category" );
+            
+            new_filter_list := Concatenation( [ CategoryFilter( category ) ], ListWithIdenticalEntries( Length( filter_list ) - 1, IsObject ) );
+            
+            CAP_INTERNAL_WARN_ABOUT_SIMILAR_METHODS( ValueGlobal( install_name ), new_filter_list, Length( category!.added_functions.( function_name ) ), { operation_name } -> Concatenation(
+                "WARNING: A method for the CAP operation ", operation_name, " was installed manually (e.g. using Install(Other)Method). This is not supported.\n"
+            ) );
+            
             Add( category!.added_functions.( function_name ), [ func_to_install, additional_filters ] );
             
-            new_filter_list := CAP_INTERNAL_MERGE_FILTER_LISTS( replaced_filter_list, additional_filters );
+            new_filter_list := CAP_INTERNAL_MERGE_FILTER_LISTS( new_filter_list, additional_filters );
             
             if category!.overhead then
                 
