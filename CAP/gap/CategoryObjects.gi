@@ -35,49 +35,6 @@ InstallValue( PROPAGATION_LIST_FOR_EQUAL_OBJECTS,
 ##
 ###################################
 
-# This method should not be selected when the two objects belong to the same category and the category can compute IsEqualForObjects.
-InstallOtherMethod( IsEqualForObjects,
-                    [ IsCapCategory, IsCapCategoryObject, IsCapCategoryObject ],
-
-  function( cat, object_1, object_2 )
-    
-    if not HasCapCategory( object_1 ) then
-        
-        Error( Concatenation( "the object \"", String( object_1 ), "\" has no CAP category" ) );
-        
-    fi;
-    
-    if not HasCapCategory( object_2 ) then
-        
-        Error( Concatenation( "the object \"", String( object_2 ), "\" has no CAP category" ) );
-        
-    fi;
-    
-    if not IsIdenticalObj( CapCategory( object_1 ), cat ) then
-        
-        Error( Concatenation( "the object \"", String( object_1 ), "\" does not belong to the CAP category <cat>" ) );
-        
-    elif not IsIdenticalObj( CapCategory( object_2 ), cat ) then
-        
-        Error( Concatenation( "the object \"", String( object_2 ), "\" does not belong to the CAP category <cat>" ) );
-        
-    else
-        
-        # convenience: as long as the objects are identical, everything "just works"
-        if IsIdenticalObj( object_1, object_2 ) then
-            
-            return true;
-            
-        else
-            
-            Error( "Cannot decide whether the object \"", String( object_1 ), "\" and the object \"", String( object_2 ), "\" are equal. You can fix this error by installing `IsEqualForObjects` in <cat> or possibly avoid it by enabling strict caching." );
-            
-        fi;
-        
-    fi;
-    
-end );
-
 ##
 InstallMethod( \=,
                [ IsCapCategoryObject, IsCapCategoryObject ],
