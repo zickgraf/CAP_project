@@ -3277,6 +3277,21 @@ AddFinalDerivationBundle( "IsomorphismFromHomologyObjectToItsConstructionAsAnIma
   end,
 ] : CategoryFilter := IsAbelianCategory );
 
+## Final method for IsEqualForCacheForObjects/Morphisms
+##
+AddFinalDerivation( IsEqualForCacheForObjects,
+                    [ ],
+                    [ IsEqualForCacheForObjects ],
+                    
+  { cat, mor1, mor2 } -> IsIdenticalObj( mor1, mor2 ) : Description := "using IsIdenticalObj" );
+
+##
+AddFinalDerivation( IsEqualForCacheForMorphisms,
+                    [ ],
+                    [ IsEqualForCacheForMorphisms ],
+                    
+  { cat, mor1, mor2 } -> IsIdenticalObj( mor1, mor2 ) : Description := "using IsIdenticalObj" );
+
 ## Final methods for IsEqual/IsCongruentForMorphisms
 ##
 AddFinalDerivation( IsCongruentForMorphisms,
