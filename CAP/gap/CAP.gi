@@ -246,8 +246,22 @@ InstallGlobalFunction( "CreateCapCategoryWithDataTypes", FunctionWithNamedArgume
     ## filters
     SetCategoryFilter( obj, filter );
     
+    # Note on instance filters:
+    # They are neither required for method selection anymore (because the category is now always given as the first arguments)
+    # nor for CompilerForCAP in general (neither type signatures nor logic templates are usually instance-specific).
+    # Still, they allow for a cheap consistency check even if input sanity checks are disabled, that is, they check that one
+    # does not mix objects, morphisms or twocells of different category instances even if input sanity checks are disabled.
+    
     # object filter
-    filter := NewCategory( Concatenation( name, "InstanceObjectFilter" ), object_filter );
+    if IsSpecializationOfFilter( IsCapCategoryObject, object_filter ) then
+        
+        filter := NewCategory( Concatenation( name, "InstanceObjectFilter" ), object_filter );
+        
+    else
+        
+        filter := object_filter;
+        
+    fi;
     
     SetObjectFilter( obj, filter );
     SetObjectDatumType( obj, object_datum_type );
@@ -258,7 +272,15 @@ InstallGlobalFunction( "CreateCapCategoryWithDataTypes", FunctionWithNamedArgume
     obj!.object_attribute := ValueGlobal( obj!.object_attribute_name );
     
     # morphism filter
-    filter := NewCategory( Concatenation( name, "InstanceMorphismFilter" ), morphism_filter );
+    if IsSpecializationOfFilter( IsCapCategoryMorphism, morphism_filter ) then
+        
+        filter := NewCategory( Concatenation( name, "InstanceMorphismFilter" ), morphism_filter );
+        
+    else
+        
+        filter := morphism_filter;
+        
+    fi;
     
     SetMorphismFilter( obj, filter );
     SetMorphismDatumType( obj, morphism_datum_type );
@@ -269,7 +291,15 @@ InstallGlobalFunction( "CreateCapCategoryWithDataTypes", FunctionWithNamedArgume
     obj!.morphism_attribute := ValueGlobal( obj!.morphism_attribute_name );
     
     # two cell filter
-    filter := NewCategory( Concatenation( name, "InstanceTwoCellFilter" ), two_cell_filter );
+    if IsSpecializationOfFilter( IsCapCategoryTwoCell, two_cell_filter ) then
+        
+        filter := NewCategory( Concatenation( name, "InstanceTwoCellFilter" ), two_cell_filter );
+        
+    else
+        
+        filter := two_cell_filter;
+        
+    fi;
     
     SetTwoCellFilter( obj, filter );
     SetTwoCellDatumType( obj, two_cell_datum_type );
