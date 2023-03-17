@@ -2443,7 +2443,7 @@ end );
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
 BindGlobal( "STATE_THEOREM", function ( type, func, args... )
-  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, tree, local_replacements_strings, replacement_func, result, i, replacement;
+  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, inner_parts, source, range, tree, local_replacements_strings, replacement_func, result, i, replacement;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2553,24 +2553,53 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                 
             fi;
             
-            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" )  ));
-            
             if filter = "object" then
+                
+                current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\myboxed{", LaTeXName( names[i] ), "}$" ) ) );
                 
                 part := Concatenation( numeral, " object", plural, " ", current_names );
                 
             elif filter = "morphism" then
                 
+                current_names := [ ];
+                
+                for i in positions do
+                    
+                    name := names[i];
+                    
+                    inner_parts := MySplitString( name, "__" );
+                    
+                    if Length( inner_parts ) = 3 then
+                        
+                        name := Concatenation( "\\myboxed{", LaTeXName( inner_parts[1] ), "}" );
+                        source := Concatenation( "\\myboxed{", LaTeXName( inner_parts[2] ), "}" );
+                        range := Concatenation( "\\myboxed{", LaTeXName( inner_parts[3] ), "}" );
+                        
+                        Add( current_names, Concatenation( "$", name, " : ", source, " \\to ", range, "$" ) );
+                        
+                    else
+                        
+                        Add( current_names, Concatenation( "$\\myboxed{", LaTeXName( name ), "}$" ) );
+                        
+                        #source := Concatenation( "s(", name, ")" );
+                        #range := Concatenation( "t(", name, ")" );
+                        
+                    fi;
+                    
+                od;
+                
+                current_names := PhraseEnumeration( current_names );
+                
                 part := Concatenation( numeral, " morphism", plural, " ", current_names );
                 
-            elif filter = "object_in_range_category_of_homomorphism_structure" then
-                
-                part := Concatenation( numeral, " object", plural, " ", current_names, " in the range category of the homomorphism structure" );
-                
-            elif filter = "morphism_in_range_category_of_homomorphism_structure" then
-                
-                part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
-                
+            #elif filter = "object_in_range_category_of_homomorphism_structure" then
+            #    
+            #    part := Concatenation( numeral, " object", plural, " ", current_names, " in the range category of the homomorphism structure" );
+            #    
+            #elif filter = "morphism_in_range_category_of_homomorphism_structure" then
+            #    
+            #    part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
+            #    
             else
                 
                 part := "an unhandled filter";

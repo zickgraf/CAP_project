@@ -1062,6 +1062,23 @@ BindGlobal( "LaTeXName", function ( name )
             
 end );
 
+MySplitString := function ( string, substring )
+  local pos;
+    
+    pos := PositionSublist( string, substring );
+    
+    if pos = fail then
+        
+        return [ string ];
+        
+    else
+        
+        return Concatenation( [ string{[ 1 .. pos - 1 ]} ], MySplitString( string{[ pos + 2 .. Length( string ) ]}, substring ) );
+        
+    fi;
+    
+end;
+
 FunctionAsMathString := function ( func, cat, input_filters, args... )
   local suffix, arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i;
     
@@ -1143,7 +1160,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     return_value := func_tree.bindings.BINDING_RETURN_VALUE;
     
     result_func := function ( tree, result, keys, func_stack )
-      local pos, type, GREEK_LETTERS, name, string, info, local_cat, object_func_tree, object_func, source_string, range_string, math_record, list, mor, letter_name, i;
+      local func, pos, type, name, parts, source, range, string, info, local_cat, object_func_tree, object_func, source_string, range_string, math_record, list, mor, i;
         
         if tree.type = "EXPR_DECLARATIVE_FUNC" then
             
@@ -1249,7 +1266,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             fi;
             
-            name := LaTeXName( tree.name );
+            name := tree.name;
             
             if type = "homalg_matrix" then
                 
@@ -1267,6 +1284,8 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif type = "object" then
                 
+                name := Concatenation( "\\myboxed{", LaTeXName( name ), "}" );
+                
                 return rec(
                     type := "object",
                     string := name,
@@ -1274,10 +1293,28 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif type = "morphism" then
                 
+                parts := MySplitString( name, "__" );
+                
+                if Length( parts ) = 3 then
+                    
+                    name := Concatenation( "\\myboxed{", LaTeXName( parts[1] ), "}" );
+                    source := Concatenation( "\\myboxed{", LaTeXName( parts[2] ), "}" );
+                    range := Concatenation( "\\myboxed{", LaTeXName( parts[3] ), "}" );
+                     
+                else
+                    
+                    name := LaTeXName( name );
+                    
+                    name := Concatenation( "\\myboxed{", name, "}" );
+                    source := Concatenation( "s(", name, ")" );
+                    range := Concatenation( "t(", name, ")" );
+                    
+                fi;
+                
                 return rec(
                     type := "morphism",
-                    source := Concatenation( "s(", name, ")" ),
-                    range := Concatenation( "t(", name, ")" ),
+                    source := source,
+                    range := range,
                     string := name,
                 );
                 
@@ -1416,7 +1453,22 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "object",
-                    string := Concatenation( "\\boxed{", result.args.3.string, "}" ),
+                    string := Concatenation( "\\myboxed{", result.args.3.string, "}" ),
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "AsCapCategoryObject" then
+                
+                if tree.args.length <> 2 then
+                    
+                    Error( "Cannot handle AsCapCategoryObject with less or more than three arguments yet." );
+                    
+                fi;
+                
+                return rec(
+                    type := "object",
+                    string := Concatenation( "\\myboxed{", result.args.2.string, "}" ),
                 );
                 
             fi;
@@ -1431,7 +1483,24 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "morphism",
-                    string := Concatenation( "\\boxed{", result.args.5.string, "}" ),
+                    string := Concatenation( "\\myboxed{", result.args.5.string, "}" ),
+                    source := result.args.2.string,
+                    range := result.args.3.string,
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "AsCapCategoryMorphism" then
+                
+                if tree.args.length <> 4 then
+                    
+                    Error( "Cannot handle AsCapCategoryMorphism with less or more than five arguments yet." );
+                    
+                fi;
+                
+                return rec(
+                    type := "morphism",
+                    string := Concatenation( "\\myboxed{", result.args.4.string, "}" ),
                     source := result.args.2.string,
                     range := result.args.3.string,
                 );
@@ -1506,6 +1575,15 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 return rec(
                     type := "homalg_matrix",
                     string := Concatenation( "\\mathrm{UniqueRightDivide}(", result.args.1.string, ", ", result.args.2.string, ")" ),
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "RightDivide" and result.args.1.type = "homalg_matrix" and result.args.2.type = "homalg_matrix" then
+                
+                return rec(
+                    type := "homalg_matrix",
+                    string := Concatenation( "\\mathrm{RightDivide}(", result.args.1.string, ", ", result.args.2.string, ")" ),
                 );
                 
             fi;
@@ -1720,6 +1798,46 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := Concatenation( "\\mathrm{U}(", result.args.1.string, ")" ),
                 );
                 
+            elif tree.funcref.gvar = "AsValue" and result.args.1.type = "object" then
+                
+                # TODO
+                
+                if Length( result.args.1.string ) >= 9 and result.args.1.string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.string ) = '}' then
+                    
+                    math_record := rec(
+                        type := "integer",
+                        string := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]},
+                    );
+                    
+                else
+                    
+                    math_record := rec(
+                        type := "integer",
+                        string := Concatenation( "\\mathrm{AsValue}(", result.args.1.string, ")" ),
+                    );
+                    
+                fi;
+                
+            elif tree.funcref.gvar = "AsValue" and result.args.1.type = "morphism" then
+                
+                # TODO
+                
+                if Length( result.args.1.string ) >= 9 and result.args.1.string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.string ) = '}' then
+                    
+                    math_record := rec(
+                        type := "homalg_matrix",
+                        string := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]},
+                    );
+                    
+                else
+                    
+                    math_record := rec(
+                        type := "homalg_matrix",
+                        string := Concatenation( "\\mathrm{AsValue}(", result.args.1.string, ")" ),
+                    );
+                    
+                fi;
+                
             elif tree.funcref.gvar = "ObjectList" then
                 
                 math_record := rec(
@@ -1829,14 +1947,14 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 math_record := rec(
                     type := "object",
-                    string := Concatenation( "s(", result.args.1.string, ")" ),
+                    string := result.args.1.source,
                 );
                 
             elif tree.funcref.gvar in [ "Range", "Target" ] then
                 
                 math_record := rec(
                     type := "object",
-                    string := Concatenation( "t(", result.args.1.string, ")" ),
+                    string := result.args.1.range,
                 );
                 
             elif tree.funcref.gvar = "DualOnObjects" then
