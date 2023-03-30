@@ -1196,6 +1196,20 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 string := Concatenation( result.left.string, " = ", result.right.string ),
             );
             
+        elif tree.type = "EXPR_GE" then
+            
+            return rec(
+                type := "bool",
+                string := Concatenation( result.left.string, " \\geq ", result.right.string ),
+            );
+            
+        elif tree.type = "EXPR_AND" then
+            
+            return rec(
+                type := "bool",
+                string := Concatenation( result.left.string, "\\quad\\text{and}\\quad", result.right.string ),
+            );
+            
         elif tree.type = "EXPR_INT" then
             
             return rec(
@@ -1434,6 +1448,15 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             fi;
             
+            if tree.funcref.gvar = "IS_IDENTICAL_OBJ" then
+                
+                return rec(
+                    type := "bool",
+                    string := Concatenation( result.args.1.string, " \\quad = \\quad ", result.args.2.string ),
+                );
+                
+            fi;
+            
             if tree.funcref.gvar = "Concatenation" then
                 
                 return rec(
@@ -1556,7 +1579,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "integer",
-                    string := Concatenation( "RowRankOfMatrix(", result.args.1.string, ")" ),
+                    string := Concatenation( "\\mathrm{RowRankOfMatrix}(", result.args.1.string, ")" ),
                 );
                 
             fi;
@@ -1593,6 +1616,15 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 return rec(
                     type := "homalg_matrix",
                     string := Concatenation( "\\mathrm{IsZero}(", result.args.1.string, ")" ),
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "HomalgRing" then
+                
+                return rec(
+                    type := "homalg_ring",
+                    string := Concatenation( "\\mathrm{HomalgRing}(", result.args.1.string, ")" ),
                 );
                 
             fi;
