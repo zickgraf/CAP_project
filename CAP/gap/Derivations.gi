@@ -33,7 +33,7 @@ InstallMethod( MakeDerivation,
                [ IsString, IsString, IsDenseList, IsPosInt, IsFunction, IsFunction ],
                
 function( name, target_op_name, used_op_names_with_multiples_and_category_getters, weight, func, category_filter )
-  local wrapped_category_filter, derivation;
+  local wrapped_category_filter, conditions, derivation;
     
     #= comment for Julia
     if PositionSublist( String( category_filter ), "CanCompute" ) <> fail then
@@ -69,6 +69,68 @@ function( name, target_op_name, used_op_names_with_multiples_and_category_getter
         wrapped_category_filter := category_filter;
         
     fi;
+    
+    if false then
+    
+    Print( "AddDerivationToCAP( ", NameFunction( target_op ), ",\n                    [ " );
+    
+    conditions := List( used_op_names_with_multiples_and_category_getters, function ( x )
+        
+        if x[3] = fail then
+            
+            return Concatenation( "[ ", x[1], ", ", String( x[2] ), " ]" );
+            
+        elif IsAttribute( x[3] ) then
+            
+            return Concatenation( "[ ", x[1], ", ", String( x[2] ), ", ", NameFunction( x[3] ), " ]" );
+            
+        else
+            
+            Error("unknown case");
+            
+        fi;
+        
+    end );
+    
+    Print( JoinStringsWithSeparator( conditions, ",\n                      " ) );
+    Print( " ],\n                    \n  function( ", JoinStringsWithSeparator( NamesLocalVariablesFunction( func ){[ 1 .. NumberArgumentsFunction( func ) ]}, ", " ), " )\n" );
+    
+    if not IsEmpty( name ) then
+        
+        Print( "Description := \"", name, "\"\n\n" );
+        
+    fi;
+        
+    fi;
+    
+    if false and not StartsWith( name, "dummy derivation" ) then
+    
+    Print( "[\n  ", NameFunction( target_op ), ",\n  [ " );
+    
+    conditions := List( used_op_names_with_multiples_and_category_getters, function ( x )
+        
+        if x[3] = fail then
+            
+            return Concatenation( "[ ", x[1], ", ", String( x[2] ), " ]" );
+            
+        elif IsAttribute( x[3] ) then
+            
+            return Concatenation( "[ ", x[1], ", ", String( x[2] ), ", ", NameFunction( x[3] ), " ]" );
+            
+        else
+            
+            Error("unknown case");
+            
+        fi;
+        
+    end );
+    
+    Print( JoinStringsWithSeparator( conditions, ",\n    " ) );
+    Print( " ],\n  function( ", JoinStringsWithSeparator( NamesLocalVariablesFunction( func ){[ 1 .. NumberArgumentsFunction( func ) ]}, ", " ), " )\n\n" );
+    
+    fi;
+    
+    
     
     derivation := ObjectifyWithAttributes(
         rec( ), TheTypeOfDerivedMethods,
