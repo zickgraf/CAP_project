@@ -1207,7 +1207,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             return rec(
                 type := "bool",
-                string := Concatenation( result.left.string, "\\quad\\text{and}\\quad", result.right.string ),
+                string := Concatenation( result.left.string, " \\quad \\text{and} \\quad ", result.right.string ),
             );
             
         elif tree.type = "EXPR_INT" then
@@ -2356,7 +2356,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         
         latex_string := CapJitIterateOverTree( return_value, ReturnFirst, result_func, additional_arguments_func, [ func_tree ] );
         
-        if latex_string.type in [ "object", "bool", "homalg_matrix" ] then
+        if latex_string.type in [ "object", "bool", "homalg_matrix", "homalg_ring", "var", "integer" ] then
             
             latex_string := latex_string.string;
             
