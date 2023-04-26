@@ -66,21 +66,6 @@ CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_fi
         
     fi;
     
-    latex_string := ReplacedString( latex_string, "⁻¹", """^{-1}""" );
-    latex_string := ReplacedString( latex_string, "ᵛ", """^{\vee}""" );
-    latex_string := ReplacedString( latex_string, "⊗", """\otimes""" );
-    latex_string := ReplacedString( latex_string, "id", """\mathrm{id}""" );
-    latex_string := ReplacedString( latex_string, "ev", """\mathrm{ev}""" );
-    latex_string := ReplacedString( latex_string, "coev", """\mathrm{coev}""" );
-    latex_string := ReplacedString( latex_string, "hom", """\mathrm{hom}""" );
-    latex_string := ReplacedString( latex_string, "", """\mathrm{ev}""" );
-    latex_string := ReplacedString( latex_string, "", """\mathrm{coev}""" );
-    latex_string := ReplacedString( latex_string, "α", """\alpha""" );
-    latex_string := ReplacedString( latex_string, "β", """\beta""" );
-    latex_string := ReplacedString( latex_string, "γ", """\gamma""" );
-    latex_string := ReplacedString( latex_string, "λ", """\lambda""" );
-    latex_string := ReplacedString( latex_string, "ρ", """\rho""" );
-    
     #latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
     latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}\n" );
     
