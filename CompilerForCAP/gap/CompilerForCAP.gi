@@ -277,6 +277,21 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         
     fi;
     
+    if CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED and IsBound( tree.data_type ) then
+        
+        tree := CapJitResolvedGlobalVariables( tree );
+        tree := CapJitInlinedArguments( tree );
+        tree := CapJitInlinedBindingsToVariableReferences( tree );
+        tree := CapJitInferredDataTypes( tree );
+        
+        if not IsBound( tree.bindings.BINDING_RETURN_VALUE.data_type ) then
+            
+            PrintWithCurrentlyCompiledFunctionLocation( "WARNING: Could not determine data type. This is not supported in proof assistant mode." );
+            
+        fi;
+        
+    fi;
+    
     # resolving phase
     resolving_phase_functions := [
         CapJitResolvedOperations,
