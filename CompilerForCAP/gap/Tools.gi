@@ -956,6 +956,41 @@ WriteResultToTeXFile := function ( filename, label, result )
     
 end;
 
+TestAndReturnCode := function ( code )
+  local lines;
+    
+    Assert( 0, Test( InputTextString( code ) ) );
+    
+    lines := SplitString( code, "\n" );
+    
+    if lines[1] = "" then
+        
+        Remove( lines, 1 );
+        
+    fi;
+    
+    lines := List( lines, function ( line )
+        
+        if StartsWith( line, "gap>" ) then
+            
+            return Concatenation( "(*@\\textcolor{promptColor}{gap>}\\aftergroup\\startGAPInput@*)", line{[ 5 .. Length( line )]}, "(*@\\aftergroup\\endGAPInput@*)" );
+            
+        elif StartsWith( line, ">" ) then
+            
+            return Concatenation( "(*@\\textcolor{promptColor}{>}\\aftergroup\\startGAPInput@*)", line{[ 2 .. Length( line )]}, "(*@\\aftergroup\\endGAPInput@*)" );
+            
+        else
+            
+            return line;
+            
+        fi;
+        
+    end );
+    
+    return Concatenation( "\\begin{lstlisting}\n", JoinStringsWithSeparator( lines, "\n" ), "\n\\end{lstlisting}" );
+    
+end;
+
 FunctionLaTeXString := function ( func )
   local old_size_screen, string;
     
@@ -1105,30 +1140,30 @@ BindGlobal( "LaTeXName", function ( name )
   local GREEK_LETTERS, pos, underscore, letter_name;
     
     GREEK_LETTERS := rec(
-        alpha := "α",
-        beta := "β",
-        gamma := "γ",
-        delta := "δ",
-        epsilon := "ε",
-        zeta := "ζ",
-        eta := "η",
-        theta := "θ",
-        iota := "ι",
-        kappa := "κ",
-        lambda := "λ",
-        mu := "μ",
-        nu := "ν",
-        xi := "ξ",
+        alpha := "\\alpha",
+        beta := "\\beta",
+        gamma := "\\gamma",
+        delta := "\\delta",
+        epsilon := "\\varepsilon",
+        zeta := "\\zeta",
+        eta := "\\eta",
+        theta := "\\theta",
+        iota := "\\iota",
+        kappa := "\\kappa",
+        lambda := "\\lambda",
+        mu := "\\mu",
+        nu := "\\nu",
+        xi := "\\xi",
         # omikron
-        pi := "π",
-        rho := "ρ",
-        sigma := "σ",
-        tau := "τ",
+        pi := "\\pi",
+        rho := "\\rho",
+        sigma := "\\sigma",
+        tau := "\\tau",
         # ypsilon
-        phi := "φ",
-        chi := "χ",
-        psi := "ψ",
-        omega := "ω",
+        phi := "\\varphi",
+        chi := "\\chi",
+        psi := "\\psi",
+        omega := "\\omega",
     );
     
     # replace names of greek letters by unicode characters
@@ -1884,7 +1919,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 math_record := rec(
                     type := "plain",
-                    string := Concatenation( result.args.2.string, " \\quad ∼ \\quad ", result.args.3.string ),
+                    string := Concatenation( result.args.2.string, " \\quad \\sim \\quad ", result.args.3.string ),
                 );
                 
             elif tree.funcref.gvar = "IsEqualForObjects" or tree.funcref.gvar = "IsEqualForMorphisms" then
