@@ -1137,9 +1137,9 @@ parenthesize_postfix := function ( tree, symbol, child_tree, child_result )
 end;
 
 BindGlobal( "LaTeXName", function ( name )
-  local GREEK_LETTERS, pos, underscore, letter_name;
+  local latex_commands, pos, underscore, command;
     
-    GREEK_LETTERS := rec(
+    latex_commands := rec(
         alpha := "\\alpha",
         beta := "\\beta",
         gamma := "\\gamma",
@@ -1164,14 +1164,15 @@ BindGlobal( "LaTeXName", function ( name )
         chi := "\\chi",
         psi := "\\psi",
         omega := "\\omega",
+        QQ := "\\QQ",
     );
     
     # replace names of greek letters by unicode characters
-    for letter_name in RecNames( GREEK_LETTERS ) do
+    for command in RecNames( latex_commands ) do
         
-        if StartsWith( name, letter_name ) then
+        if StartsWith( name, command ) then
             
-            name := Concatenation( GREEK_LETTERS.(letter_name), name{[ Length( letter_name ) + 1 .. Length( name ) ]} );
+            name := Concatenation( latex_commands.(command), name{[ Length( command ) + 1 .. Length( name ) ]} );
             break;
             
         fi;
@@ -1219,7 +1220,7 @@ MySplitString := function ( string, substring )
 end;
 
 FunctionAsMathString := function ( func, cat, input_filters, args... )
-  local suffix, arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i;
+  local suffix, arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i, collect, conditions, latex_strings;
     
     if IsEmpty( args ) then
         
@@ -1367,7 +1368,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             return rec(
                 type := "plain",
-                string := tree.gvar,
+                string := LaTeXName( tree.gvar ),
             );
             
         elif tree.type = "EXPR_REF_FVAR" then
@@ -2235,6 +2236,33 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         latex_string := Concatenation( "\\begin{tikzcd}\n", latex_string, "\\end{tikzcd}\n" );
         #return Concatenation( "\\begin{center}\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}}\\end{center}\n" );
         return Concatenation( "\\begin{center}\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}\\end{center}\n" );
+        
+    elif return_value.type = "EXPR_AND" then
+        
+        Assert( 0, IsSpecializationOfFilter( "bool", return_value.data_type.filter ) );
+        
+        collect := function ( tree )
+            
+            if tree.type = "EXPR_AND" then
+                
+                return Concatenation( collect( tree.left ), collect( tree.right ) );
+                
+            else
+                
+                return [ tree ];
+                
+            fi;
+            
+        end;
+        
+        conditions := collect( return_value );
+        
+        Assert( 0, ForAll( conditions, c -> IsSpecializationOfFilter( "bool", c.data_type.filter ) ) );
+        
+        latex_strings := List( conditions, c -> CapJitIterateOverTree( c, ReturnFirst, result_func, additional_arguments_func, [ func_tree ] ).string );
+        
+        latex_string := Concatenation( "\\begin{equation*}\\begin{split}\n", JoinStringsWithSeparator( latex_strings, "&\\quad\\text{and}\\\\\n" ), suffix, "&\n\\end{split}\\end{equation*}\n" );
+        return latex_string;
         
     else
         
