@@ -2650,7 +2650,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             
         fi;
         
-        text := Concatenation( text, " we have" );
+        text := Concatenation( text, " we have that" );
         
     fi;
     
@@ -2787,10 +2787,11 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
     
 end );
 
-BindGlobal( "ASSERT_THEOREM", function ( )
+BindGlobal( "ASSERT_THEOREM", function ( type )
   local func, cat, input_filters, tree;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
     
     func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
@@ -2818,14 +2819,15 @@ end );
 
 BindGlobal( "AssertLemma", function ( )
     
-    return ASSERT_THEOREM( );
+    return ASSERT_THEOREM( "lemma" );
     
 end );
 
-BindGlobal( "PRINT_THEOREM", function ( )
+BindGlobal( "PRINT_THEOREM", function ( type, args... )
   local func, cat, input_filters, tree;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
     
     func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
@@ -2836,12 +2838,12 @@ BindGlobal( "PRINT_THEOREM", function ( )
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled := true;
     
-    return FunctionAsMathString( func, cat, input_filters );
+    return CallFuncList( FunctionAsMathString, Concatenation( [ func, cat, input_filters ], args ) );
     
 end );
 
-BindGlobal( "PrintLemma", function ( )
+BindGlobal( "PrintLemma", function ( args... )
     
-    return PRINT_THEOREM( );
+    return CallFuncList( PRINT_THEOREM, Concatenation( [ "lemma" ], args ) );
     
 end );

@@ -1017,6 +1017,7 @@ end;
 
 
 BINDING_STRENGTHS := [
+    [ "IsWellDefinedForObjects", "IsWellDefinedForMorphisms", "IsZeroForMorphisms", "IsZero", "IsInt", "IsHomalgMatrix" ],
     [ "AdditionForMorphisms", "AdditiveInverseForMorphisms", "+", "-" ],
     [ "TensorProductOnMorphisms", "TensorProductOnMorphismsWithGivenTensorProducts", "TensorProductOnObjects", "PreCompose", "PreComposeList", "*" ],
     [ "DualOnObjects", "DualOnMorphisms" ],
@@ -1606,6 +1607,24 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             fi;
             
+            if tree.funcref.gvar = "RowRankOfMatrix" and tree.args.length = 1 then
+                
+                return rec(
+                    type := "plain",
+                    string := Concatenation( "\\mathrm{RowRank}(", result.args.1.string, ")" ),
+                );
+                
+            fi;
+            
+            if tree.funcref.gvar = "ColumnRankOfMatrix" and tree.args.length = 1 then
+                
+                return rec(
+                    type := "plain",
+                    string := Concatenation( "\\mathrm{ColumnRank}(", result.args.1.string, ")" ),
+                );
+                
+            fi;
+            
             math_record := fail;
             
             if tree.funcref.gvar = "PreComposeList" then
@@ -1923,6 +1942,27 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := Concatenation( result.args.2.string, " \\quad \\sim \\quad ", result.args.3.string ),
                 );
                 
+            elif tree.funcref.gvar = "IsInt" then
+                
+                math_record := rec(
+                    type := "plain",
+                    string := parenthesize_postfix( tree, " \\text{ is an integer}", tree.args.1, result.args.1 ),
+                );
+                
+            elif tree.funcref.gvar = "IsHomalgMatrix" then
+                
+                math_record := rec(
+                    type := "plain",
+                    string := parenthesize_postfix( tree, " \\text{ is a matrix}", tree.args.1, result.args.1 ),
+                );
+                
+            elif tree.funcref.gvar = "IsZero" and tree.args.length = 1 and IsSpecializationOfFilter( IsHomalgMatrix, tree.args.1.data_type.filter ) then
+                
+                math_record := rec(
+                    type := "plain",
+                    string := parenthesize_postfix( tree, " \\text{ is a zero matrix}", tree.args.1, result.args.1 ),
+                );
+                
             elif tree.funcref.gvar = "IsEqualForObjects" or tree.funcref.gvar = "IsEqualForMorphisms" then
                 
                 math_record := rec(
@@ -1930,18 +1970,25 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := Concatenation( result.args.2.string, " = ", result.args.3.string ),
                 );
                 
+            elif tree.funcref.gvar = "IsWellDefinedForObjects" then
+                
+                math_record := rec(
+                    type := "plain",
+                    string := parenthesize_postfix( tree, " \\text{ defines an object}", tree.args.2, result.args.2 ),
+                );
+                
             elif tree.funcref.gvar = "IsWellDefinedForMorphisms" then
                 
                 math_record := rec(
                     type := "plain",
-                    string := Concatenation( "\\mathrm{IsWellDefined}(", result.args.2.string, ")" ),
+                    string := parenthesize_postfix( tree, " \\text{ defines a morphism}", tree.args.2, result.args.2 ),
                 );
                 
             elif tree.funcref.gvar = "IsZeroForMorphisms" then
                 
                 math_record := rec(
                     type := "plain",
-                    string := Concatenation( "\\mathrm{IsZero}(", result.args.2.string, ")" ),
+                    string := parenthesize_postfix( tree, " \\text{ is a zero morphism}", tree.args.2, result.args.2 ),
                 );
                 
             elif tree.funcref.gvar = "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure" then
@@ -2261,7 +2308,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         
         latex_strings := List( conditions, c -> CapJitIterateOverTree( c, ReturnFirst, result_func, additional_arguments_func, [ func_tree ] ).string );
         
-        latex_string := Concatenation( "\\begin{equation*}\\begin{split}\n", JoinStringsWithSeparator( latex_strings, "&\\quad\\text{and}\\\\\n" ), suffix, "&\n\\end{split}\\end{equation*}\n" );
+        latex_string := Concatenation( "\\begin{equation*}\\begin{split}\n", JoinStringsWithSeparator( latex_strings, "&\\quad\\text{and}\\\\\n" ), "&", suffix, "\n\\end{split}\\end{equation*}\n" );
         return latex_string;
         
     else
