@@ -2628,17 +2628,25 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             
             Assert( 0, Length( replacement_func.bindings.names ) = 1 );
             
-            replacement_func.bindings.BINDING_RETURN_VALUE := rec(
-                type := "EXPR_FUNCCALL",
-                funcref := rec(
-                    type := "EXPR_REF_GVAR",
-                    gvar := "=",
-                ),
-                args := AsSyntaxTreeList( [
-                    StructuralCopy( replacement.src ),
-                    StructuralCopy( replacement.dst),
-                ] ),
-            );
+            if replacement.dst.type = "EXPR_TRUE" then
+                
+                replacement_func.bindings.BINDING_RETURN_VALUE := StructuralCopy( replacement.src );
+                
+            else
+                
+                replacement_func.bindings.BINDING_RETURN_VALUE := rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := rec(
+                        type := "EXPR_REF_GVAR",
+                        gvar := "=",
+                    ),
+                    args := AsSyntaxTreeList( [
+                        StructuralCopy( replacement.src ),
+                        StructuralCopy( replacement.dst ),
+                    ] ),
+                );
+                
+            fi;
             
             Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( replacement_func ), cat, input_filters ) );
             

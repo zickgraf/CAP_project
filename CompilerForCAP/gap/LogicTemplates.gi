@@ -62,7 +62,7 @@ CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_fi
         
         dst_string := FunctionAsMathString( dst_func, cat, input_filters : raw );
         
-        latex_string := Concatenation( src_string, connecting_symbol, dst_string );
+        latex_string := Concatenation( src_string, " ", connecting_symbol, " ", dst_string );
         
     fi;
     
