@@ -1221,7 +1221,7 @@ MySplitString := function ( string, substring )
 end;
 
 FunctionAsMathString := function ( func, cat, input_filters, args... )
-  local suffix, arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i, collect, conditions, latex_strings;
+  local suffix, arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i, collect, conditions, latex_strings, latex_record_left_morphism, latex_record_right, latex_string_left;
     
     if IsEmpty( args ) then
         
@@ -2099,6 +2099,8 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     math_record.type := "morphism";
                     math_record.source := source_string;
                     math_record.range := range_string;
+                    #math_record.source := Concatenation( "s(", math_record.string, ")" );
+                    #math_record.range := Concatenation( "t(", math_record.string, ")" );
                     
                 fi;
                 
@@ -2310,6 +2312,29 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         
         latex_string := Concatenation( "\\begin{equation*}\\begin{split}\n", JoinStringsWithSeparator( latex_strings, "&\\quad\\text{and}\\\\\n" ), "&", suffix, "\n\\end{split}\\end{equation*}\n" );
         return latex_string;
+        
+    elif CapJitIsCallToGlobalFunction( return_value, "IsEqualForObjects" ) and CapJitIsCallToGlobalFunction( return_value.args.2, gvar -> gvar = "Source" or gvar = "Range" or gvar = "Target" ) then
+        
+        latex_record_left_morphism := CapJitIterateOverTree( return_value.args.2.args.1, ReturnFirst, result_func, additional_arguments_func, [ func_tree ] );
+        latex_record_right := CapJitIterateOverTree( return_value.args.3, ReturnFirst, result_func, additional_arguments_func, [ func_tree ] );
+        
+        if return_value.args.2.funcref.gvar = "Source" then
+            
+            latex_string_left := Concatenation( "s(", latex_record_left_morphism.string, ")" );
+            
+        elif return_value.args.2.funcref.gvar in [ "Range", "Target" ] then
+            
+            latex_string_left := Concatenation( "t(", latex_record_left_morphism.string, ")" );
+            
+        else
+            
+            Error( "this should never happen" );
+            
+        fi;
+        
+        latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string_left, " = ", latex_record_right.string, suffix, "$}\n" );
+        
+        return Concatenation( "\\[", latex_string, "\\]\n" );
         
     else
         
