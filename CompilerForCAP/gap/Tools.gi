@@ -2310,7 +2310,8 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         
         latex_strings := List( conditions, c -> CapJitIterateOverTree( c, ReturnFirst, result_func, additional_arguments_func, [ func_tree ] ).string );
         
-        latex_string := Concatenation( "\\begin{equation*}\\begin{split}\n", JoinStringsWithSeparator( latex_strings, "&\\quad\\text{and}\\\\\n" ), "&", suffix, "\n\\end{split}\\end{equation*}\n" );
+        #latex_string := Concatenation( "\\begin{equation*}\\begin{split}\n", JoinStringsWithSeparator( latex_strings, "&\\quad\\text{and}\\\\\n" ), "&", suffix, "\n\\end{split}\\end{equation*}\n" );
+        latex_string := Concatenation( "% neutralize abovedisplayskip\n\\vskip-\\abovedisplayskip\n\\begin{equation*}\\begin{split}\n&", JoinStringsWithSeparator( latex_strings, "\\\\\n\\text{and}\\enspace&" ), suffix, "\n\\end{split}\\end{equation*}\n" );
         return latex_string;
         
     elif CapJitIsCallToGlobalFunction( return_value, "IsEqualForObjects" ) and CapJitIsCallToGlobalFunction( return_value.args.2, gvar -> gvar = "Source" or gvar = "Range" or gvar = "Target" ) then
@@ -2320,11 +2321,11 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         
         if return_value.args.2.funcref.gvar = "Source" then
             
-            latex_string_left := Concatenation( "s(", latex_record_left_morphism.string, ")" );
+            latex_string_left := Concatenation( "the source of $", latex_record_left_morphism.string, "$" );
             
         elif return_value.args.2.funcref.gvar in [ "Range", "Target" ] then
             
-            latex_string_left := Concatenation( "t(", latex_record_left_morphism.string, ")" );
+            latex_string_left := Concatenation( "the target of $", latex_record_left_morphism.string, "$" );
             
         else
             
@@ -2332,7 +2333,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
         fi;
         
-        latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string_left, " = ", latex_record_right.string, suffix, "$}\n" );
+        latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{", latex_string_left, " is $", latex_record_right.string, "$", suffix, "}\n" );
         
         return Concatenation( "\\[", latex_string, "\\]\n" );
         

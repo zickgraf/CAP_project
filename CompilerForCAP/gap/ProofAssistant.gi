@@ -2443,7 +2443,7 @@ end );
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
 BindGlobal( "STATE_THEOREM", function ( type, func, args... )
-  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, inner_parts, source, range, tree, local_replacements_strings, replacement_func, result, i, replacement;
+  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, inner_parts, source, range, tree, condition_func, conditions, result, i, condition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2619,44 +2619,85 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         
         tree := ENHANCED_SYNTAX_TREE( func );
         
-        local_replacements_strings := [ ];
-        
-        for replacement in tree.local_replacements do
+        if not IsEmpty( tree.local_replacements ) then
             
-            replacement_func := StructuralCopy( tree );
-            replacement_func.local_replacements := [ ];
+            condition_func := StructuralCopy( tree );
+            condition_func.local_replacements := [ ];
             
-            Assert( 0, Length( replacement_func.bindings.names ) = 1 );
+            Assert( 0, Length( condition_func.bindings.names ) = 1 );
             
-            if replacement.dst.type = "EXPR_TRUE" then
+            conditions := List( tree.local_replacements, function ( replacement )
                 
-                replacement_func.bindings.BINDING_RETURN_VALUE := StructuralCopy( replacement.src );
+                if replacement.dst.type = "EXPR_TRUE" then
+                    
+                    return StructuralCopy( replacement.src );
+                    
+                else
+                    
+                    return rec(
+                        type := "EXPR_EQ",
+                        left := StructuralCopy( replacement.src ),
+                        right := StructuralCopy( replacement.dst ),
+                    );
+                    
+                fi;
                 
-            else
+            end );
+            
+            condition_func.bindings.BINDING_RETURN_VALUE := Remove( conditions, 1 );
+            
+            for condition in conditions do
                 
-                replacement_func.bindings.BINDING_RETURN_VALUE := rec(
-                    type := "EXPR_FUNCCALL",
-                    funcref := rec(
-                        type := "EXPR_REF_GVAR",
-                        gvar := "=",
-                    ),
-                    args := AsSyntaxTreeList( [
-                        StructuralCopy( replacement.src ),
-                        StructuralCopy( replacement.dst ),
-                    ] ),
+                condition_func.bindings.BINDING_RETURN_VALUE := rec(
+                    type := "EXPR_AND",
+                    left := condition_func.bindings.BINDING_RETURN_VALUE,
+                    right := condition,
                 );
                 
-            fi;
+            od;
             
-            Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( replacement_func ), cat, input_filters ) );
-            
-        od;
-        
-        if not IsEmpty( local_replacements_strings ) then
-            
-            text := Concatenation( text, " such that ", JoinStringsWithSeparator( local_replacements_strings, "\n" ) );
+            text := Concatenation( text, " such that\n", FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( condition_func ), cat, input_filters ) );
             
         fi;
+        
+        #local_replacements_strings := [ ];
+        #
+        #for replacement in tree.local_replacements do
+        #    
+        #    replacement_func := StructuralCopy( tree );
+        #    replacement_func.local_replacements := [ ];
+        #    
+        #    Assert( 0, Length( replacement_func.bindings.names ) = 1 );
+        #    
+        #    if replacement.dst.type = "EXPR_TRUE" then
+        #        
+        #        replacement_func.bindings.BINDING_RETURN_VALUE := StructuralCopy( replacement.src );
+        #        
+        #    else
+        #        
+        #        replacement_func.bindings.BINDING_RETURN_VALUE := rec(
+        #            type := "EXPR_FUNCCALL",
+        #            funcref := rec(
+        #                type := "EXPR_REF_GVAR",
+        #                gvar := "=",
+        #            ),
+        #            args := AsSyntaxTreeList( [
+        #                StructuralCopy( replacement.src ),
+        #                StructuralCopy( replacement.dst ),
+        #            ] ),
+        #        );
+        #        
+        #    fi;
+        #    
+        #    Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( replacement_func ), cat, input_filters ) );
+        #    
+        #od;
+        #
+        #if not IsEmpty( local_replacements_strings ) then
+        #    
+        #    text := Concatenation( text, " such that ", JoinStringsWithSeparator( local_replacements_strings, "\n" ) );
+        #    
+        #fi;
         
         text := Concatenation( text, " we have that" );
         
