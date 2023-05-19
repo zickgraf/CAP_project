@@ -2872,6 +2872,23 @@ BindGlobal( "AssertLemma", function ( )
     
 end );
 
+BindGlobal( "RESET_THEOREM", function ( type )
+    
+    Print( "WARNING: Resetting theorem.\n" );
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
+    
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
+    
+end );
+
+BindGlobal( "ResetLemma", function ( )
+    
+    RESET_THEOREM( "lemma" );
+    
+end );
+
 BindGlobal( "PRINT_THEOREM", function ( type, args... )
   local func, cat, input_filters, latex_string;
     
