@@ -1021,7 +1021,7 @@ BINDING_STRENGTHS := [
     [ "AdditionForMorphisms", "AdditiveInverseForMorphisms", "+", "-" ],
     [ "TensorProductOnMorphisms", "TensorProductOnMorphismsWithGivenTensorProducts", "TensorProductOnObjects", "PreCompose", "PreComposeList", "*" ],
     [ "SumOfMorphisms" ],
-    [ "DualOnObjects", "DualOnMorphisms", "[]" ],
+    [ "DualOnObjects", "DualOnMorphisms", "[]", "List" ],
 ];
 
 get_strength := function ( tree )
@@ -1197,6 +1197,14 @@ BindGlobal( "LaTeXName", function ( name )
         fi;
         
         name := Concatenation( name{[ 1 .. pos ]}, underscore, "{", name{[ pos + 1 .. Length( name ) ]}, "}" );
+        
+    fi;
+    
+    if '_' in name then
+        
+        # escape for double subscript
+        # TODO: parentheses
+        name := Concatenation( "{", name, "}" );
         
     fi;
     
@@ -1391,6 +1399,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             result.list.length := tree.list.length;
             return result.list;
             
+        elif tree.type = "EXPR_IN" then
+            
+            return rec(
+                type := "plain",
+                string := Concatenation( result.left.string, " \\in ", result.right.string ),
+            );
+            
         elif tree.type = "EXPR_REF_GVAR" then
             
             return rec(
@@ -1402,7 +1417,20 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             return rec(
                 type := "plain",
-                string := Concatenation( "\\{", result.first.string, " \\ldots ", result.last.string, "\\}" ),
+                string := Concatenation( "\\{", result.first.string, ", \\ldots, ", result.last.string, "\\}" ),
+            );
+            
+        elif tree.type = "EXPR_FUNCCALL" and tree.funcref.type = "EXPR_DECLARATIVE_FUNC" then # call to global functions are handled below
+            
+            if tree.args.length <> 1 then
+                
+                Error("not yet handled");
+                
+            fi;
+            
+            return rec(
+                type := "plain",
+                string := Concatenation( result.funcref.string, "[", tree.funcref.nams[1], " \\from ", result.args.1.string, "]" ),
             );
             
         elif tree.type = "EXPR_CASE" then
@@ -1429,6 +1457,14 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             Assert( 0, Last( tree.branches ).condition.type = "EXPR_TRUE" );
             
             math_record.string := Concatenation( math_record.string, result.branches.(tree.branches.length).value.string, """ & \text{else.}""", "\n", """\end{array}}\right\}""" );
+            
+            if IsSpecializationOfFilter( "morphism", tree.data_type.filter ) then
+                
+                math_record.type := "morphism";
+                math_record.source := "EXPR_CASE_TODO";
+                math_record.range := "EXPR_CASE_TODO";
+                
+            fi;
             
             return math_record;
             
@@ -1489,21 +1525,28 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "plain",
-                    string := name,
+                    string := LaTeXName( name ),
                 );
                 
             elif type = "integer" then
                 
                 return rec(
                     type := "plain",
-                    string := name,
+                    string := LaTeXName( name ),
+                );
+                
+            elif type = "bool" then
+                
+                return rec(
+                    type := "plain",
+                    string := LaTeXName( name ),
                 );
                 
             elif type = "category" then
                 
                 return rec(
                     type := "plain",
-                    string := name,
+                    string := LaTeXName( name ),
                 );
                 
             elif type = "object" then
@@ -1555,14 +1598,14 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "plain",
-                    string := name,
+                    string := LaTeXName( name ),
                 );
                 
             elif type = "list_of_morphisms" then
                 
                 return rec(
                     type := "plain",
-                    string := name,
+                    string := LaTeXName( name ),
                 );
                 
             else
@@ -1576,6 +1619,12 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             math_record := fail;
             
             if tree.funcref.gvar = "[]" then
+                
+                if result.args.1.string = "tau" then
+                    
+                    Error("asd");
+                    
+                fi;
                 
                 return rec(
                     type := "plain",
@@ -1864,7 +1913,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     math_record := rec(
                         type := "plain",
-                        string := Concatenation( "\\mathrm{MorphismMatrix}(", result.args.1.string, ")" ),
+                        string := Concatenation( "\\mathrm{ObjectList}(", result.args.1.string, ")" ),
                     );
                     
                 fi;
@@ -2560,9 +2609,12 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             else
                 
-                latex_string := Concatenation( latex_string.source, "\\xrightarrow{", latex_string.string, "}", latex_string.range );
+                # TODO
+                latex_string := latex_string.string;
+                #latex_string := Concatenation( latex_string.source, "\\xrightarrow{", latex_string.string, "}", latex_string.range );
                 
             fi;
+            
             
         else
             
