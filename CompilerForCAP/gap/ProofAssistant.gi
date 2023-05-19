@@ -2873,7 +2873,7 @@ BindGlobal( "AssertLemma", function ( )
 end );
 
 BindGlobal( "PRINT_THEOREM", function ( type, args... )
-  local func, cat, input_filters, tree;
+  local func, cat, input_filters, latex_string;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
@@ -2887,7 +2887,11 @@ BindGlobal( "PRINT_THEOREM", function ( type, args... )
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled := true;
     
-    return CallFuncList( FunctionAsMathString, Concatenation( [ func, cat, input_filters ], args ) );
+    latex_string := CallFuncList( FunctionAsMathString, Concatenation( [ func, cat, input_filters ], args ) : raw := false );
+    
+    #latex_string := Concatenation( "\\text{(claim)}\\quad ", latex_string );
+    
+    return latex_string;
     
 end );
 
