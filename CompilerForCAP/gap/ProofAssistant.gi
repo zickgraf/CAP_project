@@ -2917,3 +2917,167 @@ BindGlobal( "PrintLemma", function ( args... )
     return CallFuncList( PRINT_THEOREM, Concatenation( [ "lemma" ], args ) );
     
 end );
+
+specifications := rec(
+    KernelEmbedding := rec(
+        input_types := [ "category", "morphism" ],
+        func := { cat, alpha } -> IsZeroForMorphisms( cat, PreCompose( cat, KernelEmbedding( cat, alpha ), alpha ) ),
+    ),
+);
+
+propositions := rec(
+    has_kernels := rec(
+        description := "has kernels",
+        operations := [ "KernelEmbedding" ],
+    ),
+);
+
+enhance_propositions := function ( propositions )
+  local prop, info, is_well_defined, id, operation;
+    
+    for id in RecNames( propositions ) do
+        
+        prop := propositions.(id);
+        
+        Assert( 0, not IsBound( prop.lemmata ) );
+        
+        prop.lemmata := [ ];
+        
+        for operation in prop.operations do
+            
+            Assert( 0, IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(operation) ) );
+            Assert( 0, IsBound( specifications.(operation) ) );
+            
+            info := CAP_INTERNAL_METHOD_NAME_RECORD.(operation);
+            
+            ## check well-definedness
+            
+            if info.return_type = "object" then
+                
+                is_well_defined := "IsWellDefinedForObjects";
+                
+            elif info.return_type = "morphism" then
+                
+                is_well_defined := "IsWellDefinedForMorphisms";
+                
+            else
+                
+                Error( "return_type ", info.return_type, " is not supported yet when checking well-definedness" );
+                
+            fi;
+            
+            Add( prop.lemmata, rec(
+                input_types := info.filter_list,
+                func := EvalString( ReplacedStringViaRecord(
+                    """function ( input_arguments... )
+                        return is_well_defined( cat, operation( input_arguments... ) );
+                    end""",
+                    rec(
+                        is_well_defined := is_well_defined,
+                        operation := operation,
+                        input_arguments := info.input_arguments_names,
+                    )
+                ) )
+            ) );
+            
+            ## check source and range (if required)
+            
+            if info.return_type = "object" then
+                
+                # nothing to do
+            
+            elif info.return_type = "morphism" then
+                
+                Add( prop.lemmata, rec(
+                    input_types := info.filter_list,
+                    func := EvalString( ReplacedStringViaRecord(
+                        """function ( input_arguments... )
+                            return IsEqualForObjects( cat, Source( operation( input_arguments... ) ), output_source_getter );
+                        end""",
+                        rec(
+                            operation := operation,
+                            output_source_getter := info.output_source_getter_string,
+                            input_arguments := info.input_arguments_names,
+                        )
+                    ) )
+                ) );
+                
+                Add( prop.lemmata, rec(
+                    input_types := info.filter_list,
+                    func := EvalString( ReplacedStringViaRecord(
+                        """function ( input_arguments... )
+                            return IsEqualForObjects( cat, Range( operation( input_arguments... ) ), output_range_getter );
+                        end""",
+                        rec(
+                            operation := operation,
+                            output_range_getter := info.output_range_getter_string,
+                            input_arguments := info.input_arguments_names,
+                        )
+                    ) )
+                ) );
+                
+            else
+                
+                Error( "return_type ", info.return_type, " is not supported yet when checking source and range" );
+                
+            fi;
+            
+            Add( prop.lemmata, specifications.(operation) );
+            
+        od;
+        
+        Display( prop.lemmata );
+        
+    od;
+    
+end;
+
+enhance_propositions( propositions );
+
+CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
+
+StateProposition := function ( cat, cat_description, proposition_id )
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail );
+    
+    if not IsBound( propositions.(proposition_id) ) then
+        
+        Error( "unknown proposition ", proposition_id );
+        
+    fi;
+    
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := rec( );
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition := propositions.(proposition_id);
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index := 0;
+    
+    SetCurrentCategory( cat, cat_description );
+    
+    return Concatenation(
+        "\\begin{proposition}\n",
+        "The ", cat_description, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n",
+        "\\end{proposition}"
+    );
+    
+end;
+
+StateNextLemma := function ( )
+  local active_lemma_index, lemmata;
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail );
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM = fail );
+    
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index + 1;
+    
+    active_lemma_index := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index;
+    lemmata := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata;
+    
+    if active_lemma_index > Length( lemmata ) then
+        
+        Error( "All lemmata proven." );
+        
+    fi;
+    
+    return StateLemma( lemmata[active_lemma_index].func, lemmata[active_lemma_index].input_types );
+    
+end;
