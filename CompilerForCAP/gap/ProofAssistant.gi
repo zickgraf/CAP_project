@@ -2443,7 +2443,7 @@ end );
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
 BindGlobal( "STATE_THEOREM", function ( type, func, args... )
-  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, inner_parts, source, range, tree, condition_func, conditions, result, i, condition;
+  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, inner_parts, source, range, tree, condition_func, conditions, result, i, condition, latex_string;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2513,6 +2513,12 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         names := NamesLocalVariablesFunction( func );
         
         Assert( 0, Length( names ) >= Length( input_filters ) );
+        
+        if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
+            
+            names := List( names, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator );
+            
+        fi;
         
         handled_input_filters := [ ];
         
@@ -2705,12 +2711,32 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     
     result := FunctionAsMathString( func, cat, input_filters, "." );
     
-    return Concatenation(
+    latex_string := Concatenation(
         "\\begin{", type, "}\n",
         text, "\n",
         result, "\n",
         "\\end{", type, "}"
     );
+    
+    func := CapJitCompiledFunction( func, cat, input_filters, "bool" );
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
+    
+    tree := ENHANCED_SYNTAX_TREE( func );
+    
+    if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
+        
+        latex_string := Concatenation(
+            latex_string, "\n\n",
+            "\\begin{proof}\n",
+            "This is immediate from the construction.\n",
+            "\\end{proof}\n"
+        );
+        
+        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
+        
+    fi;
+    
+    return latex_string;
     
 end );
 
@@ -2728,15 +2754,6 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
     input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
-    
-    if not CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled then
-        
-        func := CapJitCompiledFunction( func, cat, input_filters, "bool" );
-        
-        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
-        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled := true;
-        
-    fi;
     
     logic_template := ShallowCopy( logic_template );
     
@@ -2773,7 +2790,6 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     fi;
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled := true;
     
 end );
 
@@ -2785,15 +2801,6 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
     func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
     input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
-    
-    if not CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled then
-        
-        func := CapJitCompiledFunction( func, cat, input_filters, "bool" );
-        
-        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
-        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled := true;
-        
-    fi;
     
     logic_template := ShallowCopy( logic_template );
     
@@ -2830,7 +2837,6 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
     fi;
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled := true;
     
     return latex_string;
     
@@ -2846,7 +2852,7 @@ BindGlobal( "ASSERT_THEOREM", function ( type )
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
     input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
     
-    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( func, "with_post_processing", cat, input_filters, "bool" );
+    tree := ENHANCED_SYNTAX_TREE( func );
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
@@ -2899,11 +2905,6 @@ BindGlobal( "PRINT_THEOREM", function ( type, args... )
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
     input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
     
-    func := CapJitCompiledFunction( func, cat, input_filters, "bool" );
-    
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled := true;
-    
     latex_string := CallFuncList( FunctionAsMathString, Concatenation( [ func, cat, input_filters ], args ) : raw := false );
     
     #latex_string := Concatenation( "\\text{(claim)}\\quad ", latex_string );
@@ -2919,21 +2920,143 @@ BindGlobal( "PrintLemma", function ( args... )
 end );
 
 specifications := rec(
+    PreCompose := rec(
+        preconditions := """
+            CapJitAddLocalReplacement( Source( beta ), Range( alpha ) );
+        """,
+        postconditions := [
+            rec(
+                # composition is associative
+                input_types := [ "category", "morphism", "morphism", "morphism" ],
+                func := function( cat, alpha, beta, gamma )
+                    
+                    CapJitAddLocalReplacement( Source( beta ), Range( alpha ) );
+                    CapJitAddLocalReplacement( Range( beta ), Source( gamma ) );
+                    
+                    return IsCongruentForMorphisms( cat, PreCompose( cat, PreCompose( cat, alpha, beta ), gamma ), PreCompose( cat, alpha, PreCompose( cat, beta, gamma ) ) );
+                    
+                end,
+            ),
+        ],
+    ),
+    IdentityMorphism := rec(
+        postconditions := [
+            rec(
+                # identity is left-neutral
+                input_types := [ "category", "morphism" ],
+                func := { cat, alpha } -> IsCongruentForMorphisms( cat, PreCompose( cat, IdentityMorphism( cat, Source( alpha ) ), alpha ), alpha ),
+            ),
+            rec(
+                # identity is right-neutral
+                input_types := [ "category", "morphism" ],
+                func := { cat, alpha } -> IsCongruentForMorphisms( cat, PreCompose( cat, alpha, IdentityMorphism( cat, Range( alpha ) ) ), alpha ),
+            ),
+        ],
+    ),
+    AdditionForMorphisms := rec(
+        preconditions := """
+            CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
+            CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
+        """,
+        postconditions := [
+            rec(
+                # addition is associative
+                input_types := [ "category", "morphism", "morphism", "morphism" ],
+                func := function( cat, alpha, beta, gamma )
+                    
+                    CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
+                    CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
+                    CapJitAddLocalReplacement( Source( gamma ), Source( alpha ) );
+                    CapJitAddLocalReplacement( Range( gamma ), Range( alpha ) );
+                    
+                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, AdditionForMorphisms( cat, alpha, beta ), gamma ), AdditionForMorphisms( cat, alpha, AdditionForMorphisms( cat, beta, gamma ) ) );
+                    
+                end,
+            ),
+            rec(
+                # addition is commutative
+                input_types := [ "category", "morphism", "morphism" ],
+                func := function ( cat, alpha, beta )
+                    
+                    CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
+                    CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
+                    
+                    return IsCongruentForMorphisms( cat,
+                        AdditionForMorphisms( cat, alpha, beta ),
+                        AdditionForMorphisms( cat, beta, alpha )
+                    );
+                    
+                end,
+            )
+        ],
+    ),
+    ZeroMorphism := rec(
+        postconditions := [
+            rec(
+                # zero is left-neutral
+                input_types := [ "category", "morphism" ],
+                func := { cat, alpha } -> IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, ZeroMorphism( cat, Source( alpha ), Range( alpha ) ), alpha ), alpha ),
+            ),
+            rec(
+                # zero is right-neutral
+                input_types := [ "category", "morphism" ],
+                func := { cat, alpha } -> IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, ZeroMorphism( cat, Source( alpha ), Range( alpha ) ) ), alpha ),
+            ),
+        ],
+    ),
+    AdditiveInverseForMorphisms := rec(
+        postconditions := [
+            rec(
+                # additive inverse is left-inverse
+                input_types := [ "category", "morphism" ],
+                func := { cat, alpha } -> IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, AdditiveInverseForMorphisms( cat, alpha ), alpha ), ZeroMorphism( cat, Source( alpha ), Range( alpha ) ) ),
+            ),
+            rec(
+                # additive inverse is right-inverse
+                input_types := [ "category", "morphism" ],
+                func := { cat, alpha } -> IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, AdditiveInverseForMorphisms( cat, alpha ) ), ZeroMorphism( cat, Source( alpha ), Range( alpha ) ) ),
+            ),
+        ],
+    ),
     KernelEmbedding := rec(
-        input_types := [ "category", "morphism" ],
-        func := { cat, alpha } -> IsZeroForMorphisms( cat, PreCompose( cat, KernelEmbedding( cat, alpha ), alpha ) ),
+        postconditions := [
+            rec(
+                input_types := [ "category", "morphism" ],
+                func := { cat, alpha } -> IsZeroForMorphisms( cat, PreCompose( cat, KernelEmbedding( cat, alpha ), alpha ) ),
+            ),
+        ],
+    ),
+    KernelLift := rec(
+        preconditions := """
+            CapJitAddLocalReplacement( Range( tau ), Source( alpha ) );
+            CapJitAddLocalReplacement( IsZeroForMorphisms( PreCompose( tau, alpha ) ), true );
+        """,
+        postconditions := [
+        ],
     ),
 );
 
 propositions := rec(
+    is_category := rec(
+        description := "is indeed a category",
+        operations := [ "PreCompose", "IdentityMorphism" ],
+    ),
+    is_pre_additive_category := rec(
+        description := "is a pre-additive category",
+        operations := [ "AdditionForMorphisms", "ZeroMorphism", "AdditiveInverseForMorphisms" ],
+    ),
     has_kernels := rec(
         description := "has kernels",
-        operations := [ "KernelEmbedding" ],
+        operations := [ "KernelEmbedding", "KernelLift" ],
     ),
+    #has_direct_sums_via_components_of_morphisms := rec(
+    #    description := "has direct sums",
+    #    operations := [ "DirectSum" ],
+    #),
 );
 
 enhance_propositions := function ( propositions )
-  local prop, info, is_well_defined, id, operation;
+  local prop, info, specification, preconditions, is_well_defined, id, operation;
     
     for id in RecNames( propositions ) do
         
@@ -2949,6 +3072,18 @@ enhance_propositions := function ( propositions )
             Assert( 0, IsBound( specifications.(operation) ) );
             
             info := CAP_INTERNAL_METHOD_NAME_RECORD.(operation);
+            
+            specification := specifications.(operation);
+            
+            if IsBound( specification.preconditions ) then
+                
+                preconditions := specification.preconditions;
+                
+            else
+                
+                preconditions := "";
+                
+            fi;
             
             ## check well-definedness
             
@@ -2970,12 +3105,17 @@ enhance_propositions := function ( propositions )
                 input_types := info.filter_list,
                 func := EvalString( ReplacedStringViaRecord(
                     """function ( input_arguments... )
+                        
+                        preconditions
+                        
                         return is_well_defined( cat, operation( input_arguments... ) );
+                        
                     end""",
                     rec(
                         is_well_defined := is_well_defined,
                         operation := operation,
                         input_arguments := info.input_arguments_names,
+                        preconditions := preconditions,
                     )
                 ) )
             ) );
@@ -2992,12 +3132,17 @@ enhance_propositions := function ( propositions )
                     input_types := info.filter_list,
                     func := EvalString( ReplacedStringViaRecord(
                         """function ( input_arguments... )
+                            
+                            preconditions
+                            
                             return IsEqualForObjects( cat, Source( operation( input_arguments... ) ), output_source_getter );
+                            
                         end""",
                         rec(
                             operation := operation,
                             output_source_getter := info.output_source_getter_string,
                             input_arguments := info.input_arguments_names,
+                            preconditions := preconditions,
                         )
                     ) )
                 ) );
@@ -3006,12 +3151,17 @@ enhance_propositions := function ( propositions )
                     input_types := info.filter_list,
                     func := EvalString( ReplacedStringViaRecord(
                         """function ( input_arguments... )
+                            
+                            preconditions
+                            
                             return IsEqualForObjects( cat, Range( operation( input_arguments... ) ), output_range_getter );
+                            
                         end""",
                         rec(
                             operation := operation,
                             output_range_getter := info.output_range_getter_string,
                             input_arguments := info.input_arguments_names,
+                            preconditions := preconditions,
                         )
                     ) )
                 ) );
@@ -3022,11 +3172,9 @@ enhance_propositions := function ( propositions )
                 
             fi;
             
-            Add( prop.lemmata, specifications.(operation) );
+            prop.lemmata := Concatenation( prop.lemmata, specification.postconditions );
             
         od;
-        
-        Display( prop.lemmata );
         
     od;
     
@@ -3036,7 +3184,7 @@ enhance_propositions( propositions );
 
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
 
-StateProposition := function ( cat, cat_description, proposition_id )
+StateProposition := function ( cat, cat_description, proposition_id, variable_name_translator )
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail );
     
@@ -3049,6 +3197,7 @@ StateProposition := function ( cat, cat_description, proposition_id )
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := rec( );
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition := propositions.(proposition_id);
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index := 0;
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
     
     SetCurrentCategory( cat, cat_description );
     
@@ -3079,5 +3228,20 @@ StateNextLemma := function ( )
     fi;
     
     return StateLemma( lemmata[active_lemma_index].func, lemmata[active_lemma_index].input_types );
+    
+end;
+
+AssertProposition := function ( )
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail );
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM = fail );
+    
+    # TODO
+    #Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata ) );
+    
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
+    
+    return "TODO";
     
 end;

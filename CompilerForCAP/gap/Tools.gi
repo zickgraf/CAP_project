@@ -1521,6 +1521,12 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             name := tree.name;
             
+            if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
+                
+                name := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator( name );
+                
+            fi;
+            
             if IsFilter( type ) then
                 
                 return rec(
