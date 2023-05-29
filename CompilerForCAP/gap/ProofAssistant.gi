@@ -2394,9 +2394,23 @@ end );
 
 CAP_JIT_PROOF_ASSISTANT_MODE_CATEGORY_DESCRIPTION := fail;
 
-BindGlobal( "SetCurrentCategory", function ( category, description )
+BindGlobal( "SetCurrentCategory", function ( category, description, symbols... )
     
     CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY := rec( category := category, description := description );
+    
+    Assert( 0, Length( symbols ) <= 1 );
+    
+    if Length( symbols ) = 1 then
+        
+        symbols := symbols[1];
+        
+    else
+        
+        symbols := [ ];
+        
+    fi;
+    
+    CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS := symbols;
     
 end );
 
@@ -2491,10 +2505,6 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     if Length( input_filters ) = 0 then
         
         Error( "cannot handle theorems without input" );
-        
-    elif Length( input_filters ) = 1 then
-        
-        Error( "TODO" );
         
     else
         
@@ -2609,7 +2619,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             #    
             else
                 
-                part := "an unhandled filter";
+                part := Concatenation( "TODO: ", ReplacedString( filter, "_", "\\_" ) );
                 
             fi;
             
@@ -2621,7 +2631,11 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             
         od;
         
-        text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ) );
+        if Length( input_filters ) > 1 then
+            
+            text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ) );
+            
+        fi;
         
         tree := ENHANCED_SYNTAX_TREE( func );
         
@@ -3018,6 +3032,42 @@ specifications := rec(
             ),
         ],
     ),
+    ZeroObject := rec( ),
+    UniversalMorphismIntoZeroObject := rec(
+        postconditions := [
+            rec(
+                input_types := [ "category", "morphism" ],
+                func := function ( cat, u )
+                    
+                    CapJitAddLocalReplacement( Range( u ), ZeroObject( cat ) );
+                    
+                    return IsCongruentForMorphisms( cat,
+                        UniversalMorphismIntoZeroObject( cat, Source( u ) ),
+                        u
+                    );
+                    
+                end,
+            ),
+        ],
+    ),
+    UniversalMorphismFromZeroObject := rec(
+        postconditions := [
+            rec(
+                input_types := [ "category", "morphism" ],
+                func := function ( cat, u )
+                    
+                    CapJitAddLocalReplacement( Source( u ), ZeroObject( cat ) );
+                    
+                    return IsCongruentForMorphisms( cat,
+                        UniversalMorphismFromZeroObject( cat, Source( u ) ),
+                        u
+                    );
+                    
+                end,
+            ),
+        ],
+    ),
+    DirectSum := rec( ),
     KernelEmbedding := rec(
         postconditions := [
             rec(
@@ -3045,14 +3095,18 @@ propositions := rec(
         description := "is a pre-additive category",
         operations := [ "AdditionForMorphisms", "ZeroMorphism", "AdditiveInverseForMorphisms" ],
     ),
+    has_zero_object := rec(
+        description := "has a zero object",
+        operations := [ "ZeroObject", "UniversalMorphismIntoZeroObject", "UniversalMorphismFromZeroObject" ],
+    ),
+    has_direct_sums_via_components_of_morphisms := rec(
+        description := "has direct sums",
+        operations := [ "DirectSum" ],
+    ),
     has_kernels := rec(
         description := "has kernels",
         operations := [ "KernelEmbedding", "KernelLift" ],
     ),
-    #has_direct_sums_via_components_of_morphisms := rec(
-    #    description := "has direct sums",
-    #    operations := [ "DirectSum" ],
-    #),
 );
 
 enhance_propositions := function ( propositions )
@@ -3172,7 +3226,11 @@ enhance_propositions := function ( propositions )
                 
             fi;
             
-            prop.lemmata := Concatenation( prop.lemmata, specification.postconditions );
+            if IsBound( specification.postconditions ) then
+                
+                prop.lemmata := Concatenation( prop.lemmata, specification.postconditions );
+                
+            fi;
             
         od;
         
@@ -3184,7 +3242,7 @@ enhance_propositions( propositions );
 
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
 
-StateProposition := function ( cat, cat_description, proposition_id, variable_name_translator )
+StateProposition := function ( cat, cat_description, category_symbols, proposition_id, variable_name_translator )
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail );
     
@@ -3199,7 +3257,7 @@ StateProposition := function ( cat, cat_description, proposition_id, variable_na
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index := 0;
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
     
-    SetCurrentCategory( cat, cat_description );
+    SetCurrentCategory( cat, cat_description, category_symbols );
     
     return Concatenation(
         "\\begin{proposition}\n",
