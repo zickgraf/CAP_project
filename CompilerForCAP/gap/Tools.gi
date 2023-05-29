@@ -1258,13 +1258,26 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     
     type_signature := Pair( arguments_data_types, fail );
     
-    func_tree := ENHANCED_SYNTAX_TREE( func );
+    Add( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK, func );
+    
+    if input_filters[1] = "category" then
+        
+        func_tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
+        
+    else
+        
+        func_tree := ENHANCED_SYNTAX_TREE( func );
+        
+    fi;
+    
     func_tree.data_type := rec( filter := IsFunction, signature := type_signature );
     
-    # TODO: populate CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK
     func_tree := CapJitInferredDataTypes( func_tree );
     
     if not IsBound( func_tree.bindings.BINDING_RETURN_VALUE.data_type ) then
+        
+        Display( type_signature );
+        Display( func );
         
         Error( "func could not be typed" );
         
@@ -1292,13 +1305,18 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     
     # why is this needed?
     func_tree := CapJitResolvedOperations( func_tree );
+    func_tree := CapJitResolvedGlobalVariables( func_tree );
+    
+    Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
+    
+    #Display( ENHANCED_SYNTAX_TREE_CODE( func_tree ) );
     
     cat!.stop_compilation := old_stop_compilation;
     if HasRangeCategoryOfHomomorphismStructure( cat ) and not IsIdenticalObj( RangeCategoryOfHomomorphismStructure( cat ), cat ) then
         RangeCategoryOfHomomorphismStructure( cat )!.stop_compilation := old_range_stop_compilation;
     fi;
     
-    func_tree := CapJitReplacedGlobalVariablesByCategoryAttributes( func_tree, cat );
+    #func_tree := CapJitReplacedGlobalVariablesByCategoryAttributes( func_tree, cat );
     func_tree := CapJitInlinedBindingsFully( func_tree );
     
     if Length( func_tree.bindings.names ) > 1 then
@@ -2218,16 +2236,52 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif tree.funcref.gvar = "IsWellDefinedForObjects" then
                 
+                Assert( 0, tree.args.1.type = "EXPR_REF_GVAR" );
+                
+                cat := ValueGlobal( tree.args.1.gvar );
+                
+                Assert( 0, IsCapCategory( cat ) );
+                
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+                
+                if pos = fail then
+                    
+                    specifier := "";
+                    
+                else
+                    
+                    specifier := Concatenation( " in ", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol );
+                    
+                fi;
+                
                 math_record := rec(
                     type := "plain",
-                    string := parenthesize_postfix( tree, " \\text{ defines an object}", tree.args.2, result.args.2 ),
+                    string := parenthesize_postfix( tree, Concatenation( " \\text{ defines an object", specifier, "}" ), tree.args.2, result.args.2 ),
                 );
                 
             elif tree.funcref.gvar = "IsWellDefinedForMorphisms" then
                 
+                Assert( 0, tree.args.1.type = "EXPR_REF_GVAR" );
+                
+                cat := ValueGlobal( tree.args.1.gvar );
+                
+                Assert( 0, IsCapCategory( cat ) );
+                
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+                
+                if pos = fail then
+                    
+                    specifier := "";
+                    
+                else
+                    
+                    specifier := Concatenation( " in ", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol );
+                    
+                fi;
+                
                 math_record := rec(
                     type := "plain",
-                    string := parenthesize_postfix( tree, " \\text{ defines a morphism}", tree.args.2, result.args.2 ),
+                    string := parenthesize_postfix( tree, Concatenation( " \\text{ defines a morphism", specifier, "}" ), tree.args.2, result.args.2 ),
                 );
                 
             elif tree.funcref.gvar = "IsZeroForMorphisms" then
