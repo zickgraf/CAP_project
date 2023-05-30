@@ -9,6 +9,8 @@
 #! @Section Proof assistant mode
 
 DeclareGlobalName( "CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED" );
+DeclareGlobalName( "CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION" );
+DeclareGlobalName( "CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS" );
 
 #! @BeginGroup
 #! @Description

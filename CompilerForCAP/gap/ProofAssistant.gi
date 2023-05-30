@@ -2496,7 +2496,6 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := rec(
         type := type,
         claim := func,
-        func := func,
         cat := cat,
         input_filters := input_filters,
         ever_compiled := false,
@@ -2732,10 +2731,10 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         "\\end{", type, "}"
     );
     
-    func := CapJitCompiledFunction( func, cat, input_filters, "bool" );
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
-    
-    tree := ENHANCED_SYNTAX_TREE( func );
+    # twice to resolve operations added by local replacements
+    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( func, "with_post_processing", cat, input_filters, "bool" );
+    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := tree;
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
@@ -2761,11 +2760,11 @@ BindGlobal( "StateLemma", function ( args... )
 end );
 
 BindGlobal( "ApplyLogicTemplate", function ( logic_template )
-  local func, cat, input_filters, old_tree, new_tree;
+  local tree, cat, input_filters, old_tree, new_tree;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     
-    func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
+    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
     input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
     
@@ -2779,11 +2778,9 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     
     CapJitAddLogicTemplate( logic_template );
     
-    old_tree := ENHANCED_SYNTAX_TREE( func );
+    old_tree := StructuralCopy( tree );
     
-    func := CapJitCompiledFunction( func, cat, input_filters, "bool" );
-    
-    new_tree := ENHANCED_SYNTAX_TREE( func );
+    new_tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
     
     if ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> t.number_of_applications <> infinity and t.number_of_applications <> 0 ) then
         
@@ -2803,16 +2800,16 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
         
     fi;
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := new_tree;
     
 end );
 
 BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template, args... )
-  local func, cat, input_filters, latex_string, old_tree, new_tree;
+  local tree, cat, input_filters, latex_string, old_tree, new_tree;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     
-    func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
+    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
     input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
     
@@ -2826,11 +2823,9 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
     
     latex_string := CallFuncList( CapJitAddLogicTemplateAndReturnLaTeXString, Concatenation( [ logic_template ], args ) );
     
-    old_tree := ENHANCED_SYNTAX_TREE( func );
+    old_tree := StructuralCopy( tree );
     
-    func := CapJitCompiledFunction( func, cat, input_filters, "bool" );
-    
-    new_tree := ENHANCED_SYNTAX_TREE( func );
+    new_tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
     
     if ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> t.number_of_applications <> infinity and t.number_of_applications <> 0 ) then
         
@@ -2850,23 +2845,21 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
         
     fi;
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := new_tree;
     
     return latex_string;
     
 end );
 
 BindGlobal( "ASSERT_THEOREM", function ( type )
-  local func, cat, input_filters, tree;
+  local cat, input_filters, tree;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
     
-    func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
+    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
     input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
-    
-    tree := ENHANCED_SYNTAX_TREE( func );
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
@@ -2894,10 +2887,10 @@ end );
 
 BindGlobal( "RESET_THEOREM", function ( type )
     
-    Print( "WARNING: Resetting theorem.\n" );
-    
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
+    
+    Print( "WARNING: Resetting ", type, ".\n" );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
     
@@ -2910,16 +2903,17 @@ BindGlobal( "ResetLemma", function ( )
 end );
 
 BindGlobal( "PRINT_THEOREM", function ( type, args... )
-  local func, cat, input_filters, latex_string;
+  local tree, cat, input_filters, latex_string;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
     
-    func := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func;
+    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
     input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
     
-    latex_string := CallFuncList( FunctionAsMathString, Concatenation( [ func, cat, input_filters ], args ) : raw := false );
+    # TODO
+    latex_string := CallFuncList( FunctionAsMathString, Concatenation( [ tree, cat, input_filters ], args ) : raw := false );
     
     #latex_string := Concatenation( "\\text{(claim)}\\quad ", latex_string );
     
@@ -3059,7 +3053,7 @@ specifications := rec(
                     CapJitAddLocalReplacement( Source( u ), ZeroObject( cat ) );
                     
                     return IsCongruentForMorphisms( cat,
-                        UniversalMorphismFromZeroObject( cat, Source( u ) ),
+                        UniversalMorphismFromZeroObject( cat, Range( u ) ),
                         u
                     );
                     
@@ -3282,6 +3276,7 @@ StateNextLemma := function ( )
     if active_lemma_index > Length( lemmata ) then
         
         Error( "All lemmata proven." );
+        return;
         
     fi;
     
@@ -3295,11 +3290,134 @@ AssertProposition := function ( )
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM = fail );
     
-    # TODO
-    #Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata ) );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata ) );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
     
     return "TODO";
+    
+end;
+
+ResetProposition := function ( )
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail );
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM = fail );
+    
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
+    
+    Print( "WARNING: Resetting proposition.\n" );
+    
+    return "TODO";
+    
+end;
+
+AssumeValidInputs := function ( )
+  local tree, cat, input_filters, pre_func;
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    
+    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
+    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
+    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
+    
+    # assert that the tree is well-typed
+    Assert( 0, IsBound( tree.bindings.BINDING_RETURN_VALUE.data_type ) );
+    
+    pre_func := function ( tree, additional_arguments )
+      local category, source, morphism, range, args, type, funcref, right;
+        
+        # properties like IsZeroForMorphisms can be applied to applied to two arguments, a category and a morphism
+        if CapJitIsCallToGlobalFunction( tree, x -> IsFilter( ValueGlobal( x ) ) ) and tree.args.length = 1 then
+            
+            if IsSpecializationOfFilter( ValueGlobal( tree.funcref.gvar ), tree.args.1.data_type.filter ) then
+                
+                return rec( type := "EXPR_TRUE" );
+                
+            fi;
+            
+            # We do not want to return `false` in the `else` case, for example because `IsList( Pair( 1, 2 ) )` is `true` but `IsNTuple` does not imply `IsList`.
+            
+        fi;
+        
+        if CapJitIsCallToGlobalFunction( tree, "IsWellDefinedForObjects" ) and tree.args.length = 2 then
+            
+            Assert( 0, IsSpecializationOfFilter( "category", tree.args.1.data_type.filter ) );
+            Assert( 0, IsSpecializationOfFilter( ObjectFilter( tree.args.1.data_type.category ), tree.args.2.data_type.filter ) );
+            
+            return rec( type := "EXPR_TRUE" );
+            
+        fi;
+        
+        if CapJitIsCallToGlobalFunction( tree, "IsWellDefinedForMorphismsWithGivenSourceAndRange" ) and tree.args.length = 4 then
+            
+            Assert( 0, IsSpecializationOfFilter( "category", tree.args.1.data_type.filter ) );
+            Assert( 0, IsSpecializationOfFilter( MorphismFilter( tree.args.1.data_type.category ), tree.args.3.data_type.filter ) );
+            
+            category := tree.args.1;
+            source := tree.args.2;
+            morphism := tree.args.3;
+            range := tree.args.4;
+            
+            # IsEqualForObjects( category, Source( morphism ), source )
+            return rec(
+                type := "EXPR_AND",
+                left := rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := rec(
+                        type := "EXPR_REF_GVAR",
+                        gvar := "IsEqualForObjects",
+                    ),
+                    args := AsSyntaxTreeList( [
+                        CapJitCopyWithNewFunctionIDs( category ),
+                        rec(
+                            type := "EXPR_FUNCCALL",
+                            funcref := rec(
+                                type := "EXPR_REF_GVAR",
+                                gvar := "Source",
+                            ),
+                            args := AsSyntaxTreeList( [
+                                CapJitCopyWithNewFunctionIDs( morphism ),
+                            ] ),
+                        ),
+                        source,
+                    ] ),
+                ),
+                right := rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := rec(
+                        type := "EXPR_REF_GVAR",
+                        gvar := "IsEqualForObjects",
+                    ),
+                    args := AsSyntaxTreeList( [
+                        CapJitCopyWithNewFunctionIDs( category ),
+                        rec(
+                            type := "EXPR_FUNCCALL",
+                            funcref := rec(
+                                type := "EXPR_REF_GVAR",
+                                gvar := "Range",
+                            ),
+                            args := AsSyntaxTreeList( [
+                                CapJitCopyWithNewFunctionIDs( morphism ),
+                            ] ),
+                        ),
+                        range,
+                    ] ),
+                ),
+            );
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    tree := CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
+    
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := tree;
+    
+    return "We let CompilerForCAP assume that all inputs are valid.";
     
 end;
