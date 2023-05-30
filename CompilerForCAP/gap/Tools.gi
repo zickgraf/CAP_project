@@ -1231,7 +1231,7 @@ end;
 
 FunctionAsMathString := function ( func, cat, input_filters, args... )
   local suffix, arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i, collect, conditions, latex_strings, latex_record_left_morphism, latex_record_right, latex_string_left;
-    orig_func := func;
+    
     if IsEmpty( args ) then
         
         suffix := "";
@@ -1246,7 +1246,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         
     fi;
     
-    if not IsList( input_filters ) or Length( input_filters ) <> NumberArgumentsFunction( func ) then
+    if not IsList( input_filters ) or (IsFunction( func ) and Length( input_filters ) <> NumberArgumentsFunction( func )) then
         
         Error( "<input_filters> must be a list of length `NumberArgumentsFunction( <func> )`" );
         
@@ -1260,17 +1260,16 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     
     Add( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK, func );
     
-    if input_filters[1] = "category" then
+    if IsRecord( func ) then
         
-        func_tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
+        func_tree := func;
         
     else
         
         func_tree := ENHANCED_SYNTAX_TREE( func );
+        func_tree.data_type := rec( filter := IsFunction, signature := type_signature );
         
     fi;
-    
-    func_tree.data_type := rec( filter := IsFunction, signature := type_signature );
     
     func_tree := CapJitInferredDataTypes( func_tree );
     
@@ -1316,7 +1315,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         RangeCategoryOfHomomorphismStructure( cat )!.stop_compilation := old_range_stop_compilation;
     fi;
     
-    #func_tree := CapJitReplacedGlobalVariablesByCategoryAttributes( func_tree, cat );
+    func_tree := CapJitReplacedGlobalVariablesByCategoryAttributes( func_tree, cat );
     func_tree := CapJitInlinedBindingsFully( func_tree );
     
     if Length( func_tree.bindings.names ) > 1 then
@@ -1329,7 +1328,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     return_value := func_tree.bindings.BINDING_RETURN_VALUE;
     
     result_func := function ( tree, result, keys, func_stack )
-      local func, pos, type, name, parts, source, range, string, info, local_cat, object_func_tree, object_func, source_string, range_string, math_record, list, mor, i;
+      local func, pos, type, name, parts, source, range, string, info, local_cat, object_func_tree, object_func, source_string, range_string, math_record, list, mor, i, specifier;
         
         if tree.type = "EXPR_DECLARATIVE_FUNC" then
             
@@ -1413,8 +1412,10 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
         elif tree.type = "EXPR_LIST" then
             
-            result.list.type := "list";
+            result.list.type := "SYNTAX_TREE_LIST";
             result.list.length := tree.list.length;
+            result.list.string := Concatenation( "(", JoinStringsWithSeparator( AsListMut( result.list ), ", " ), ")" );
+            result.list.type := "list";
             return result.list;
             
         elif tree.type = "EXPR_IN" then
@@ -2236,9 +2237,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif tree.funcref.gvar = "IsWellDefinedForObjects" then
                 
-                Assert( 0, tree.args.1.type = "EXPR_REF_GVAR" );
-                
-                cat := ValueGlobal( tree.args.1.gvar );
+                cat := tree.args.1.data_type.category;
                 
                 Assert( 0, IsCapCategory( cat ) );
                 
@@ -2261,9 +2260,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif tree.funcref.gvar = "IsWellDefinedForMorphisms" then
                 
-                Assert( 0, tree.args.1.type = "EXPR_REF_GVAR" );
-                
-                cat := ValueGlobal( tree.args.1.gvar );
+                cat := tree.args.1.data_type.category;
                 
                 Assert( 0, IsCapCategory( cat ) );
                 
