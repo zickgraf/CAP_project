@@ -2525,6 +2525,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         
         if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
             
+            # TODO: only names of things in the category
             names := List( names, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator );
             
         fi;
@@ -2569,6 +2570,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                 
             fi;
             
+            # TODO: only box things in the category
             if filter = "object" then
                 
                 current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\myboxed{", LaTeXName( names[i] ), "}$" ) ) );

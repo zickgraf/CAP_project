@@ -1271,6 +1271,8 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         
     fi;
     
+    func_tree := CapJitMadeVariableNamesUnique( func_tree );
+    
     func_tree := CapJitInferredDataTypes( func_tree );
     
     if not IsBound( func_tree.bindings.BINDING_RETURN_VALUE.data_type ) then
@@ -1318,6 +1320,18 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     func_tree := CapJitReplacedGlobalVariablesByCategoryAttributes( func_tree, cat );
     func_tree := CapJitInlinedBindingsFully( func_tree );
     
+    # type again after resolving etc.
+    func_tree := CapJitInferredDataTypes( func_tree );
+    
+    if not IsBound( func_tree.bindings.BINDING_RETURN_VALUE.data_type ) then
+        
+        Display( type_signature );
+        Display( func );
+        
+        Error( "func could not be typed" );
+        
+    fi;
+    
     if Length( func_tree.bindings.names ) > 1 then
         
         Display( func );
@@ -1329,6 +1343,16 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     
     result_func := function ( tree, result, keys, func_stack )
       local func, pos, type, name, parts, source, range, string, info, local_cat, object_func_tree, object_func, source_string, range_string, math_record, list, mor, i, specifier;
+        
+        if StartsWith( tree.type, "EXPR_" ) then
+            
+            Assert( 0, IsBound( tree.data_type ) );
+            
+        fi;
+        
+        latex_string_record := rec(
+            children := result,
+        );
         
         if tree.type = "EXPR_DECLARATIVE_FUNC" then
             
@@ -1434,10 +1458,9 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
         elif tree.type = "EXPR_RANGE" then
             
-            return rec(
-                type := "plain",
-                string := Concatenation( "\\{", result.first.string, ", \\ldots, ", result.last.string, "\\}" ),
-            );
+            latex_string_record.type := "plain";
+            latex_string_record.string := Concatenation( "\\{", result.first.string, ", \\ldots, ", result.last.string, "\\}" );
+            return latex_string_record;
             
         elif tree.type = "EXPR_FUNCCALL" and tree.funcref.type = "EXPR_DECLARATIVE_FUNC" then # call to global functions are handled below
             
@@ -1542,7 +1565,12 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
                 
-                name := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator( name );
+                # TODO
+                if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                    
+                    name := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator( name );
+                    
+                fi;
                 
             fi;
             
@@ -1576,7 +1604,11 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif type = "object" then
                 
-                name := Concatenation( "\\myboxed{", LaTeXName( name ), "}" );
+                if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                    
+                    name := Concatenation( "\\myboxed{", LaTeXName( name ), "}" );
+                    
+                fi;
                 
                 return rec(
                     type := "plain",
@@ -1589,15 +1621,28 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 if Length( parts ) = 3 then
                     
-                    name := Concatenation( "\\myboxed{", LaTeXName( parts[1] ), "}" );
-                    source := Concatenation( "\\myboxed{", LaTeXName( parts[2] ), "}" );
-                    range := Concatenation( "\\myboxed{", LaTeXName( parts[3] ), "}" );
+                    name := LaTeXName( parts[1] );
+                    source := LaTeXName( parts[2] );
+                    range := LaTeXName( parts[3] );
+                    
+                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                        
+                        name := Concatenation( "\\myboxed{", name, "}" );
+                        source := Concatenation( "\\myboxed{", source, "}" );
+                        range := Concatenation( "\\myboxed{", range, "}" );
+                        
+                    fi;
                      
                 else
                     
                     name := LaTeXName( name );
                     
-                    name := Concatenation( "\\myboxed{", name, "}" );
+                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                        
+                        name := Concatenation( "\\myboxed{", name, "}" );
+                        
+                    fi;
+                    
                     source := Concatenation( "s\\left(", name, "\\right)" );
                     range := Concatenation( "t\\left(", name, "\\right)" );
                     
@@ -1643,13 +1688,25 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             math_record := fail;
             
-            if tree.funcref.gvar = "[]" then
+            if tree.funcref.gvar = "Length" then
                 
-                if result.args.1.string = "tau" then
+                if IsBound( result.args.1.length_string ) then
                     
-                    Error("asd");
+                    return rec(
+                        type := "plain",
+                        string := result.args.1.length_string,
+                    );
+                    
+                else
+                    
+                    return rec(
+                        type := "plain",
+                        string := Concatenation( "\\mathrm{Length}(", result.args.1.string, ")" ),
+                    );
                     
                 fi;
+                
+            elif tree.funcref.gvar = "[]" then
                 
                 return rec(
                     type := "plain",
@@ -1661,17 +1718,27 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 if tree.args.2.type = "EXPR_DECLARATIVE_FUNC" then
                     
-                    return rec(
-                        type := "plain",
-                        string := Concatenation( "\\left(", result.args.2.string, "\\right)_{", tree.args.2.nams[1], "}" ),
-                    );
+                    if tree.args.1.type = "EXPR_RANGE" then
+                        
+                        below := Concatenation( " = ", result.args.1.children.first.string );
+                        above := Concatenation( "^{", result.args.1.children.last.string, "}" );
+                        
+                    else
+                        
+                        below := Concatenation( " \\in ", result.args.1.string );
+                        above := "";
+                        
+                    fi;
+                    
+                    latex_string_record.type := "plain";
+                    latex_string_record.string := Concatenation( "\\left(", result.args.2.string, "\\right)_{", tree.args.2.nams[1], below, "}", above );
+                    return latex_string_record;
                     
                 elif tree.args.2.type = "EXPR_REF_GVAR" then
                     
-                    return rec(
-                        type := "plain",
-                        string := Concatenation( "\\left(", tree.args.2.gvar, "(x)\\right)_x" ),
-                    );
+                    latex_string_record.type := "plain";
+                    latex_string_record.string := Concatenation( "\\left(", tree.args.2.gvar, "(x)\\right)_x" );
+                    return latex_string_record;
                     
                 else
                     
@@ -1689,15 +1756,35 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 Assert( 0, tree.args.2.narg = 1 );
                 
+                index_symbol := tree.args.2.nams[1];
+                
+                #if tree.args.1.type = "EXPR_RANGE" then
+                #    
+                #    list_string := Concatenation( "\\ ", result.args.1.children.first.string, " \\leq ", index_symbol, " \\leq ", result.args.1.children.last.string );
+                #    
+                #else
+                #    
+                #    list_string := Concatenation( index_symbol, " \\in ", result.args.1.string );
+                #    
+                #fi;
+                
+                if tree.args.1.type = "EXPR_RANGE" then
+                    
+                    below := Concatenation( " = ", result.args.1.children.first.string );
+                    above := Concatenation( "^{", result.args.1.children.last.string, "}" );
+                    
+                else
+                    
+                    below := Concatenation( " \\in ", result.args.1.string );
+                    above := "";
+                    
+                fi;
+                
+                # TODO: remove \displaystyle
                 return rec(
                     type := "plain",
-                    string := Concatenation( "\\forall ", tree.args.2.nams[1], " \\colon ", result.args.2.string ),
+                    string := Concatenation( "\\displaystyle\\mathop{\\mathlarger{\\mathlarger{\\mathlarger{\\mathlarger{\\mathsurround0pt \\forall}}}}}_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.string ),
                 );
-                
-                #return rec(
-                #    type := "plain",
-                #    string := Concatenation( "\\forall ", tree.args.2.nams[1], " \\in ", result.args.1.string, " \\colon ", result.args.2.string ),
-                #);
                 
             elif tree.funcref.gvar = "KroneckerDelta" and result.args.3.type = "morphism" then
                 
@@ -1929,10 +2016,18 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 if Length( result.args.1.string ) >= 9 and result.args.1.string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.string ) = '}' then
                     
+                    name := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]};
+                    
                     math_record := rec(
                         type := "plain",
-                        string := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]},
+                        string := name,
                     );
+                    
+                    if Length( name ) = 1 and name[1] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" then
+                        
+                        math_record.length_string := LowercaseString( name );
+                        
+                    fi;
                     
                 else
                     
@@ -1969,9 +2064,28 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     Assert( 0, tree.args.3.args.2.narg = 1 );
                     
+                    index_symbol := tree.args.3.args.2.nams[1];
+                    
+                    if tree.args.3.args.1.type = "EXPR_RANGE" then
+                        
+                        below := Concatenation( " = ", result.args.3.children.args.1.children.first.string );
+                        above := Concatenation( "^{", result.args.3.children.args.1.children.last.string, "}" );
+                        
+                    else
+                        
+                        below := Concatenation( " \\in ", result.args.3.children.args.1.string );
+                        above := "";
+                        
+                    fi;
+                    
+                    #Assert( 0, result.args.3.string{[ 7 .. Length( result.args.3.string ) - Length( index_symbol ) - 10 ]} = result.args.3.children.args.2.string );
+                    
                     math_record := rec(
                         type := "morphism",
-                        string := parenthesize_prefix( tree, Concatenation( "\\sum_{", tree.args.3.args.2.nams[1], "}" ), tree.args.3.args.2.bindings.BINDING_RETURN_VALUE, rec( string := result.args.3.string{[ 7 .. Length( result.args.3.string ) - Length( tree.args.3.args.2.nams[1] ) - 10 ]} ) ), # HACK
+                        #string := parenthesize_prefix( tree, Concatenation( "\\sum_{", tree.args.3.args.2.nams[1], "}" ), tree.args.3.args.2.bindings.BINDING_RETURN_VALUE, rec( string := result.args.3.children.args.2.string ) ), # HACK
+                        #string := Concatenation( "\\sum_{", index_symbol, below, "}", above, " \\underbrace{", result.args.3.children.args.2.string, "}_{", result.args.2.string, " \\to ", result.args.4.string, "}" ), # HACK
+                        # the additional pair of braces is required to get correct spacing after a following \cdot
+                        string := Concatenation( "\\sum_{", index_symbol, below, "}", above, " {\\mathcolor{black!50}{\\underbrace{\\mathcolor{black}{", result.args.3.children.args.2.string, "}}_{", result.args.2.string, " \\to ", result.args.4.string, "}}}" ), # HACK
                     );
                     
                 else
@@ -2725,3 +2839,114 @@ BindGlobal( "CapJitCompiledFunctionAsMathStringAssert", function ( func, cat, in
     fi;
     
 end );
+
+CapJitMadeVariableNamesUnique := function ( tree )
+  local variable_names, pre_func, additional_arguments_func;
+    
+    variable_names := rec( );
+    
+    pre_func := function ( tree, func_id_stack )
+      local name;
+        
+        if tree.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            for name in tree.nams do
+                
+                if name <> "RETURN_VALUE" then
+                    
+                    if not IsBound( variable_names.(name) ) then
+                        
+                        variable_names.(name) := [ ];
+                        
+                    fi;
+                    
+                    added := false;
+                    
+                    for partition in variable_names.(name) do
+                        
+                        if partition[1] in func_id_stack then
+                            
+                            Add( partition, tree.id );
+                            
+                            added := true;
+                            break;
+                            
+                        fi;
+                        
+                    od;
+                    
+                    if not added then
+                        
+                        Add( variable_names.(name), [ tree.id ] );
+                        
+                    fi;
+                    
+                fi;
+                
+            od;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    additional_arguments_func := function ( tree, key, func_id_stack )
+        
+        if tree.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            Assert( 0, IsBound( tree.id ) );
+            
+            return Concatenation( func_id_stack, [ tree.id ] );
+            
+        else
+            
+            return func_id_stack;
+            
+        fi;
+        
+    end;
+    
+    CapJitIterateOverTree( tree, pre_func, ReturnTrue, additional_arguments_func, [ ] );
+    
+    pre_func := function ( tree, additional_arguments )
+      local name, pos, partition, index, new_nams, i;
+        
+        if tree.type = "EXPR_DECLARATIVE_FUNC" then
+            
+            for i in [ 1 .. Length( tree.nams ) ] do
+                
+                name := tree.nams[i];
+                
+                if name <> "RETURN_VALUE" then
+                    
+                    Assert( 0, IsBound( variable_names.(name) ) );
+                    
+                    pos := SafeUniquePositionProperty( variable_names.(name), p -> tree.id in p );
+                    
+                    partition := variable_names.(name)[pos];
+                    
+                    if Length( partition ) > 1 then
+                        
+                        index := Position( partition, tree.id );
+                        
+                        new_nams := ShallowCopy( tree.nams );
+                        new_nams[i] := Concatenation( new_nams[i], String( index ) );
+                        
+                        tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tree, tree.id, new_nams );
+                        
+                    fi;
+                    
+                fi;
+                
+            od;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end;
