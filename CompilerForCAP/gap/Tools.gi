@@ -1139,7 +1139,7 @@ parenthesize_postfix := function ( tree, symbol, child_tree, child_result )
 end;
 
 BindGlobal( "LaTeXName", function ( name )
-  local latex_commands, pos, underscore, command;
+  local latex_commands, pos, name_end, command;
     
     latex_commands := rec(
         alpha := "\\alpha",
@@ -1188,15 +1188,17 @@ BindGlobal( "LaTeXName", function ( name )
         
         if name[pos] = '_' then
             
-            underscore := "";
+            name_end := pos - 1;
             
         else
             
-            underscore := "_";
+            name_end := pos;
             
         fi;
         
-        name := Concatenation( name{[ 1 .. pos ]}, underscore, "{", name{[ pos + 1 .. Length( name ) ]}, "}" );
+        Assert( 0, name_end > 0 );
+        
+        name := Concatenation( "{", name{[ 1 .. name_end ]}, "}_{", name{[ pos + 1 .. Length( name ) ]}, "}" );
         
     fi;
     
@@ -1342,7 +1344,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     return_value := func_tree.bindings.BINDING_RETURN_VALUE;
     
     result_func := function ( tree, result, keys, func_stack )
-      local func, pos, type, name, parts, source, range, string, info, local_cat, object_func_tree, object_func, source_string, range_string, math_record, list, mor, i, specifier;
+      local latex_string_record, func, pos, type, name, parts, source, range, string, info, local_cat, object_func_tree, object_func, source_string, range_string, math_record, list, mor, i, specifier, below, above, index_symbol;
         
         if StartsWith( tree.type, "EXPR_" ) then
             
@@ -1472,7 +1474,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             return rec(
                 type := "plain",
-                string := Concatenation( result.funcref.string, "[", tree.funcref.nams[1], " \\from ", result.args.1.string, "]" ),
+                string := Concatenation( result.funcref.string, "[", LaTeXName( tree.funcref.nams[1] ), " \\from ", result.args.1.string, "]" ),
             );
             
         elif tree.type = "EXPR_CASE" then
@@ -1572,6 +1574,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 fi;
                 
+                # TODO
+                if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                    
+                    name := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator( name );
+                    
+                fi;
+                
             fi;
             
             if IsFilter( type ) then
@@ -1666,10 +1675,28 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif type = "list_of_objects" then
                 
-                return rec(
-                    type := "plain",
-                    string := LaTeXName( name ),
-                );
+                parts := MySplitString( name, "__" );
+                
+                if Length( parts ) = 1 then
+                    
+                    return rec(
+                        type := "plain",
+                        string := LaTeXName( name ),
+                    );
+                    
+                elif Length( parts ) = 2 then
+                    
+                    return rec(
+                        type := "plain",
+                        string := Concatenation( "(", LaTeXName( parts[1] ) , "_1,\\dots,", LaTeXName( parts[1] ), "_", LaTeXName( parts[2] ), ")" ),
+                        length := LaTeXName( parts[2] ),
+                    );
+                    
+                else
+                    
+                    Error( "wrong usage" );
+                    
+                fi;
                 
             elif type = "list_of_morphisms" then
                 
@@ -1731,13 +1758,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     fi;
                     
                     latex_string_record.type := "plain";
-                    latex_string_record.string := Concatenation( "\\left(", result.args.2.string, "\\right)_{", tree.args.2.nams[1], below, "}", above );
+                    latex_string_record.string := Concatenation( "\\left(", result.args.2.string, "\\right)_{", LaTeXName( tree.args.2.nams[1] ), below, "}", above );
                     return latex_string_record;
                     
                 elif tree.args.2.type = "EXPR_REF_GVAR" then
                     
                     latex_string_record.type := "plain";
-                    latex_string_record.string := Concatenation( "\\left(", tree.args.2.gvar, "(x)\\right)_x" );
+                    latex_string_record.string := Concatenation( "\\left(\\mathrm{", tree.args.2.gvar, "}(x)\\right)_{x \\in ", result.args.1.string, "}" );
                     return latex_string_record;
                     
                 else
@@ -1756,7 +1783,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 Assert( 0, tree.args.2.narg = 1 );
                 
-                index_symbol := tree.args.2.nams[1];
+                index_symbol := LaTeXName( tree.args.2.nams[1] );
                 
                 #if tree.args.1.type = "EXPR_RANGE" then
                 #    
@@ -1783,7 +1810,8 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 # TODO: remove \displaystyle
                 return rec(
                     type := "plain",
-                    string := Concatenation( "\\displaystyle\\mathop{\\mathlarger{\\mathlarger{\\mathlarger{\\mathlarger{\\mathsurround0pt \\forall}}}}}_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.string ),
+                    #string := Concatenation( "\\displaystyle\\mathop{\\mathlarger{\\mathlarger{\\mathlarger{\\mathlarger{\\mathsurround0pt \\forall}}}}}_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.string ),
+                    string := Concatenation( "\\bigwedge_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.string ),
                 );
                 
             elif tree.funcref.gvar = "KroneckerDelta" and result.args.3.type = "morphism" then
@@ -2064,7 +2092,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     Assert( 0, tree.args.3.args.2.narg = 1 );
                     
-                    index_symbol := tree.args.3.args.2.nams[1];
+                    index_symbol := LaTeXName( tree.args.3.args.2.nams[1] );
                     
                     if tree.args.3.args.1.type = "EXPR_RANGE" then
                         
@@ -2304,7 +2332,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 math_record := rec(
                     type := "plain",
-                    string := Concatenation( result.args.2.string, " \\quad \\sim \\quad ", result.args.3.string ),
+                    string := Concatenation( result.args.2.string, " \\sim ", result.args.3.string ),
                 );
                 
             elif tree.funcref.gvar = "IsInt" then
@@ -2363,7 +2391,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 else
                     
-                    specifier := Concatenation( " in ", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol );
+                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "$" );
                     
                 fi;
                 
@@ -2386,7 +2414,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 else
                     
-                    specifier := Concatenation( " in ", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol );
+                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "$" );
                     
                 fi;
                 
@@ -2800,7 +2828,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         fi;
         
         #latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
-        latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}\n" );
+        latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$\\displaystyle ", latex_string, suffix, "$}\n" );
         
         return Concatenation( "\\[", latex_string, "\\]\n" );
         
@@ -2841,12 +2869,12 @@ BindGlobal( "CapJitCompiledFunctionAsMathStringAssert", function ( func, cat, in
 end );
 
 CapJitMadeVariableNamesUnique := function ( tree )
-  local variable_names, pre_func, additional_arguments_func;
+  local variable_names, pre_func, additional_arguments_func, outer_func_id;
     
     variable_names := rec( );
     
     pre_func := function ( tree, func_id_stack )
-      local name;
+      local added, name, partition;
         
         if tree.type = "EXPR_DECLARATIVE_FUNC" then
             
@@ -2909,10 +2937,13 @@ CapJitMadeVariableNamesUnique := function ( tree )
     
     CapJitIterateOverTree( tree, pre_func, ReturnTrue, additional_arguments_func, [ ] );
     
+    # do not rename variables of `tree` itself because the names might be used inside statements
+    outer_func_id := tree.id;
+    
     pre_func := function ( tree, additional_arguments )
       local name, pos, partition, index, new_nams, i;
         
-        if tree.type = "EXPR_DECLARATIVE_FUNC" then
+        if tree.type = "EXPR_DECLARATIVE_FUNC" and tree.id <> outer_func_id then
             
             for i in [ 1 .. Length( tree.nams ) ] do
                 
