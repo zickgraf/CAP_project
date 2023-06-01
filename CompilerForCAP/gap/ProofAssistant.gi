@@ -2618,6 +2618,41 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             #    
             #    part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
             #    
+            elif filter = "list_of_objects" then
+                
+                current_names := [ ];
+                
+                for i in positions do
+                    
+                    name := names[i];
+                    
+                    inner_parts := MySplitString( name, "__" );
+                    
+                    Assert( 0, Length( inner_parts ) > 0 );
+                    
+                    if Length( inner_parts ) = 1 then
+                        
+                        Add( current_names, Concatenation( "$", LaTeXName( name ), "$" ) );
+                        
+                    elif Length( inner_parts ) = 2 then
+                        
+                        name := LaTeXName( inner_parts[1] );
+                        length := LaTeXName( inner_parts[2] );
+                        
+                        Add( current_names, Concatenation( "$(", name , "_1,\\dots,", name, "_", length, ")$" ) );
+                        
+                    else
+                        
+                        Error( "wrong usage" );
+                        
+                    fi;
+                    
+                od;
+                
+                current_names := PhraseEnumeration( current_names );
+                
+                part := Concatenation( numeral, " list", plural, " of objects ", current_names );
+                
             else
                 
                 part := Concatenation( "TODO: ", ReplacedString( filter, "_", "\\_" ) );
@@ -2867,7 +2902,7 @@ BindGlobal( "ASSERT_THEOREM", function ( type )
         
         CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
         
-        return "\\qedhere";
+        return "With this, the claim follows and we let CompilerForCAP end the proof.\\qedhere";
         
     else
         
@@ -3257,7 +3292,7 @@ StateProposition := function ( cat, cat_description, category_symbols, propositi
     
     return Concatenation(
         "\\begin{proposition}\n",
-        "The ", cat_description, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n",
+        UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n",
         "\\end{proposition}"
     );
     
@@ -3287,6 +3322,7 @@ StateNextLemma := function ( )
 end;
 
 AssertProposition := function ( )
+  local cat_description, proposition_description;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail );
     
@@ -3294,9 +3330,16 @@ AssertProposition := function ( )
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata ) );
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
+    cat_description := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.description;
+    proposition_description := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description;
     
-    return "TODO";
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
+    CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY := fail;
+    
+    return Concatenation(
+        "With this, we have shown:\n",
+        UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition_description, ".\n"
+    );
     
 end;
 
@@ -3306,11 +3349,9 @@ ResetProposition := function ( )
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM = fail );
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
-    
     Print( "WARNING: Resetting proposition.\n" );
     
-    return "TODO";
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
     
 end;
 

@@ -14,7 +14,7 @@ InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
 end );
 
 CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_filters, connecting_symbol, args... )
-  local suffix, src_template, dst_template, src_func, dst_func, src_string, dst_string, latex_string, name;
+  local suffix, src_template, dst_template, src_func, dst_func, src_string, latex_string, dst_string, pos, specifier, name;
     
     if IsEmpty( args ) then
         
@@ -66,7 +66,19 @@ CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_fi
         
     fi;
     
-    latex_string := Concatenation( "\\text{(rule)}\\quad ", latex_string );
+    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+    
+    if pos = fail then
+        
+        specifier := "";
+        
+    else
+        
+        specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "$" );
+        
+    fi;
+    
+    latex_string := Concatenation( "\\text{(rule", specifier, ")}\\quad ", latex_string );
     
     #latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
     #latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}\n" );
