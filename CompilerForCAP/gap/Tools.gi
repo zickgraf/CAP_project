@@ -1583,6 +1583,38 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             fi;
             
+            if IsBound( tree.data_type.category ) then
+                
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.data_type.category, s.category ) );
+                
+                if pos <> fail then
+                    
+                    if IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(name) ) then
+                        
+                        name := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(name);
+                        
+                    fi;
+                    
+                fi;
+                
+            fi;
+            
+            if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) then
+                
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.data_type.element_type.category, s.category ) );
+                
+                if pos <> fail then
+                    
+                    if IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(name) ) then
+                        
+                        name := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(name);
+                        
+                    fi;
+                    
+                fi;
+                
+            fi;
+            
             if IsFilter( type ) then
                 
                 return rec(
@@ -1783,7 +1815,26 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 Assert( 0, tree.args.2.narg = 1 );
                 
-                index_symbol := LaTeXName( tree.args.2.nams[1] );
+                index_symbol := tree.args.2.nams[1];
+                
+                # TODO
+                if IsBound( tree.args.1.data_type.element_type.category ) then
+                    
+                    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.1.data_type.element_type.category, s.category ) );
+                    
+                    if pos <> fail then
+                        
+                        if IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol) ) then
+                            
+                            index_symbol := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol);
+                            
+                        fi;
+                        
+                    fi;
+                    
+                fi;
+                
+                index_symbol := LaTeXName( index_symbol );
                 
                 #if tree.args.1.type = "EXPR_RANGE" then
                 #    
@@ -2124,6 +2175,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     );
                     
                 fi;
+                
+            elif tree.funcref.gvar = "ProjectionInFactorOfDirectSum" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "\\pi_{", result.args.3.string, "}^{\\bigoplus(", result.args.2.string, ")}" ),
+                );
                 
             elif tree.funcref.gvar = "IdentityMorphism" then
                 

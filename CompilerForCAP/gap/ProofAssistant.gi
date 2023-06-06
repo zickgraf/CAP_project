@@ -2571,7 +2571,13 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             fi;
             
             # TODO: only box things in the category
-            if filter = "object" then
+            if filter = "integer" then
+                
+                current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" ) ) );
+                
+                part := Concatenation( numeral, " integer", plural, " ", current_names );
+                
+            elif filter = "object" then
                 
                 current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\myboxed{", LaTeXName( names[i] ), "}$" ) ) );
                 
