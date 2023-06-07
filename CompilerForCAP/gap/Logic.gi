@@ -569,6 +569,101 @@ CapJitAddLogicFunction( function ( tree )
     
 end );
 
+# func( ..., list[i], ... ) => List( list, l -> func( ..., l, ... ) )[i]
+# TODO: putting this before cancelling attributes and using pre_func instead of result_func significantly
+# improves the performance for PrecompileAdelmanCategoryOfAdditiveClosureOfAlgebroid.g
+CapJitAddLogicFunction( function ( tree )
+  local pre_func, result_func;
+    
+    Info( InfoCapJit, 1, "####" );
+    Info( InfoCapJit, 1, "Apply logic for func( ..., list[i], ... )." );
+    
+    pre_func := function ( tree, additional_arguments )
+      local pos;
+        
+        if tree.type = "EXPR_FUNCCALL" then
+            
+            pos := PositionProperty( tree.args, a -> CapJitIsCallToGlobalFunction( a, "[]" ) and IsBound( a.args.1.data_type ) and IsSpecializationOfFilter( IsList, a.args.1.data_type.filter ) );
+            
+            if pos <> fail then
+                
+                tree := rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := rec(
+                        type := "EXPR_REF_GVAR",
+                        gvar := "[]",
+                    ),
+                    args := AsSyntaxTreeList( [
+                        rec(
+                            type := "EXPR_FUNCCALL",
+                            funcref := rec(
+                                type := "EXPR_REF_GVAR",
+                                gvar := "List",
+                            ),
+                            args := AsSyntaxTreeList( [
+                                tree.args.(pos).args.1,
+                                rec(
+                                    type := "EXPR_DECLARATIVE_FUNC",
+                                    id := CAP_JIT_INTERNAL_FUNCTION_ID,
+                                    nams := [
+                                        "logic_new_func_x",
+                                        "RETURN_VALUE",
+                                    ],
+                                    narg := 1,
+                                    variadic := false,
+                                    bindings := rec(
+                                        type := "FVAR_BINDING_SEQ",
+                                        names := [ "RETURN_VALUE" ],
+                                        BINDING_RETURN_VALUE := rec(
+                                            type := "EXPR_FUNCCALL",
+                                            funcref := tree.funcref,
+                                            args := AsSyntaxTreeList(
+                                                List(
+                                                    [ 1 .. tree.args.length ],
+                                                    function ( i )
+                                                        
+                                                        if i = pos then
+                                                            
+                                                            return rec(
+                                                                type := "EXPR_REF_FVAR",
+                                                                func_id := CAP_JIT_INTERNAL_FUNCTION_ID,
+                                                                name := "logic_new_func_x",
+                                                            );
+                                                            
+                                                        else
+                                                            
+                                                            return tree.args.(i);
+                                                            
+                                                        fi;
+                                                        
+                                                    end
+                                                )
+                                            ),
+                                        ),
+                                    ),
+                                )
+                            ] ),
+                        ),
+                        tree.args.(pos).args.2
+                    ] ),
+                );
+                
+                CAP_JIT_INTERNAL_FUNCTION_ID := CAP_JIT_INTERNAL_FUNCTION_ID + 1;
+                
+                return tree;
+                
+            fi;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end );
+
 # AttributeGetter( CreateCapCategoryObject/MorphismWithAttributes( ..., Attribute, value, ... ) ) => value
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
