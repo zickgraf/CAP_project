@@ -485,40 +485,40 @@ CapJitAddLogicTemplate(
 # This causes some minor overhead if the index is fixed (e.g. for ProjectionInFactorOfDirectSum) because f is applied to the whole list
 # instead of only the element given by the index, but such examples are rare.
 # Additionally, this should only trigger for homogeneous lists, i.e. `func` must be applicable to all elements of `L`.
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "list", "func", "index" ],
-        variable_filters := [ IsList, IsFunction, IsInt ],
-        src_template := "func( list[index] )",
-        dst_template := "List( list, func )[index]",
-        apply_in_proof_assistant_mode := "no",
-    )
-);
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "list", "func", "index" ],
+#        variable_filters := [ IsList, IsFunction, IsInt ],
+#        src_template := "func( list[index] )",
+#        dst_template := "List( list, func )[index]",
+#        apply_in_proof_assistant_mode := "no",
+#    )
+#);
 
 # List( list_of_lists[index], func ) => List( list_of_lists, list -> List( list, func ) )[index]
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "list_of_lists", "index", "func" ],
-        variable_filters := [ IsList, IsInt, IsFunction ],
-        src_template := "List( list_of_lists[index], func )",
-        dst_template := "List( list_of_lists, list -> List( list, func ) )[index]",
-        new_funcs := [ [ "list" ] ],
-        apply_in_proof_assistant_mode := "no",
-    )
-);
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "list_of_lists", "index", "func" ],
+#        variable_filters := [ IsList, IsInt, IsFunction ],
+#        src_template := "List( list_of_lists[index], func )",
+#        dst_template := "List( list_of_lists, list -> List( list, func ) )[index]",
+#        new_funcs := [ [ "list" ] ],
+#        apply_in_proof_assistant_mode := "no",
+#    )
+#);
 
 # In proof assistant mode, performance (and in particular hoisting and deduplication) is irrelevant.
 # Instead, evaluating a function applied to a list at a given index makes the code more readable.
 # Hence, we apply the reverse of the above templates.
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "list", "func", "index" ],
-        variable_filters := [ IsList, IsFunction, IsInt ],
-        src_template := "List( list, func )[index]",
-        dst_template := "func( list[index] )",
-        apply_in_proof_assistant_mode := "only",
-    )
-);
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "list", "func", "index" ],
+#        variable_filters := [ IsList, IsFunction, IsInt ],
+#        src_template := "List( list, func )[index]",
+#        dst_template := "func( list[index] )",
+#        apply_in_proof_assistant_mode := "only",
+#    )
+#);
 
 # Length( List( list, func ) ) => Length( list )
 CapJitAddLogicTemplate(
