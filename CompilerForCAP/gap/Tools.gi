@@ -1547,6 +1547,10 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     type := "integer";
                     
+                elif IsSpecializationOfFilter( "bool", type.filter ) then
+                    
+                    type := "bool";
+                    
                 elif IsSpecializationOfFilter( IsList, type.filter ) and IsSpecializationOfFilter( "morphism", type.element_type.filter ) then
                     
                     type := "list_of_morphisms";
