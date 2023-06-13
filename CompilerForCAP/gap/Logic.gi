@@ -420,32 +420,46 @@ CapJitAddLogicFunction( function ( tree )
     
 end );
 
-# List( [ a_1, ..., a_n ], f ) = [ f( a_1 ), ..., f( a_n ) ]
+##
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
     
     Info( InfoCapJit, 1, "####" );
-    Info( InfoCapJit, 1, "Apply logic for List applied to a literal list." );
+    Info( InfoCapJit, 1, "TODO" );
     
     pre_func := function ( tree, additional_arguments )
-      local args, new_tree;
+      local list, func, index;
         
-        if CapJitIsCallToGlobalFunction( tree, "List" ) then
+        # detect `List( list, func )[index]` where `index` is a literal integer
+        if CapJitIsCallToGlobalFunction( tree, "[]" ) and CapJitIsCallToGlobalFunction( tree.args.1, "List" ) and tree.args.2.type = "EXPR_INT" then
             
-            args := tree.args;
+            list := tree.args.1.args.1;
+            func := tree.args.1.args.2;
+            index := tree.args.2.value;
             
-            if args.length = 2 and args.1.type = "EXPR_LIST" then
+            if list.type = "EXPR_LIST" then
                 
-                new_tree := rec(
-                    type := "EXPR_LIST",
-                    list := List(
-                        args.1.list,
-                        entry -> rec(
-                            type := "EXPR_FUNCCALL",
-                            funcref := CapJitCopyWithNewFunctionIDs( args.2 ),
-                            args := AsSyntaxTreeList( [ entry ] ),
-                        )
-                    ),
+                return rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := func,
+                    args := AsSyntaxTreeList( [
+                        list.list.(index),
+                    ] ),
+                );
+                
+            fi;
+            
+            if list.type = "EXPR_RANGE" and list.first.type = "EXPR_INT" and list.last.type = "EXPR_INT" then
+                
+                return rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := func,
+                    args := AsSyntaxTreeList( [
+                        rec(
+                            type := "EXPR_INT",
+                            value := index - list.first.value + 1,
+                        ),
+                    ] ),
                 );
                 
                 if IsBound( tree.data_type ) then
@@ -467,6 +481,54 @@ CapJitAddLogicFunction( function ( tree )
     return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
 end );
+
+# List( [ a_1, ..., a_n ], f ) = [ f( a_1 ), ..., f( a_n ) ]
+#CapJitAddLogicFunction( function ( tree )
+#  local pre_func;
+#    
+#    Info( InfoCapJit, 1, "####" );
+#    Info( InfoCapJit, 1, "Apply logic for List applied to a literal list." );
+#    
+#    pre_func := function ( tree, additional_arguments )
+#      local args, new_tree;
+#        
+#        if CapJitIsCallToGlobalFunction( tree, "List" ) then
+#            
+#            args := tree.args;
+#            
+#            if args.length = 2 and args.1.type = "EXPR_LIST" then
+#                
+#                new_tree := rec(
+#                    type := "EXPR_LIST",
+#                    list := List(
+#                        args.1.list,
+#                        entry -> rec(
+#                            type := "EXPR_FUNCCALL",
+#                            funcref := CapJitCopyWithNewFunctionIDs( args.2 ),
+#                            args := AsSyntaxTreeList( [ entry ] ),
+#                        )
+#                    ),
+#                );
+#                
+#                if IsBound( tree.data_type ) then
+#                    
+#                    new_tree.data_type := tree.data_type;
+#                    
+#                fi;
+#                
+#                tree := new_tree;
+#                
+#            fi;
+#            
+#        fi;
+#        
+#        return tree;
+#        
+#    end;
+#    
+#    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+#    
+#end );
 
 # List( Concatenation( L_1, ..., L_n ), f ) = Concatenation( List( L_1, f ), ..., List( L_n, f ) )
 CapJitAddLogicFunction( function ( tree )
