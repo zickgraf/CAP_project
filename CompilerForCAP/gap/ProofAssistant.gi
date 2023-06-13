@@ -3147,7 +3147,7 @@ propositions := rec(
 );
 
 enhance_propositions := function ( propositions )
-  local prop, info, specification, preconditions, is_well_defined, id, operation;
+  local prop, info, specification, preconditions, enhanced_arguments, is_well_defined, id, operation;
     
     for id in RecNames( propositions ) do
         
@@ -3176,6 +3176,20 @@ enhance_propositions := function ( propositions )
                 
             fi;
             
+            enhanced_arguments := ListN( info.filter_list, info.input_arguments_names, function ( filter_string, name )
+                
+                if filter_string = "list_of_objects" then
+                    
+                    return ReplacedStringViaRecord( "List( [ 1 .. Length( var ) ], i -> var[i] )", rec( var := name ) );
+                    
+                else
+                    
+                    return name;
+                    
+                fi;
+                
+            end );
+            
             ## check well-definedness
             
             if info.return_type = "object" then
@@ -3199,13 +3213,14 @@ enhance_propositions := function ( propositions )
                         
                         preconditions
                         
-                        return is_well_defined( cat, operation( input_arguments... ) );
+                        return is_well_defined( cat, operation( enhanced_arguments... ) );
                         
                     end""",
                     rec(
                         is_well_defined := is_well_defined,
                         operation := operation,
                         input_arguments := info.input_arguments_names,
+                        enhanced_arguments := enhanced_arguments,
                         preconditions := preconditions,
                     )
                 ) )
@@ -3226,13 +3241,14 @@ enhance_propositions := function ( propositions )
                             
                             preconditions
                             
-                            return IsEqualForObjects( cat, Source( operation( input_arguments... ) ), output_source_getter );
+                            return IsEqualForObjects( cat, Source( operation( enhanced_arguments... ) ), output_source_getter );
                             
                         end""",
                         rec(
                             operation := operation,
                             output_source_getter := info.output_source_getter_string,
                             input_arguments := info.input_arguments_names,
+                            enhanced_arguments := enhanced_arguments,
                             preconditions := preconditions,
                         )
                     ) )
@@ -3245,13 +3261,14 @@ enhance_propositions := function ( propositions )
                             
                             preconditions
                             
-                            return IsEqualForObjects( cat, Range( operation( input_arguments... ) ), output_range_getter );
+                            return IsEqualForObjects( cat, Range( operation( enhanced_arguments... ) ), output_range_getter );
                             
                         end""",
                         rec(
                             operation := operation,
                             output_range_getter := info.output_range_getter_string,
                             input_arguments := info.input_arguments_names,
+                            enhanced_arguments := enhanced_arguments,
                             preconditions := preconditions,
                         )
                     ) )

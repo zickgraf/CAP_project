@@ -1028,7 +1028,7 @@ get_strength := function ( tree )
   local pos;
     
     # things that never have to be parenthesized
-    if tree.type = "EXPR_REF_FVAR" then
+    if tree.type in [ "EXPR_REF_FVAR", "EXPR_INT" ] then
         
         return Length( BINDING_STRENGTHS ) + 1;
         
@@ -1462,6 +1462,8 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             latex_string_record.type := "plain";
             latex_string_record.string := Concatenation( "\\{", result.first.string, ", \\ldots, ", result.last.string, "\\}" );
+            latex_string_record.first := result.first.string;
+            latex_string_record.last := result.last.string;
             return latex_string_record;
             
         elif tree.type = "EXPR_FUNCCALL" and tree.funcref.type = "EXPR_DECLARATIVE_FUNC" then # call to global functions are handled below
@@ -1725,7 +1727,9 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     return rec(
                         type := "plain",
                         string := Concatenation( "(", LaTeXName( parts[1] ) , "_1,\\dots,", LaTeXName( parts[1] ), "_", LaTeXName( parts[2] ), ")" ),
-                        length := LaTeXName( parts[2] ),
+                        length_string := LaTeXName( parts[2] ),
+                        first := Concatenation( LaTeXName( parts[1] ), "_1" ),
+                        last := Concatenation( LaTeXName( parts[1] ), "_", LaTeXName( parts[2] ) ),
                     );
                     
                 else
@@ -1764,18 +1768,29 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     return rec(
                         type := "plain",
-                        string := Concatenation( "\\mathrm{Length}(", result.args.1.string, ")" ),
+                        string := Concatenation( "l(", result.args.1.string, ")" ),
                     );
                     
                 fi;
                 
             elif tree.funcref.gvar = "[]" then
                 
-                return rec(
+                latex_string_record := rec(
                     type := "plain",
                     #string := Concatenation( "{", result.args.1.string, "}_{", result.args.2.string, "}" ),
                     string := parenthesize_infix( tree, "_", tree.args.1, result.args.1, tree.args.2, result.args.2 ),
                 );
+                
+                # TODO
+                
+                if IsBound( tree.data_type ) and IsSpecializationOfFilter( "morphism", tree.data_type.filter ) then
+                    
+                    latex_string_record.source := Concatenation( "s(", latex_string_record.string, ")" );
+                    latex_string_record.range := Concatenation( "t(", latex_string_record.string, ")" );
+                    
+                fi;
+                
+                return latex_string_record;
                 
             elif tree.funcref.gvar = "List" then
                 
@@ -1799,9 +1814,23 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 elif tree.args.2.type = "EXPR_REF_GVAR" then
                     
-                    latex_string_record.type := "plain";
-                    latex_string_record.string := Concatenation( "\\left(\\mathrm{", tree.args.2.gvar, "}(x)\\right)_{x \\in ", result.args.1.string, "}" );
-                    return latex_string_record;
+                    Assert( 0, IsBound( result.args.1.first ) = IsBound( result.args.1.last ) );
+                    
+                    if IsBound( result.args.1.first ) then
+                        
+                        latex_string_record.type := "plain";
+                        latex_string_record.string := Concatenation( "\\left(\\mathrm{", tree.args.2.gvar, "}(", result.args.1.first, "),\\ldots, \\mathrm{", tree.args.2.gvar, "}(", result.args.1.last, ")\\right)" );
+                        latex_string_record.first := Concatenation( "\\mathrm{", tree.args.2.gvar, "}(", result.args.1.first, ")" );
+                        latex_string_record.last := Concatenation( "\\mathrm{", tree.args.2.gvar, "}(", result.args.1.last, ")" );
+                        return latex_string_record;
+                        
+                    else
+                        
+                        latex_string_record.type := "plain";
+                        latex_string_record.string := Concatenation( "\\left(\\mathrm{", tree.args.2.gvar, "}(x)\\right)_{x \\in ", result.args.1.string, "}" );
+                        return latex_string_record;
+                        
+                    fi;
                     
                 else
                     
@@ -1944,6 +1973,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := Concatenation( "\\myboxed{", result.args.4.string, "}" ),
                     source := result.args.2.string,
                     range := result.args.3.string,
+                );
+                
+            elif tree.funcref.gvar = "+" then
+                
+                return rec(
+                    type := "plain",
+                    string := parenthesize_infix( tree, "+", tree.args.1, result.args.1, tree.args.2, result.args.2 ),
                 );
                 
             elif tree.funcref.gvar = "-" then
@@ -2180,6 +2216,69 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 fi;
                 
+            elif tree.funcref.gvar = "DirectSum" then
+                
+                if not( CapJitIsCallToGlobalFunction( tree.args.2, "List" ) and tree.args.2.args.2.type = "EXPR_DECLARATIVE_FUNC" ) then
+                    
+                    return rec(
+                        type := "plain",
+                        string := Concatenation( "\\mathrm{DirectSum}(", result.args.2.string, ")" ),
+                    );
+                    
+                fi;
+                
+                Assert( 0, tree.args.2.args.2.narg = 1 );
+                
+                index_symbol := tree.args.2.args.2.nams[1];
+                
+                # TODO
+                if IsBound( tree.args.2.args.1.data_type.element_type.category ) then
+                    
+                    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.2.args.1.data_type.element_type.category, s.category ) );
+                    
+                    if pos <> fail then
+                        
+                        if IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol) ) then
+                            
+                            index_symbol := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol);
+                            
+                        fi;
+                        
+                    fi;
+                    
+                fi;
+                
+                index_symbol := LaTeXName( index_symbol );
+                
+                #if tree.args.1.type = "EXPR_RANGE" then
+                #    
+                #    list_string := Concatenation( "\\ ", result.args.1.children.first.string, " \\leq ", index_symbol, " \\leq ", result.args.1.children.last.string );
+                #    
+                #else
+                #    
+                #    list_string := Concatenation( index_symbol, " \\in ", result.args.1.string );
+                #    
+                #fi;
+                
+                if tree.args.2.args.1.type = "EXPR_RANGE" then
+                    
+                    below := Concatenation( " = ", result.args.2.children.args.1.children.first.string );
+                    above := Concatenation( "^{", result.args.2.children.args.1.children.last.string, "}" );
+                    
+                else
+                    
+                    below := Concatenation( " \\in ", result.args.2.children.args.1.string );
+                    above := "";
+                    
+                fi;
+                
+                # TODO: remove \displaystyle
+                return rec(
+                    type := "plain",
+                    #string := Concatenation( "\\displaystyle\\mathop{\\mathlarger{\\mathlarger{\\mathlarger{\\mathlarger{\\mathsurround0pt \\forall}}}}}_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.children.args.2.string ),
+                    string := Concatenation( "\\bigoplus_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.children.args.2.string ),
+                );
+                
             elif tree.funcref.gvar = "ProjectionInFactorOfDirectSum" then
                 
                 math_record := rec(
@@ -2193,6 +2292,26 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     type := "morphism",
                     string := Concatenation( "\\mathrm{id}_{", result.args.2.string, "}" ),
                 );
+                
+            elif tree.funcref.gvar = "ZeroObject" then
+                
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.1.data_type.category, s.category ) );
+                
+                if pos = fail then
+                    
+                    math_record := rec(
+                        type := "plain",
+                        string := Concatanation( "\\mathrm{ZeroObject)(", result.args.2.string, ")" ),
+                    );
+                    
+                else
+                    
+                    math_record := rec(
+                        type := "morphism",
+                        string := Concatenation( "0_{", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "}" ),
+                    );
+                    
+                fi;
                 
             elif tree.funcref.gvar = "ZeroMorphism" then
                 
