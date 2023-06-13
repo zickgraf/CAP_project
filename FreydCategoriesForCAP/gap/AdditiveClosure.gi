@@ -869,38 +869,38 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
     end );
     
     ##
-    AddComponentOfMorphismIntoDirectSum( category,
-      function( cat, morphism, summands, nr )
-        local lengths, start, stop;
-        
-        lengths := List( summands, s -> Length( ObjectList( s ) ) );
-        
-        start := Sum( lengths{[ 1 .. nr-1 ]} ) + 1;
-        
-        stop := (start - 1) + lengths[nr];
-        
-        return AdditiveClosureMorphism( cat, Source( morphism ),
-                                        List( MorphismMatrix( morphism ), row -> row{[ start .. stop ]} ), # CertainColumns
-                                        summands[nr] );
-        
-    end );
-    
-    ##
-    AddComponentOfMorphismFromDirectSum( category,
-      function( cat, morphism, summands, nr )
-        local lengths, start, stop;
-        
-        lengths := List( summands, s -> Length( ObjectList( s ) ) );
-        
-        start := Sum( lengths{[ 1 .. nr-1 ]} ) + 1;
-        
-        stop := (start - 1) + lengths[nr];
-        
-        return AdditiveClosureMorphism( cat, summands[nr],
-                                        MorphismMatrix( morphism ){[ start .. stop ]}, # CertainRows
-                                        Range( morphism ) );
-        
-    end );
+    #AddComponentOfMorphismIntoDirectSum( category,
+    #  function( cat, morphism, summands, nr )
+    #    local lengths, start, stop;
+    #    
+    #    lengths := List( summands, s -> Length( ObjectList( s ) ) );
+    #    
+    #    start := Sum( lengths{[ 1 .. nr-1 ]} ) + 1;
+    #    
+    #    stop := (start - 1) + lengths[nr];
+    #    
+    #    return AdditiveClosureMorphism( cat, Source( morphism ),
+    #                                    List( MorphismMatrix( morphism ), row -> row{[ start .. stop ]} ), # CertainColumns
+    #                                    summands[nr] );
+    #    
+    #end );
+    #
+    ###
+    #AddComponentOfMorphismFromDirectSum( category,
+    #  function( cat, morphism, summands, nr )
+    #    local lengths, start, stop;
+    #    
+    #    lengths := List( summands, s -> Length( ObjectList( s ) ) );
+    #    
+    #    start := Sum( lengths{[ 1 .. nr-1 ]} ) + 1;
+    #    
+    #    stop := (start - 1) + lengths[nr];
+    #    
+    #    return AdditiveClosureMorphism( cat, summands[nr],
+    #                                    MorphismMatrix( morphism ){[ start .. stop ]}, # CertainRows
+    #                                    Range( morphism ) );
+    #    
+    #end );
     
     if CanCompute( underlying_category, "MultiplyWithElementOfCommutativeRingForMorphisms" ) then
       

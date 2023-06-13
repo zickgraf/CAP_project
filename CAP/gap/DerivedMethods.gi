@@ -107,64 +107,64 @@ AddDerivationToCAP( UniversalMorphismIntoDirectSumWithGivenDirectSum,
 end : CategoryFilter := IsAdditiveCategory );
 
 ##
-AddDerivationToCAP( ProjectionInFactorOfDirectSum,
-                    "ProjectionInFactorOfDirectSum using UniversalMorphismFromDirectSum",
-                    [ [ IdentityMorphism, 1 ],
-                      [ ZeroMorphism, 2 ],
-                      [ UniversalMorphismFromDirectSum, 1 ] ],
-                    
-  function( cat, list, projection_number )
-    local id, morphisms;
-    
-    id := IdentityMorphism( cat, list[projection_number] );
-    
-    morphisms := List( [ 1 .. Length( list ) ], function( i )
-        
-        if i = projection_number then
-            
-            return id;
-            
-        else
-            
-            return ZeroMorphism( cat, list[i], list[projection_number] );
-            
-        fi;
-        
-    end );
-    
-    return UniversalMorphismFromDirectSum( cat, list, list[projection_number], morphisms );
-    
-  end );
-
-##
-AddDerivationToCAP( ProjectionInFactorOfDirectSumWithGivenDirectSum,
-                    "ProjectionInFactorOfDirectSum using UniversalMorphismFromDirectSum",
-                    [ [ IdentityMorphism, 1 ],
-                      [ ZeroMorphism, 2 ],
-                      [ UniversalMorphismFromDirectSumWithGivenDirectSum, 1 ] ],
-                    
-  function( cat, list, projection_number, direct_sum_object )
-    local id, morphisms;
-    
-    id := IdentityMorphism( cat, list[projection_number] );
-    
-    morphisms := List( [ 1 .. Length( list ) ], function( i )
-        
-        if i = projection_number then
-            
-            return id;
-            
-        else
-            
-            return ZeroMorphism( cat, list[i], list[projection_number] );
-            
-        fi;
-        
-    end );
-    
-    return UniversalMorphismFromDirectSumWithGivenDirectSum( cat, list, list[projection_number], morphisms, direct_sum_object );
-    
-end );
+#AddDerivationToCAP( ProjectionInFactorOfDirectSum,
+#                    "ProjectionInFactorOfDirectSum using UniversalMorphismFromDirectSum",
+#                    [ [ IdentityMorphism, 1 ],
+#                      [ ZeroMorphism, 2 ],
+#                      [ UniversalMorphismFromDirectSum, 1 ] ],
+#                    
+#  function( cat, list, projection_number )
+#    local id, morphisms;
+#    
+#    id := IdentityMorphism( cat, list[projection_number] );
+#    
+#    morphisms := List( [ 1 .. Length( list ) ], function( i )
+#        
+#        if i = projection_number then
+#            
+#            return id;
+#            
+#        else
+#            
+#            return ZeroMorphism( cat, list[i], list[projection_number] );
+#            
+#        fi;
+#        
+#    end );
+#    
+#    return UniversalMorphismFromDirectSum( cat, list, list[projection_number], morphisms );
+#    
+#  end );
+#
+###
+#AddDerivationToCAP( ProjectionInFactorOfDirectSumWithGivenDirectSum,
+#                    "ProjectionInFactorOfDirectSum using UniversalMorphismFromDirectSum",
+#                    [ [ IdentityMorphism, 1 ],
+#                      [ ZeroMorphism, 2 ],
+#                      [ UniversalMorphismFromDirectSumWithGivenDirectSum, 1 ] ],
+#                    
+#  function( cat, list, projection_number, direct_sum_object )
+#    local id, morphisms;
+#    
+#    id := IdentityMorphism( cat, list[projection_number] );
+#    
+#    morphisms := List( [ 1 .. Length( list ) ], function( i )
+#        
+#        if i = projection_number then
+#            
+#            return id;
+#            
+#        else
+#            
+#            return ZeroMorphism( cat, list[i], list[projection_number] );
+#            
+#        fi;
+#        
+#    end );
+#    
+#    return UniversalMorphismFromDirectSumWithGivenDirectSum( cat, list, list[projection_number], morphisms, direct_sum_object );
+#    
+#end );
 
 ##
 AddDerivationToCAP( UniversalMorphismIntoTerminalObject,
