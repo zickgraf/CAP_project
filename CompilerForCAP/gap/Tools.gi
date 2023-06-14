@@ -1726,10 +1726,11 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     return rec(
                         type := "plain",
-                        string := Concatenation( "(", LaTeXName( parts[1] ) , "_1,\\dots,", LaTeXName( parts[1] ), "_", LaTeXName( parts[2] ), ")" ),
+                        string := Concatenation( "\\left(\\myboxed{", LaTeXName( parts[1] ) , "^1},\\ldots,\\myboxed{", LaTeXName( parts[1] ), "^", LaTeXName( parts[2] ), "}\\right)" ),
                         length_string := LaTeXName( parts[2] ),
-                        first := Concatenation( LaTeXName( parts[1] ), "_1" ),
-                        last := Concatenation( LaTeXName( parts[1] ), "_", LaTeXName( parts[2] ) ),
+                        first := Concatenation( "\\myboxed{", LaTeXName( parts[1] ), "^1}" ),
+                        last := Concatenation( "\\myboxed{", LaTeXName( parts[1] ), "^", LaTeXName( parts[2] ), "}" ),
+                        element_string := Concatenation( "\\myboxed{", LaTeXName( parts[1] ), "^{INDEX}}" ),
                     );
                     
                 else
@@ -1775,11 +1776,23 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif tree.funcref.gvar = "[]" then
                 
-                latex_string_record := rec(
-                    type := "plain",
-                    #string := Concatenation( "{", result.args.1.string, "}_{", result.args.2.string, "}" ),
-                    string := parenthesize_infix( tree, "_", tree.args.1, result.args.1, tree.args.2, result.args.2 ),
-                );
+                if IsBound( result.args.1.element_string ) then
+                    
+                    latex_string_record := rec(
+                        type := "plain",
+                        #string := Concatenation( "{", result.args.1.string, "}_{", result.args.2.string, "}" ),
+                        string := ReplacedString( result.args.1.element_string, "INDEX", result.args.2.string ),
+                    );
+                    
+                else
+                    
+                    latex_string_record := rec(
+                        type := "plain",
+                        #string := Concatenation( "{", result.args.1.string, "}_{", result.args.2.string, "}" ),
+                        string := parenthesize_infix( tree, "_", tree.args.1, result.args.1, tree.args.2, result.args.2 ),
+                    );
+                    
+                fi;
                 
                 # TODO
                 
@@ -1816,12 +1829,51 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     Assert( 0, IsBound( result.args.1.first ) = IsBound( result.args.1.last ) );
                     
-                    if IsBound( result.args.1.first ) then
+                    if IsBound( result.args.1.first ) and IsBound( result.args.1.last ) then
                         
                         latex_string_record.type := "plain";
-                        latex_string_record.string := Concatenation( "\\left(\\mathrm{", tree.args.2.gvar, "}(", result.args.1.first, "),\\ldots, \\mathrm{", tree.args.2.gvar, "}(", result.args.1.last, ")\\right)" );
-                        latex_string_record.first := Concatenation( "\\mathrm{", tree.args.2.gvar, "}(", result.args.1.first, ")" );
-                        latex_string_record.last := Concatenation( "\\mathrm{", tree.args.2.gvar, "}(", result.args.1.last, ")" );
+                        
+                        if tree.args.2.gvar = "ObjectList" and
+                           Length( result.args.1.first ) >= 9 and result.args.1.first{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.first ) = '}' and
+                           Length( result.args.1.last ) >= 9 and result.args.1.last{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.last ) = '}' then
+                            
+                            latex_string_record.first := result.args.1.first{[ 10 .. Length( result.args.1.first ) - 1 ]};
+                            latex_string_record.last := result.args.1.last{[ 10 .. Length( result.args.1.last ) - 1 ]};
+                            
+                            if IsBound( result.args.1.element_string ) and Length( result.args.1.element_string ) >= 9 and result.args.1.element_string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.element_string ) = '}' then
+                                
+                                latex_string_record.element_string := result.args.1.element_string{[ 10 .. Length( result.args.1.element_string ) - 1 ]};
+                                
+                            fi;
+                            
+                            if IsBound( result.args.1.length_string ) then
+                                
+                                latex_string_record.length_string := result.args.1.length_string;
+                                
+                            fi;
+                            
+                            #math_record := rec(
+                            #    type := "plain",
+                            #    string := name,
+                            #);
+                            #
+                            #if Length( name ) = 1 and name[1] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" then
+                            #    
+                            #    math_record.length_string := LowercaseString( name );
+                            #    
+                            #fi;
+                            #
+                            #latex_string_record.first := Concatenation( "\\mathrm{", tree.args.2.gvar, "}(", result.args.1.first, ")" );
+                            #latex_string_record.last := Concatenation( "\\mathrm{", tree.args.2.gvar, "}(", result.args.1.last, ")" );
+                            
+                        else
+                            
+                            latex_string_record.first := Concatenation( "\\mathrm{", tree.args.2.gvar, "}(", result.args.1.first, ")" );
+                            latex_string_record.last := Concatenation( "\\mathrm{", tree.args.2.gvar, "}(", result.args.1.last, ")" );
+                            
+                        fi;
+                        
+                        latex_string_record.string := Concatenation( "\\left(", latex_string_record.first, ",\\ldots,", latex_string_record.last,"\\right)" );
                         return latex_string_record;
                         
                     else
@@ -1898,6 +1950,21 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := Concatenation( "\\bigwedge_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.string ),
                 );
                 
+            #elif tree.funcref.gvar = "Concatenation" then
+            #    
+            #    Error("asd");
+            #    
+            #    if not IsBound( asd  ) then
+            #        
+            #        Error( "not yet supported" );
+            #        
+            #    fi;
+            #    
+            #    return rec(
+            #        type := "plain",
+            #        string := Concatenation( result.args.1.string, " \\quad = \\quad ", result.args.2.string ),
+            #    );
+            #    
             elif tree.funcref.gvar = "KroneckerDelta" and result.args.3.type = "morphism" then
                 
                 Assert( 0, result.args.3.type = result.args.4.type );
@@ -2276,14 +2343,49 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 return rec(
                     type := "plain",
                     #string := Concatenation( "\\displaystyle\\mathop{\\mathlarger{\\mathlarger{\\mathlarger{\\mathlarger{\\mathsurround0pt \\forall}}}}}_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.children.args.2.string ),
-                    string := Concatenation( "\\bigoplus_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.children.args.2.string ),
+                    string := Concatenation( "\\bigoplus_{", index_symbol, below, "}", above, " ", result.args.2.children.args.2.string ),
                 );
                 
             elif tree.funcref.gvar = "ProjectionInFactorOfDirectSum" then
                 
                 math_record := rec(
                     type := "morphism",
-                    string := Concatenation( "\\pi_{", result.args.3.string, "}^{\\bigoplus(", result.args.2.string, ")}" ),
+                    string := Concatenation( "\\pi_{", result.args.3.string, "}^{\\mathcolor{black!50}{\\bigoplus\\left(", result.args.2.string, "\\right)}}" ),
+                );
+                
+            elif tree.funcref.gvar = "InjectionOfCofactorOfDirectSum" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "\\iota_{", result.args.3.string, "}^{\\mathcolor{black!50}{\\bigoplus\\left(", result.args.2.string, "\\right)}}" ),
+                );
+                
+            elif tree.funcref.gvar = "ComponentOfMorphismIntoDirectSum" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "\\mathrm{comp}_{", result.args.4.string, "}^{\\mathcolor{black!50}{\\to\\bigoplus\\left(", result.args.3.string, "\\right)}}\\left(", result.args.2.string, "\\right)" ),
+                );
+                
+            elif tree.funcref.gvar = "ComponentOfMorphismFromDirectSum" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "\\mathrm{comp}_{", result.args.4.string, "}^{\\mathcolor{black!50}{\\from\\bigoplus\\left(", result.args.3.string, "\\right)}}\\left(", result.args.2.string, "\\right)" ),
+                );
+                
+            elif tree.funcref.gvar = "UniversalMorphismIntoDirectSum" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "u_{", result.args.3.string, "}^{\\mathcolor{black!50}{\\to\\bigoplus\\left(", result.args.2.string, "\\right)}}\\left(", result.args.4.string, "\\right)" ),
+                );
+                
+            elif tree.funcref.gvar = "UniversalMorphismFromDirectSum" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "u_{", result.args.3.string, "}^{\\mathcolor{black!50}{\\from\\bigoplus\\left(", result.args.2.string, "\\right)}}\\left(", result.args.4.string, "\\right)" ),
                 );
                 
             elif tree.funcref.gvar = "IdentityMorphism" then
@@ -2301,7 +2403,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     math_record := rec(
                         type := "plain",
-                        string := Concatanation( "\\mathrm{ZeroObject)(", result.args.2.string, ")" ),
+                        string := Concatenation( "\\mathrm{ZeroObject)(", result.args.2.string, ")" ),
                     );
                     
                 else
@@ -2761,7 +2863,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 math_record := rec(
                     type := "plain",
-                    string := Concatenation( "\\mathrm{", tree.funcref.gvar, "}(", JoinStringsWithSeparator( List( [ 1 .. tree.args.length ], i -> result.args.(i).string ), ", " ), ")" ),
+                    string := Concatenation( "\\mathrm{", tree.funcref.gvar, "}\\left(", JoinStringsWithSeparator( List( [ 1 .. tree.args.length ], i -> result.args.(i).string ), ", " ), "\\right)" ),
                 );
                 
             fi;
@@ -2977,7 +3079,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         latex_strings := List( conditions, c -> CapJitIterateOverTree( c, ReturnFirst, result_func, additional_arguments_func, [ func_tree ] ).string );
         
         #latex_string := Concatenation( "\\begin{equation*}\\begin{split}\n", JoinStringsWithSeparator( latex_strings, "&\\quad\\text{and}\\\\\n" ), "&", suffix, "\n\\end{split}\\end{equation*}\n" );
-        latex_string := Concatenation( "% neutralize abovedisplayskip\n\\vskip-\\abovedisplayskip\n\\begin{equation*}\\begin{split}\n&", JoinStringsWithSeparator( latex_strings, "\\\\\n\\text{and}\\enspace&" ), suffix, "\n\\end{split}\\end{equation*}\n" );
+        latex_string := Concatenation( "% neutralize abovedisplayskip\n\\vskip-\\abovedisplayskip\n\\begin{equation*}\n\\begin{split}\n&", JoinStringsWithSeparator( latex_strings, "\\\\\n\\text{and}\\enspace&" ), suffix, "\n\\end{split}\n\\end{equation*}\n" );
         return latex_string;
         
     elif CapJitIsCallToGlobalFunction( return_value, "IsEqualForObjects" ) and CapJitIsCallToGlobalFunction( return_value.args.2, gvar -> gvar = "Source" or gvar = "Range" or gvar = "Target" ) then
