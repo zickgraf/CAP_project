@@ -2457,7 +2457,7 @@ end );
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
 BindGlobal( "STATE_THEOREM", function ( type, func, args... )
-  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, inner_parts, source, range, tree, condition_func, conditions, result, i, condition, latex_string;
+  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, inner_parts, source, range, length, tree, condition_func, conditions, result, latex_string, i, condition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2645,7 +2645,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                         name := LaTeXName( inner_parts[1] );
                         length := LaTeXName( inner_parts[2] );
                         
-                        Add( current_names, Concatenation( "$(", name , "_1,\\dots,", name, "_", length, ")$" ) );
+                        Add( current_names, Concatenation( "$\\left(\\myboxed{", name , "^1},\\ldots,\\myboxed{", name, "^", length, "}\\right)$" ) );
                         
                     else
                         
@@ -2657,7 +2657,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                 
                 current_names := PhraseEnumeration( current_names );
                 
-                part := Concatenation( numeral, " list", plural, " of objects ", current_names );
+                part := Concatenation( numeral, " tuple", plural, " of objects ", current_names );
                 
             else
                 
@@ -3178,15 +3178,15 @@ enhance_propositions := function ( propositions )
             
             enhanced_arguments := ListN( info.filter_list, info.input_arguments_names, function ( filter_string, name )
                 
-                if filter_string = "list_of_objects" then
-                    
-                    return ReplacedStringViaRecord( "List( [ 1 .. Length( var ) ], i -> var[i] )", rec( var := name ) );
-                    
-                else
+                #if filter_string = "list_of_objects" then
+                #    
+                #    return ReplacedStringViaRecord( "List( [ 1 .. Length( var ) ], i -> var[i] )", rec( var := name ) );
+                #    
+                #else
                     
                     return name;
                     
-                fi;
+                #fi;
                 
             end );
             

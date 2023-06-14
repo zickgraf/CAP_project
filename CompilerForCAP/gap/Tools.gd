@@ -174,3 +174,5 @@ DeclareGlobalFunction( "EvalStringStrict" );
 #!   Concatenates `[ "apples", "bananas", "oranges" ]` as `"apples, bananas, and oranges"`.
 #! @Arguments list_of_strings
 DeclareGlobalFunction( "ConcatenationOfStringsAsEnumerationWithAnd" );
+
+DeclareGlobalName( "CapJitMadeVariableNamesUnique" );
