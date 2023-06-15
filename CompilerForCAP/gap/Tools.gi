@@ -1072,7 +1072,7 @@ parenthesize_infix := function ( tree, symbol, left_tree, left_result, right_tre
     
     if left_strength = 0 or left_strength <= parent_strength then
         
-        left_string := Concatenation( "\\left(", left_string, "\\right)" );
+        left_string := Concatenation( "{\\left(", left_string, "\\right)}" );
         
     fi;
     
@@ -1080,7 +1080,7 @@ parenthesize_infix := function ( tree, symbol, left_tree, left_result, right_tre
     
     if right_strength = 0 or right_strength <= parent_strength then
         
-        right_string := Concatenation( "\\left(", right_string, "\\right)" );
+        right_string := Concatenation( "{\\left(", right_string, "\\right)}" );
         
     fi;
     
@@ -1140,6 +1140,12 @@ end;
 
 BindGlobal( "LaTeXName", function ( name )
   local latex_commands, pos, name_end, command;
+    
+    if StartsWith( name, "logic_new_func_" ) then
+        
+        name := name{[ Length( "logic_new_func_" ) + 1 .. Length( name ) ]};
+        
+    fi;
     
     latex_commands := rec(
         alpha := "\\alpha",
@@ -1789,7 +1795,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     latex_string_record := rec(
                         type := "plain",
                         #string := Concatenation( "{", result.args.1.string, "}_{", result.args.2.string, "}" ),
-                        string := parenthesize_infix( tree, "_", tree.args.1, result.args.1, tree.args.2, result.args.2 ),
+                        string := parenthesize_infix( tree, "_", tree.args.1, rec( string := Concatenation( "{", result.args.1.string, "}" ) ), tree.args.2, rec( string := Concatenation( "{", result.args.2.string, "}" ) ) ),
                     );
                     
                 fi;
