@@ -5412,6 +5412,37 @@ InstallGlobalFunction( CAP_INTERNAL_ENHANCE_NAME_RECORD,
                 
             fi;
             
+            #if return_list[1] <> fail or return_list[2] <> fail then
+                
+                Print( "sed -i 's/^  io_type := ", ReplacedString( ReplacedString( String( io_type ), "[", "\\[" ), "]", "\\]" ), ",/" );
+                #Print( "sed -i 's/^  io_type := ", ReplacedString( ReplacedString( String( io_type ), "[", "\\[" ), "]", "\\]" ), " ),/" );
+                
+                Print( "  input_arguments_names := ", String( Concatenation( [ "cat" ], io_type[1] ) ), "," );
+                
+                if return_list[1] <> fail then
+                    Print( "\\n  output_source_getter_string := \"", current_rec.output_source_getter_string, "\",\\n" );
+                    Print( "  output_source_getter_preconditions := [ ]," );
+                fi;
+                
+                if return_list[2] <> fail then
+                    Print( "\\n  output_range_getter_string := \"", current_rec.output_range_getter_string, "\",\\n" );
+                    Print( "  output_range_getter_preconditions := [ ]," );
+                fi;
+                
+                Print( "/' *.gi\n" );
+                #Print( "\\n),/' *.gi\n" );
+                
+            #else
+                
+            #    Print( "sed -i '/io_type := ", ReplacedString( ReplacedString( String( io_type ), "[", "\\[" ), "]", "\\]" ), ",/d' MethodRecord.gi\n" );
+                
+            #fi;
+            
+            #output_source_getter_string := "Source( list_of_morphisms[1] )",
+            #output_source_getter_preconditions := [ ],
+            #output_range_getter_string := "Range( Last( list_of_morphisms ) )",
+            #output_range_getter_preconditions := [ ],
+            
             # io_type is deprecated -> make sure it is not used except here
             Unbind( current_rec.io_type );
             
