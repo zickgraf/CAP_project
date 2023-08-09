@@ -2140,7 +2140,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                             #Error("range and source are not equal");
                             
                             string := Concatenation( string, mor.range ); 
-                            string := Concatenation( string, " = " ); 
+                            string := Concatenation( string, " \\equiv " );
                             
                         fi;
                         
@@ -2157,9 +2157,18 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif tree.funcref.gvar = "=" then
                 
+                Error( "does this happen?" );
+                
                 math_record := rec(
                     type := "plain",
                     string := Concatenation( result.args.1.string, " \\quad = \\quad ", result.args.2.string ),
+                );
+                
+            elif tree.funcref.gvar = "IsJudgementallyEqual" then
+                
+                math_record := rec(
+                    type := "plain",
+                    string := Concatenation( result.args.1.string, " \\equiv ", result.args.2.string ),
                 );
                 
             elif tree.funcref.gvar = "AsValue" and IsSpecializationOfFilter( "object", tree.args.1.data_type.filter ) then
@@ -2621,7 +2630,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 math_record := rec(
                     type := "plain",
-                    string := Concatenation( result.args.2.string, " \\sim ", result.args.3.string ),
+                    string := Concatenation( result.args.2.string, " = ", result.args.3.string ),
                 );
                 
             elif tree.funcref.gvar = "IsInt" then
@@ -2663,7 +2672,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 math_record := rec(
                     type := "plain",
-                    string := Concatenation( result.args.2.string, " = ", result.args.3.string ),
+                    string := Concatenation( result.args.2.string, " \\equiv ", result.args.3.string ),
                 );
                 
             elif tree.funcref.gvar = "IsWellDefinedForObjects" then
@@ -2967,7 +2976,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
         od;
         
         #DisplayCentered( Last( left_list ).range, max_length, "" );
-        latex_string := Concatenation( latex_string, Last( left_list ).range, "\\arrow[dd, phantom, \"\\sim\"]\\\\\n\\\\\n" ); 
+        latex_string := Concatenation( latex_string, Last( left_list ).range, "\\arrow[dd, phantom, \"=\"]\\\\\n\\\\\n" );
         
         #Display( "∼" );
         #Display( right.string );

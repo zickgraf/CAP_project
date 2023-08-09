@@ -2454,6 +2454,14 @@ BindGlobal( "PhraseEnumerationWithOxfordComma", function ( parts )
     
 end );
 
+BindGlobal( "IsJudgementallyEqual", function ( a, b )
+    
+    Error( "IsJudgementallyEqual is not implemented yet" );
+    
+end );
+
+CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool );
+
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
 BindGlobal( "STATE_THEOREM", function ( type, func, args... )
@@ -2697,9 +2705,15 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                 else
                     
                     return rec(
-                        type := "EXPR_EQ",
-                        left := StructuralCopy( replacement.src ),
-                        right := StructuralCopy( replacement.dst ),
+                        type := "EXPR_FUNCCALL",
+                        funcref := rec(
+                            type := "EXPR_REF_GVAR",
+                            gvar := "IsJudgementallyEqual",
+                        ),
+                        args := AsSyntaxTreeList( [
+                            StructuralCopy( replacement.src ),
+                            StructuralCopy( replacement.dst ),
+                        ] ),
                     );
                     
                 fi;
