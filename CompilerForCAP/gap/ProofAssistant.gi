@@ -3147,7 +3147,7 @@ propositions := rec(
 );
 
 enhance_propositions := function ( propositions )
-  local prop, info, specification, preconditions, enhanced_arguments, is_well_defined, id, operation;
+  local prop, info, specification, preconditions, enhanced_arguments, is_well_defined, source_string, range_string, id, operation;
     
     for id in RecNames( propositions ) do
         
@@ -3195,10 +3195,14 @@ enhance_propositions := function ( propositions )
             if info.return_type = "object" then
                 
                 is_well_defined := "IsWellDefinedForObjects";
+                source_string := "";
+                range_string := "";
                 
             elif info.return_type = "morphism" then
                 
-                is_well_defined := "IsWellDefinedForMorphisms";
+                is_well_defined := "IsWellDefinedForMorphismsWithGivenSourceAndRange";
+                source_string := Concatenation( ", ", info.output_source_getter_string );
+                range_string := Concatenation( ", ", info.output_range_getter_string );
                 
             else
                 
@@ -3213,7 +3217,7 @@ enhance_propositions := function ( propositions )
                         
                         preconditions
                         
-                        return is_well_defined( cat, operation( enhanced_arguments... ) );
+                        return is_well_defined( cat source, operation( enhanced_arguments... ) range );
                         
                     end""",
                     rec(
@@ -3222,63 +3226,65 @@ enhance_propositions := function ( propositions )
                         input_arguments := info.input_arguments_names,
                         enhanced_arguments := enhanced_arguments,
                         preconditions := preconditions,
+                        source := source_string,
+                        range := range_string,
                     )
                 ) )
             ) );
             
             ## check source and range (if required)
             
-            if info.return_type = "object" then
-                
-                # nothing to do
-            
-            elif info.return_type = "morphism" then
-                
-                Add( prop.lemmata, rec(
-                    input_types := info.filter_list,
-                    func := EvalString( ReplacedStringViaRecord(
-                        """function ( input_arguments... )
-                            
-                            preconditions
-                            
-                            return IsEqualForObjects( cat, Source( operation( enhanced_arguments... ) ), output_source_getter );
-                            
-                        end""",
-                        rec(
-                            operation := operation,
-                            output_source_getter := info.output_source_getter_string,
-                            input_arguments := info.input_arguments_names,
-                            enhanced_arguments := enhanced_arguments,
-                            preconditions := preconditions,
-                        )
-                    ) )
-                ) );
-                
-                Add( prop.lemmata, rec(
-                    input_types := info.filter_list,
-                    func := EvalString( ReplacedStringViaRecord(
-                        """function ( input_arguments... )
-                            
-                            preconditions
-                            
-                            return IsEqualForObjects( cat, Range( operation( enhanced_arguments... ) ), output_range_getter );
-                            
-                        end""",
-                        rec(
-                            operation := operation,
-                            output_range_getter := info.output_range_getter_string,
-                            input_arguments := info.input_arguments_names,
-                            enhanced_arguments := enhanced_arguments,
-                            preconditions := preconditions,
-                        )
-                    ) )
-                ) );
-                
-            else
-                
-                Error( "return_type ", info.return_type, " is not supported yet when checking source and range" );
-                
-            fi;
+            #if info.return_type = "object" then
+            #    
+            #    # nothing to do
+            #
+            #elif info.return_type = "morphism" then
+            #    
+            #    Add( prop.lemmata, rec(
+            #        input_types := info.filter_list,
+            #        func := EvalString( ReplacedStringViaRecord(
+            #            """function ( input_arguments... )
+            #                
+            #                preconditions
+            #                
+            #                return IsEqualForObjects( cat, Source( operation( enhanced_arguments... ) ), output_source_getter );
+            #                
+            #            end""",
+            #            rec(
+            #                operation := operation,
+            #                output_source_getter := info.output_source_getter_string,
+            #                input_arguments := info.input_arguments_names,
+            #                enhanced_arguments := enhanced_arguments,
+            #                preconditions := preconditions,
+            #            )
+            #        ) )
+            #    ) );
+            #    
+            #    Add( prop.lemmata, rec(
+            #        input_types := info.filter_list,
+            #        func := EvalString( ReplacedStringViaRecord(
+            #            """function ( input_arguments... )
+            #                
+            #                preconditions
+            #                
+            #                return IsEqualForObjects( cat, Range( operation( enhanced_arguments... ) ), output_range_getter );
+            #                
+            #            end""",
+            #            rec(
+            #                operation := operation,
+            #                output_range_getter := info.output_range_getter_string,
+            #                input_arguments := info.input_arguments_names,
+            #                enhanced_arguments := enhanced_arguments,
+            #                preconditions := preconditions,
+            #            )
+            #        ) )
+            #    ) );
+            #    
+            #else
+            #    
+            #    Error( "return_type ", info.return_type, " is not supported yet when checking source and range" );
+            #    
+            #fi;
             
             if IsBound( specification.postconditions ) then
                 

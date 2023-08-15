@@ -1017,7 +1017,7 @@ end;
 
 
 BINDING_STRENGTHS := [
-    [ "IsWellDefinedForObjects", "IsWellDefinedForMorphisms", "IsZeroForMorphisms", "IsZero", "IsInt", "IsHomalgMatrix", "IsCapCategoryMorphism", "IsList" ],
+    [ "IsWellDefinedForObjects", "IsWellDefinedForMorphisms", "IsWellDefinedForMorphismsWithGivenSourceAndRange", "IsZeroForMorphisms", "IsZero", "IsInt", "IsHomalgMatrix", "IsCapCategoryMorphism", "IsList" ],
     [ "AdditionForMorphisms", "AdditiveInverseForMorphisms", "+", "-" ],
     [ "TensorProductOnMorphisms", "TensorProductOnMorphismsWithGivenTensorProducts", "TensorProductOnObjects", "PreCompose", "PreComposeList", "*" ],
     [ "SumOfMorphisms" ],
@@ -2602,6 +2602,33 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 math_record := rec(
                     type := "plain",
                     string := parenthesize_postfix( tree, Concatenation( " \\text{ defines a morphism", specifier, "}" ), tree.args.2, result.args.2 ),
+                );
+                
+            elif tree.funcref.gvar = "IsWellDefinedForMorphismsWithGivenSourceAndRange" then
+                
+                cat := tree.args.1.data_type.category;
+                
+                Assert( 0, IsCapCategory( cat ) );
+                
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+                
+                if pos = fail then
+                    
+                    specifier := "";
+                    
+                else
+                    
+                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "$" );
+                    
+                fi;
+                
+                math_record := rec(
+                    type := "plain",
+                    string := Concatenation(
+                        parenthesize_postfix( tree, Concatenation( " \\text{ defines a morphism", specifier, "}" ), tree.args.3, result.args.3 ),
+                        parenthesize_prefix( tree, " \\text{ from }", tree.args.2, result.args.2 ),
+                        parenthesize_prefix( tree, " \\text{ to }", tree.args.4, result.args.4 )
+                    ),
                 );
                 
             elif tree.funcref.gvar = "IsZeroForMorphisms" then
