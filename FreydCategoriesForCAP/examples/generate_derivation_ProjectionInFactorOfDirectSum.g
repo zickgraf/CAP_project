@@ -2,58 +2,103 @@ LoadPackage( "FreydCategoriesForCAP", false );
 LoadPackage( "QPA", false );
 LoadPackage( "Algebroids", false );
 
-quiver := RightQuiver( "Q(a)[]" );
-kQ := PathAlgebra( HomalgFieldOfRationals( ), quiver );
-Aoid := Algebroid( kQ );
+CapJitAddTypeSignature( "Label", [ IsObjectInFpCategory ], IsStringRep );
 
-a := SetOfObjects( Aoid )[1];
+quiver := RightQuiver( "Q(a,b,c)[]" );
+F := FreeCategory( quiver );
+ZZZ := HomalgRingOfIntegers( );
+L := LinearClosure( ZZZ, F, ReturnTrue );
+#kQ := PathAlgebra( HomalgFieldOfRationals( ), quiver );
+#Aoid := Algebroid( kQ );
 
-add := AdditiveClosure( Aoid );
+#a := SetOfObjects( Aoid )[1];
 
-a_add := a / add;
+#add := AdditiveClosure( Aoid );
+
+a := SetOfObjects( F )[1];
+b := SetOfObjects( F )[2];
+c := SetOfObjects( F )[3];
+
+a_L := LinearClosureObject( L, a );
+b_L := LinearClosureObject( L, b );
+c_L := LinearClosureObject( L, c );
+
+add := AdditiveClosure( L );
+
+a_add := a_L / add;
+b_add := b_L / add;
+c_add := c_L / add;
 
 Assert( 0, not CanCompute( add, "ProjectionInFactorOfDirectSumWithGivenDirectSum" ) );
 
-pi_2 := BasisOfExternalHom( DirectSum( [ a_add, a_add, a_add ] ), a_add )[2];
+#pi_2 := BasisOfExternalHom( DirectSum( [ a_add, a_add, a_add ] ), a_add )[2];
+pi_2 := BasisOfExternalHom( DirectSum( [ a_add, b_add, c_add ] ), b_add )[1];
+
+#SetInfoLevel( InfoCategoryConstructor, 3 );
 
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsCongruentForMorphisms",
         "ZeroMorphism",
         "IdentityMorphism",
+        "MultiplyWithElementOfCommutativeRingForMorphisms",
+        "SumOfMorphisms",
         "DirectSum",
         "UniversalMorphismIntoDirectSumWithGivenDirectSum",
         "UniversalMorphismFromDirectSumWithGivenDirectSum",
     ],
-    properties := [ "IsAbCategory" ],
+    properties := [ "IsLinearCategoryOverCommutativeRing", "IsAbCategory" ],
+    commutative_ring_of_linear_category := ZZZ,
 ) );
 
 StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
 
 Assert( 0, not CanCompute( dummy, "ProjectionInFactorOfDirectSumWithGivenDirectSum" ) );
 
-func := function ( dummy, a_dummy, aaa_dummy )
-  local object_function, morphism_function, universal_functor_on_objects, universal_functor_on_morphisms, pi;
+func := function ( dummy, a_dummy, b_dummy, c_dummy, abc_dummy )
+  local object_function_F, morphism_function_F, object_function_L, morphism_function_L, universal_functor_on_objects, universal_functor_on_morphisms, a_L, b_L, c_L, pi;
     
-    # Aoid -> dummy
-    object_function := function ( obj )
+    # F -> dummy
+    object_function_F := function ( obj )
         
-        return a_dummy;
+        if Label( obj ) = "a" then
+            
+            return a_dummy;
+            
+        elif Label( obj ) = "b" then
+            
+            return b_dummy;
+            
+        else # TODO
+            
+            return c_dummy;
+            
+        fi;
         
     end;
     
-    morphism_function := function ( source, mor, range )
+    morphism_function_F := function ( source, mor, range )
         
-        if IsZeroForMorphisms( Aoid, mor ) then
-            
-            return ZeroMorphism( dummy, source, range );
-            
-        else
-            
-            # TODO: multiple of identity
-            return IdentityMorphism( dummy, source );
-            
-        fi;
+        # TODO: composition of identities
+        return IdentityMorphism( dummy, source );
+        
+    end;
+    
+    # lift to L -> dummy
+    object_function_L := function ( obj )
+        
+        return object_function_F( UnderlyingOriginalObject( obj ) );
+        
+    end;
+    
+    morphism_function_L := function ( source, mor, range )
+      local coeffs, support, support_range;
+        
+        coeffs := CoefficientsList( mor );
+        support := SupportMorphisms( mor );
+        support_range := List( support, s -> morphism_function_F( object_function_F( Source( s ) ), s, object_function_F( Range( s ) ) ) );
+        
+        return LinearCombinationOfMorphisms( dummy, source, coeffs, support_range, range );
         
     end;
     
@@ -65,7 +110,7 @@ func := function ( dummy, a_dummy, aaa_dummy )
         
         objs := ObjectList( A );
         
-        objs := List( objs, obj -> object_function( obj ) );
+        objs := List( objs, obj -> object_function_L( obj ) );
         
         return DirectSum( add, objs );
         
@@ -74,30 +119,36 @@ func := function ( dummy, a_dummy, aaa_dummy )
     universal_functor_on_morphisms := function ( source, alpha, range )
         local source_diagram, range_diagram, listlist;
         
-        source_diagram := List( ObjectList( Source( alpha ) ), obj -> object_function( obj ) );
-        range_diagram := List( ObjectList( Range( alpha ) ), obj -> object_function( obj ) );
+        source_diagram := List( ObjectList( Source( alpha ) ), obj -> object_function_L( obj ) );
+        range_diagram := List( ObjectList( Range( alpha ) ), obj -> object_function_L( obj ) );
         
-        listlist := List( [ 1 .. NrRows( alpha ) ], i -> List( [ 1 .. NrCols( alpha ) ], j -> morphism_function( source_diagram[i], alpha[i,j], range_diagram[j] ) ) );
+        listlist := List( [ 1 .. NrRows( alpha ) ], i -> List( [ 1 .. NrCols( alpha ) ], j -> morphism_function_L( source_diagram[i], alpha[i,j], range_diagram[j] ) ) );
         
         return MorphismBetweenDirectSumsWithGivenDirectSums( dummy, source, source_diagram, listlist, range_diagram, range );
         
     end;
     
+    a_L := LinearClosureObject( L, a );
+    b_L := LinearClosureObject( L, b );
+    c_L := LinearClosureObject( L, c );
+    
     pi := MorphismConstructor( add,
-        ObjectConstructor( add, [ a, a, a ] ),
-        [ [ ZeroMorphism( Aoid, a, a ) ], [ IdentityMorphism( Aoid, a ) ], [ ZeroMorphism( Aoid, a, a ) ] ],
-        ObjectConstructor( add, [ a ] )
+        ObjectConstructor( add, [ a_L, b_L, c_L ] ),
+        [ [ ZeroMorphism( L, a_L, b_L ) ], [ LinearClosureMorphismNC( L, b_L, [ 1 ], [ IdentityMorphism( F, b ) ], b_L ) ], [ ZeroMorphism( L, c_L, b_L ) ] ],
+        ObjectConstructor( add, [ b_L ] )
     );
     
-    return universal_functor_on_morphisms( aaa_dummy, pi, a_dummy );
+    return universal_functor_on_morphisms( abc_dummy, pi, b_dummy );
     
 end;
 
 T := TerminalCategoryWithMultipleObjects( );
 a_T := "a" / T;
-aaa_T := DirectSum( T, [ a_T, a_T, a_T ] );
+b_T := "b" / T;
+c_T := "c" / T;
+abc_T := DirectSum( T, [ a_T, b_T, c_T ] );
 
-func( T, a_T, aaa_T );
+func( T, a_T, b_T, c_T, abc_T );
 
 ReadPackage( "FreydCategoriesForCAP",
     "gap/CategoryOfRowsAsAdditiveClosureOfRingAsCategory_CompilerLogic.gi");
@@ -168,18 +219,138 @@ CapJitAddLogicTemplate(
     )
 );
 
-# TODO: the following logic template only holds up to congruence
 CapJitAddLogicTemplate(
     rec(
-        variable_names := [ "cat", "obj", "source", "tau" ],
-        src_template := "UniversalMorphismIntoDirectSumWithGivenDirectSum( cat, ListWithIdenticalEntries( 1, obj ), source, tau, obj )",
-        dst_template := "tau[1]",
+        variable_names := [ "cat", "obj" ],
+        src_template := "UnderlyingOriginalObject( LinearClosureObject( cat, obj ) )",
+        dst_template := "obj",
     )
 );
 
-compiled_func := CapJitCompiledFunction( func, dummy, [ "category", "object", "object" ], "morphism" );
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "source", "coefficients", "support_morphisms", "range" ],
+#        src_template := "CoefficientsList( LinearClosureMorphismNC( cat, source, coefficients, support_morphisms, range ) )",
+#        dst_template := "coefficients",
+#    )
+#);
+#
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "source", "coefficients", "support_morphisms", "range" ],
+#        src_template := "SupportMorphisms( LinearClosureMorphismNC( cat, source, coefficients, support_morphisms, range ) )",
+#        dst_template := "support_morphisms",
+#    )
+#);
 
-compiled_func( T, a_T, aaa_T );
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ ],
+        src_template := "IsEmpty( [ ] )",
+        dst_template := "true",
+    )
+);
+
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "element" ],
+        src_template := "IsEmpty( [ element ] )",
+        dst_template := "false",
+    )
+);
+
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "entry" ],
+        src_template := "ListWithIdenticalEntries( 0, entry )",
+        dst_template := "[ ]",
+    )
+);
+
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "entry" ],
+        src_template := "ListWithIdenticalEntries( 1, entry )",
+        dst_template := "[ entry ]",
+    )
+);
+
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "func" ],
+        src_template := "ListN( [ ], [ ], func )",
+        dst_template := "[ ]",
+    )
+);
+
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ "entry_1", "entry_2", "func" ],
+        src_template := "ListN( [ entry_1 ], [ entry_2 ], func )",
+        dst_template := "[ func( entry_1, entry_2 ) ]",
+    )
+);
+
+# TODO: the following logic templates only holds up to congruence
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "obj", "source", "tau" ],
+#        src_template := "UniversalMorphismIntoDirectSumWithGivenDirectSum( cat, [ obj ], source, tau, obj )",
+#        dst_template := "tau[1]",
+#    )
+#);
+
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "source", "range" ],
+#        src_template := "SumOfMorphisms( cat, source, [ ], range )",
+#        dst_template := "ZeroMorphism( cat, source, range )",
+#    )
+#);
+#
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "source", "range", "mor" ],
+#        src_template := "SumOfMorphisms( cat, source, [ mor ], range )",
+#        dst_template := "mor",
+#    )
+#);
+#
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "mor" ],
+#        src_template := "MultiplyWithElementOfCommutativeRingForMorphisms( cat, 1, mor )",
+#        dst_template := "mor",
+#    )
+#);
+
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ ],
+        src_template := "Label( a )",
+        dst_template := "\"a\"",
+    )
+);
+
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ ],
+        src_template := "Label( b )",
+        dst_template := "\"b\"",
+    )
+);
+
+CapJitAddLogicTemplate(
+    rec(
+        variable_names := [ ],
+        src_template := "Label( c )",
+        dst_template := "\"c\"",
+    )
+);
+
+compiled_func := CapJitCompiledFunction( func, dummy, [ "category", "object", "object", "object", "object" ], "morphism" );
+
+compiled_func( T, a_T, b_T, c_T, abc_T );
 
 Display( compiled_func );
 #! function ( dummy_1, a_dummy_1, aaa_dummy_1 )
