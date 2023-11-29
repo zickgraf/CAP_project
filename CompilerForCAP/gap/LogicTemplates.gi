@@ -78,7 +78,7 @@ CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_fi
         
     fi;
     
-    latex_string := Concatenation( "\\text{(rule", specifier, ")}\\quad ", latex_string );
+    latex_string := Concatenation( "\\llap{\\text{(rule", specifier, ")}\\qquad} ", latex_string );
     
     #latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
     #latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}\n" );

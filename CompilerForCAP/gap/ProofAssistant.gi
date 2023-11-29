@@ -2515,6 +2515,9 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         
     else
         
+        tree := ENHANCED_SYNTAX_TREE( func );
+        local_replacements := ShallowCopy( tree.local_replacements );
+        
         if CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY = fail then
             
             text := "";
@@ -2599,22 +2602,70 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                     
                     name := names[i];
                     
+                    source := fail;
+                    range := fail;
+                    
                     inner_parts := MySplitString( name, "__" );
                     
                     if Length( inner_parts ) = 3 then
                         
-                        name := Concatenation( "\\myboxed{", LaTeXName( inner_parts[1] ), "}" );
+                        #name := Concatenation( "\\myboxed{", LaTeXName( inner_parts[1] ), "}" );
+                        name := inner_parts[1];
                         source := Concatenation( "\\myboxed{", LaTeXName( inner_parts[2] ), "}" );
                         range := Concatenation( "\\myboxed{", LaTeXName( inner_parts[3] ), "}" );
                         
-                        Add( current_names, Concatenation( "$", name, " : ", source, " \\to ", range, "$" ) );
-                        
                     else
                         
-                        Add( current_names, Concatenation( "$\\myboxed{", LaTeXName( name ), "}$" ) );
+                        to_remove := [ ];
+                        
+                        for j in [ 1 .. Length( local_replacements ) ] do
+                            
+                            replacement := local_replacements[j];
+                            
+                            if CapJitIsCallToGlobalFunction( replacement.src, "Source" ) and replacement.src.args.length = 1 and
+                               replacement.src.args.1.type = "EXPR_REF_FVAR" and replacement.src.args.1.func_id = tree.id and replacement.src.args.1.name = name and
+                               replacement.dst.type = "EXPR_REF_FVAR" and replacement.dst.func_id = tree.id then
+                                
+                                Assert( 0, source = fail );
+                                
+                                source := Concatenation( "\\myboxed{", LaTeXName( replacement.dst.name ), "}" );
+                                
+                                Add( to_remove, j );
+                                
+                            elif CapJitIsCallToGlobalFunction( replacement.src, gvar -> gvar in [ "Range", "Target" ] ) and replacement.src.args.length = 1 and
+                               replacement.src.args.1.type = "EXPR_REF_FVAR" and replacement.src.args.1.func_id = tree.id and replacement.src.args.1.name = name and
+                               replacement.dst.type = "EXPR_REF_FVAR" and replacement.dst.func_id = tree.id then
+                                
+                                Assert( 0, range = fail );
+                                
+                                range := Concatenation( "\\myboxed{", LaTeXName( replacement.dst.name ), "}" );
+                                
+                                Add( to_remove, j );
+                                
+                            fi;
+                            
+                        od;
+                        
+                        local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
+                        
+                    fi;
+                    
+                    name := Concatenation( "\\myboxed{", LaTeXName( name ), "}" );
+                    
+                    if source <> fail and range <> fail then
+                        
+                        Add( current_names, Concatenation( "$", name, " : ", source, " \\to ", range, "$" ) );
+                        
+                    elif source = fail and range = fail then
+                        
+                        Add( current_names, Concatenation( "$", name, "$" ) );
                         
                         #source := Concatenation( "s(", name, ")" );
                         #range := Concatenation( "t(", name, ")" );
+                        
+                    else
+                        
+                        Error( "this case is not supported" );
                         
                     fi;
                     
@@ -2687,16 +2738,20 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             
         fi;
         
-        tree := ENHANCED_SYNTAX_TREE( func );
-        
-        if not IsEmpty( tree.local_replacements ) then
+        if not IsEmpty( local_replacements ) then
             
             condition_func := StructuralCopy( tree );
             condition_func.local_replacements := [ ];
             
-            Assert( 0, Length( condition_func.bindings.names ) = 1 );
+            # TODO: make sure that CapJitAddLocalReplacement comes before any assignments
+            #Assert( 0, Length( condition_func.bindings.names ) = 1 );
             
-            conditions := List( tree.local_replacements, function ( replacement )
+            condition_func.bindings := rec(
+                type := "FVAR_BINDING_SEQ",
+                names := [ ],
+            );
+            
+            conditions := List( local_replacements, function ( replacement )
                 
                 if replacement.dst.type = "EXPR_TRUE" then
                     
@@ -2720,7 +2775,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                 
             end );
             
-            condition_func.bindings.BINDING_RETURN_VALUE := Remove( conditions, 1 );
+            CapJitAddBinding( condition_func.bindings, "RETURN_VALUE", Remove( conditions, 1 ) );
             
             for condition in conditions do
                 
@@ -2805,6 +2860,8 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
         
     fi;
+    
+    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
     
     return latex_string;
     
@@ -2974,6 +3031,8 @@ BindGlobal( "PRINT_THEOREM", function ( type, args... )
     
     #latex_string := Concatenation( "\\text{(claim)}\\quad ", latex_string );
     
+    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
     return latex_string;
     
 end );
@@ -3043,6 +3102,7 @@ specifications := rec(
                 input_types := [ "category", "morphism", "morphism" ],
                 func := function ( cat, alpha, beta )
                     
+                    # alpha and beta are parallel
                     CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
                     CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
                     
@@ -3052,7 +3112,62 @@ specifications := rec(
                     );
                     
                 end,
-            )
+            ),
+            rec(
+                # addition is bilinear from the left
+                input_types := [ "category", "morphism", "morphism", "morphism" ],
+                func := function ( cat, alpha, beta, phi )
+                    
+                    # alpha and beta are parallel
+                    CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
+                    CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), Range( phi ) );
+                    
+                    return IsCongruentForMorphisms( cat,
+                        PreCompose( cat, phi, AdditionForMorphisms( cat, alpha, beta ) ),
+                        AdditionForMorphisms( cat, PreCompose( cat, phi, alpha ), PreCompose( cat, phi, beta ) )
+                    );
+                    
+                end,
+            ),
+            rec(
+                # addition is bilinear from the right
+                input_types := [ "category", "morphism", "morphism", "morphism" ],
+                func := function ( cat, alpha, beta, phi )
+                    
+                    # alpha and beta are parallel
+                    CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
+                    CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
+                    
+                    CapJitAddLocalReplacement( Source( phi ), Range( alpha ) );
+                    
+                    return IsCongruentForMorphisms( cat,
+                        PreCompose( cat, AdditionForMorphisms( cat, alpha, beta ), phi ),
+                        AdditionForMorphisms( cat, PreCompose( cat, alpha, phi ), PreCompose( cat, beta, phi ) )
+                    );
+                    
+                end,
+            ),
+        ],
+    ),
+    MultiplyWithElementOfCommutativeRingForMorphisms := rec(
+        postconditions := [
+            rec(
+                # multiplication is associative
+                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
+                func := { cat, r, s, alpha } -> IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, MultiplyWithElementOfCommutativeRingForMorphisms( s, alpha ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r * s, alpha ) ),
+            ),
+            rec(
+                # multiplication is distributive from the right
+                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
+                func := { cat, r, s, alpha } -> IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r + s, alpha ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, s, alpha ) ) ),
+            ),
+            rec(
+                # multiplication is distributive from the left
+                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
+                func := { cat, r, alpha, beta } -> IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, AdditionForMorphisms( cat, alpha, beta ) ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ) ),
+            ),
         ],
     ),
     ZeroMorphism := rec(
@@ -3143,9 +3258,13 @@ propositions := rec(
         description := "is indeed a category",
         operations := [ "PreCompose", "IdentityMorphism" ],
     ),
-    is_pre_additive_category := rec(
-        description := "is a pre-additive category",
+    is_preadditive_category := rec(
+        description := "is a preadditive category",
         operations := [ "AdditionForMorphisms", "ZeroMorphism", "AdditiveInverseForMorphisms" ],
+    ),
+    is_linear_category := rec(
+        description := "is a linear category",
+        operations := [ "MultiplyWithElementOfCommutativeRingForMorphisms" ],
     ),
     has_zero_object := rec(
         description := "has a zero object",
@@ -3336,6 +3455,8 @@ StateProposition := function ( proposition_id, variable_name_translator )
     
     cat_description := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.description;
     
+    Print( "Proposition: ", UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n\n" );
+    
     return Concatenation(
         "\\begin{proposition}\n",
         UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n",
@@ -3347,21 +3468,29 @@ end;
 StateNextLemma := function ( )
   local active_lemma_index, lemmata;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail );
+    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail then
+        
+        Display( "No active proposition." );
+        return;
+        
+    fi;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM = fail );
+    
+    lemmata := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata;
+    
+    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( lemmata ) then
+        
+        Display( "All lemmata proven." );
+        return;
+        
+    fi;
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index + 1;
     
     active_lemma_index := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index;
-    lemmata := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata;
     
-    if active_lemma_index > Length( lemmata ) then
-        
-        Error( "All lemmata proven." );
-        return;
-        
-    fi;
+    Print( "Next lemma:\n" );
     
     return StateLemma( lemmata[active_lemma_index].func, lemmata[active_lemma_index].input_types );
     
@@ -3383,7 +3512,7 @@ AssertProposition := function ( )
     
     return Concatenation(
         "With this, we have shown:\n",
-        UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition_description, ".\n"
+        UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition_description, ".\\qed\n"
     );
     
 end;
