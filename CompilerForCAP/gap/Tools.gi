@@ -1173,6 +1173,7 @@ BindGlobal( "LaTeXName", function ( name )
         psi := "\\psi",
         omega := "\\omega",
         QQ := "\\QQ",
+        asterisk := "*",
     );
     
     # replace names of greek letters by unicode characters
@@ -1752,6 +1753,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := LaTeXName( name ),
                 );
                 
+            elif type = "element_of_commutative_ring_of_linear_structure" then
+                
+                return rec(
+                    type := "plain",
+                    string := LaTeXName( name ),
+                );
+                
             else
                 
                 Error( "unkown type ", type );
@@ -2255,6 +2263,26 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     math_record := rec(
                         type := "plain",
                         string := Concatenation( "\\mathrm{MorphismMatrix}(", result.args.1.string, ")" ),
+                    );
+                    
+                fi;
+                
+            elif tree.funcref.gvar = "UnderlyingRingElement" and IsSpecializationOfFilter( "morphism", tree.args.1.data_type.filter ) then
+                
+                # TODO
+                
+                if Length( result.args.1.string ) >= 9 and result.args.1.string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.string ) = '}' then
+                    
+                    math_record := rec(
+                        type := "plain",
+                        string := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]},
+                    );
+                    
+                else
+                    
+                    math_record := rec(
+                        type := "plain",
+                        string := Concatenation( "\\mathrm{UnderlyingRingElement}(", result.args.1.string, ")" ),
                     );
                     
                 fi;
