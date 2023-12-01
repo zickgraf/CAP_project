@@ -927,69 +927,69 @@ InstallGlobalFunction( "ConcatenationOfStringsAsEnumerationWithAnd", function ( 
     
 end );
 
-WriteResultToTeXFile := function ( filename, label, result )
-  local path, content;
-    
-    path := Concatenation( filename, ".gap_autogen.tex" );
-    
-    result := Concatenation(
-        "\\begin{autogen-with-ref}{", label, "}\n",
-        #"\\label{src:", label, "}\n",
-        result,
-        "\n\\end{autogen-with-ref}\n"
-    );
-    
-    # check if file already exists with the correct content
-    if IsExistingFile( path ) then
-        
-        content := ReadFileForHomalg( path );
-        
-        if content = result then
-            
-            return;
-            
-        fi;
-        
-    fi;
-    
-    WriteFileForHomalg( path, result );
-    
-end;
-
-TestAndReturnCode := function ( code )
-  local lines;
-    
-    Assert( 0, Test( InputTextString( code ) ) );
-    
-    lines := SplitString( code, "\n" );
-    
-    if lines[1] = "" then
-        
-        Remove( lines, 1 );
-        
-    fi;
-    
-    lines := List( lines, function ( line )
-        
-        if StartsWith( line, "gap>" ) then
-            
-            return Concatenation( "(*@\\textcolor{promptColor}{gap>}\\aftergroup\\startGAPInput@*)", line{[ 5 .. Length( line )]}, "(*@\\aftergroup\\endGAPInput@*)" );
-            
-        elif StartsWith( line, ">" ) then
-            
-            return Concatenation( "(*@\\textcolor{promptColor}{>}\\aftergroup\\startGAPInput@*)", line{[ 2 .. Length( line )]}, "(*@\\aftergroup\\endGAPInput@*)" );
-            
-        else
-            
-            return line;
-            
-        fi;
-        
-    end );
-    
-    return Concatenation( "\\begin{lstlisting}\n", JoinStringsWithSeparator( lines, "\n" ), "\n\\end{lstlisting}" );
-    
-end;
+#WriteResultToTeXFile := function ( filename, label, result )
+#  local path, content;
+#    
+#    path := Concatenation( filename, ".gap_autogen.tex" );
+#    
+#    result := Concatenation(
+#        "\\begin{autogen-with-ref}{", label, "}\n",
+#        #"\\label{src:", label, "}\n",
+#        result,
+#        "\n\\end{autogen-with-ref}\n"
+#    );
+#    
+#    # check if file already exists with the correct content
+#    if IsExistingFile( path ) then
+#        
+#        content := ReadFileForHomalg( path );
+#        
+#        if content = result then
+#            
+#            return;
+#            
+#        fi;
+#        
+#    fi;
+#    
+#    WriteFileForHomalg( path, result );
+#    
+#end;
+#
+#TestAndReturnCode := function ( code )
+#  local lines;
+#    
+#    Assert( 0, Test( InputTextString( code ) ) );
+#    
+#    lines := SplitString( code, "\n" );
+#    
+#    if lines[1] = "" then
+#        
+#        Remove( lines, 1 );
+#        
+#    fi;
+#    
+#    lines := List( lines, function ( line )
+#        
+#        if StartsWith( line, "gap>" ) then
+#            
+#            return Concatenation( "(*@\\textcolor{promptColor}{gap>}\\aftergroup\\startGAPInput@*)", line{[ 5 .. Length( line )]}, "(*@\\aftergroup\\endGAPInput@*)" );
+#            
+#        elif StartsWith( line, ">" ) then
+#            
+#            return Concatenation( "(*@\\textcolor{promptColor}{>}\\aftergroup\\startGAPInput@*)", line{[ 2 .. Length( line )]}, "(*@\\aftergroup\\endGAPInput@*)" );
+#            
+#        else
+#            
+#            return line;
+#            
+#        fi;
+#        
+#    end );
+#    
+#    return Concatenation( "\\begin{lstlisting}\n", JoinStringsWithSeparator( lines, "\n" ), "\n\\end{lstlisting}" );
+#    
+#end;
 
 FunctionLaTeXString := function ( func )
   local old_size_screen, string;
@@ -1660,7 +1660,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
                     
-                    name := Concatenation( "\\myboxed{", LaTeXName( name ), "}" );
+                    name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
                     
                 fi;
                 
@@ -1681,9 +1681,9 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
                         
-                        name := Concatenation( "\\myboxed{", name, "}" );
-                        source := Concatenation( "\\myboxed{", source, "}" );
-                        range := Concatenation( "\\myboxed{", range, "}" );
+                        name := Concatenation( "\\bboxed{", name, "}" );
+                        source := Concatenation( "\\bboxed{", source, "}" );
+                        range := Concatenation( "\\bboxed{", range, "}" );
                         
                     fi;
                      
@@ -1693,7 +1693,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
                         
-                        name := Concatenation( "\\myboxed{", name, "}" );
+                        name := Concatenation( "\\bboxed{", name, "}" );
                         
                     fi;
                     
@@ -1733,11 +1733,11 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     return rec(
                         type := "plain",
-                        string := Concatenation( "\\left(\\myboxed{", LaTeXName( parts[1] ) , "^1},\\ldots,\\myboxed{", LaTeXName( parts[1] ), "^", LaTeXName( parts[2] ), "}\\right)" ),
+                        string := Concatenation( "\\left(\\bboxed{", LaTeXName( parts[1] ) , "^1},\\ldots,\\bboxed{", LaTeXName( parts[1] ), "^", LaTeXName( parts[2] ), "}\\right)" ),
                         length_string := LaTeXName( parts[2] ),
-                        first := Concatenation( "\\myboxed{", LaTeXName( parts[1] ), "^1}" ),
-                        last := Concatenation( "\\myboxed{", LaTeXName( parts[1] ), "^", LaTeXName( parts[2] ), "}" ),
-                        element_string := Concatenation( "\\myboxed{", LaTeXName( parts[1] ), "^{INDEX}}" ),
+                        first := Concatenation( "\\bboxed{", LaTeXName( parts[1] ), "^1}" ),
+                        last := Concatenation( "\\bboxed{", LaTeXName( parts[1] ), "^", LaTeXName( parts[2] ), "}" ),
+                        element_string := Concatenation( "\\bboxed{", LaTeXName( parts[1] ), "^{INDEX}}" ),
                     );
                     
                 else
@@ -1848,15 +1848,15 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                         latex_string_record.type := "plain";
                         
                         if tree.args.2.gvar = "ObjectList" and
-                           Length( result.args.1.first ) >= 9 and result.args.1.first{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.first ) = '}' and
-                           Length( result.args.1.last ) >= 9 and result.args.1.last{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.last ) = '}' then
+                           Length( result.args.1.first ) >= 8 and result.args.1.first{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.first ) = '}' and
+                           Length( result.args.1.last ) >= 8 and result.args.1.last{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.last ) = '}' then
                             
-                            latex_string_record.first := result.args.1.first{[ 10 .. Length( result.args.1.first ) - 1 ]};
-                            latex_string_record.last := result.args.1.last{[ 10 .. Length( result.args.1.last ) - 1 ]};
+                            latex_string_record.first := result.args.1.first{[ 9 .. Length( result.args.1.first ) - 1 ]};
+                            latex_string_record.last := result.args.1.last{[ 9 .. Length( result.args.1.last ) - 1 ]};
                             
-                            if IsBound( result.args.1.element_string ) and Length( result.args.1.element_string ) >= 9 and result.args.1.element_string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.element_string ) = '}' then
+                            if IsBound( result.args.1.element_string ) and Length( result.args.1.element_string ) >= 8 and result.args.1.element_string{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.element_string ) = '}' then
                                 
-                                latex_string_record.element_string := result.args.1.element_string{[ 10 .. Length( result.args.1.element_string ) - 1 ]};
+                                latex_string_record.element_string := result.args.1.element_string{[ 9 .. Length( result.args.1.element_string ) - 1 ]};
                                 
                             fi;
                             
@@ -2010,7 +2010,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "plain",
-                    string := Concatenation( "\\myboxed{", result.args.3.string, "}" ),
+                    string := Concatenation( "\\bboxed{", result.args.3.string, "}" ),
                 );
                 
             elif tree.funcref.gvar = "AsCapCategoryObject" then
@@ -2023,7 +2023,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "plain",
-                    string := Concatenation( "\\myboxed{", result.args.2.string, "}" ),
+                    string := Concatenation( "\\bboxed{", result.args.2.string, "}" ),
                 );
                 
             elif tree.funcref.gvar = "CreateCapCategoryMorphismWithAttributes" then
@@ -2036,7 +2036,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "morphism",
-                    string := Concatenation( "\\myboxed{", result.args.5.string, "}" ),
+                    string := Concatenation( "\\bboxed{", result.args.5.string, "}" ),
                     source := result.args.2.string,
                     range := result.args.3.string,
                 );
@@ -2051,7 +2051,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 return rec(
                     type := "morphism",
-                    string := Concatenation( "\\myboxed{", result.args.4.string, "}" ),
+                    string := Concatenation( "\\bboxed{", result.args.4.string, "}" ),
                     source := result.args.2.string,
                     range := result.args.3.string,
                 );
@@ -2183,11 +2183,11 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 # TODO
                 
-                if Length( result.args.1.string ) >= 9 and result.args.1.string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.string ) = '}' then
+                if Length( result.args.1.string ) >= 8 and result.args.1.string{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.string ) = '}' then
                     
                     math_record := rec(
                         type := "plain",
-                        string := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]},
+                        string := result.args.1.string{[ 9 .. Length( result.args.1.string ) - 1 ]},
                     );
                     
                 else
@@ -2195,6 +2195,26 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     math_record := rec(
                         type := "plain",
                         string := Concatenation( "\\mathrm{AsValue}(", result.args.1.string, ")" ),
+                    );
+                    
+                fi;
+                
+            elif tree.funcref.gvar = "AsInteger" and IsSpecializationOfFilter( "object", tree.args.1.data_type.filter ) then
+                
+                # TODO
+                
+                if Length( result.args.1.string ) >= 8 and result.args.1.string{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.string ) = '}' then
+                    
+                    math_record := rec(
+                        type := "plain",
+                        string := result.args.1.string{[ 9 .. Length( result.args.1.string ) - 1 ]},
+                    );
+                    
+                else
+                    
+                    math_record := rec(
+                        type := "plain",
+                        string := Concatenation( "\\mathrm{AsInteger}(", result.args.1.string, ")" ),
                     );
                     
                 fi;
@@ -2203,11 +2223,11 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 # TODO
                 
-                if Length( result.args.1.string ) >= 9 and result.args.1.string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.string ) = '}' then
+                if Length( result.args.1.string ) >= 8 and result.args.1.string{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.string ) = '}' then
                     
                     math_record := rec(
                         type := "plain",
-                        string := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]},
+                        string := result.args.1.string{[ 9 .. Length( result.args.1.string ) - 1 ]},
                     );
                     
                 else
@@ -2219,13 +2239,33 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 fi;
                 
+            elif tree.funcref.gvar = "AsInteger" and IsSpecializationOfFilter( "morphism", tree.args.1.data_type.filter ) then
+                
+                # TODO
+                
+                if Length( result.args.1.string ) >= 8 and result.args.1.string{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.string ) = '}' then
+                    
+                    math_record := rec(
+                        type := "plain",
+                        string := result.args.1.string{[ 9 .. Length( result.args.1.string ) - 1 ]},
+                    );
+                    
+                else
+                    
+                    math_record := rec(
+                        type := "plain",
+                        string := Concatenation( "\\mathrm{AsInteger}(", result.args.1.string, ")" ),
+                    );
+                    
+                fi;
+                
             elif tree.funcref.gvar = "ObjectList" and IsSpecializationOfFilter( "object", tree.args.1.data_type.filter ) then
                 
                 # TODO
                 
-                if Length( result.args.1.string ) >= 9 and result.args.1.string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.string ) = '}' then
+                if Length( result.args.1.string ) >= 8 and result.args.1.string{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.string ) = '}' then
                     
-                    name := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]};
+                    name := result.args.1.string{[ 9 .. Length( result.args.1.string ) - 1 ]};
                     
                     math_record := rec(
                         type := "plain",
@@ -2251,11 +2291,11 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 # TODO
                 
-                if Length( result.args.1.string ) >= 9 and result.args.1.string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.string ) = '}' then
+                if Length( result.args.1.string ) >= 8 and result.args.1.string{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.string ) = '}' then
                     
                     math_record := rec(
                         type := "plain",
-                        string := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]},
+                        string := result.args.1.string{[ 9 .. Length( result.args.1.string ) - 1 ]},
                     );
                     
                 else
@@ -2271,11 +2311,11 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 # TODO
                 
-                if Length( result.args.1.string ) >= 9 and result.args.1.string{[1 .. 9]} = "\\myboxed{" and Last( result.args.1.string ) = '}' then
+                if Length( result.args.1.string ) >= 8 and result.args.1.string{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.string ) = '}' then
                     
                     math_record := rec(
                         type := "plain",
-                        string := result.args.1.string{[ 10 .. Length( result.args.1.string ) - 1 ]},
+                        string := result.args.1.string{[ 9 .. Length( result.args.1.string ) - 1 ]},
                     );
                     
                 else

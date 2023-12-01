@@ -4,6 +4,8 @@
 # Implementations
 #
 
+LATEX_OUTPUT := true;
+
 CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED := false;
 
 InstallGlobalFunction( CapJitEnableProofAssistantMode, function ( )
@@ -2590,7 +2592,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                 
             elif filter = "object" then
                 
-                current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\myboxed{", LaTeXName( names[i] ), "}$" ) ) );
+                current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\bboxed{", LaTeXName( names[i] ), "}$" ) ) );
                 
                 part := Concatenation( numeral, " object", plural, " ", current_names );
                 
@@ -2609,10 +2611,10 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                     
                     if Length( inner_parts ) = 3 then
                         
-                        #name := Concatenation( "\\myboxed{", LaTeXName( inner_parts[1] ), "}" );
+                        #name := Concatenation( "\\bboxed{", LaTeXName( inner_parts[1] ), "}" );
                         name := inner_parts[1];
-                        source := Concatenation( "\\myboxed{", LaTeXName( inner_parts[2] ), "}" );
-                        range := Concatenation( "\\myboxed{", LaTeXName( inner_parts[3] ), "}" );
+                        source := Concatenation( "\\bboxed{", LaTeXName( inner_parts[2] ), "}" );
+                        range := Concatenation( "\\bboxed{", LaTeXName( inner_parts[3] ), "}" );
                         
                     else
                         
@@ -2628,7 +2630,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                                 
                                 Assert( 0, source = fail );
                                 
-                                source := Concatenation( "\\myboxed{", LaTeXName( replacement.dst.name ), "}" );
+                                source := Concatenation( "\\bboxed{", LaTeXName( replacement.dst.name ), "}" );
                                 
                                 Add( to_remove, j );
                                 
@@ -2638,7 +2640,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                                 
                                 Assert( 0, range = fail );
                                 
-                                range := Concatenation( "\\myboxed{", LaTeXName( replacement.dst.name ), "}" );
+                                range := Concatenation( "\\bboxed{", LaTeXName( replacement.dst.name ), "}" );
                                 
                                 Add( to_remove, j );
                                 
@@ -2650,7 +2652,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                         
                     fi;
                     
-                    name := Concatenation( "\\myboxed{", LaTeXName( name ), "}" );
+                    name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
                     
                     if source <> fail and range <> fail then
                         
@@ -2704,7 +2706,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                         name := LaTeXName( inner_parts[1] );
                         length := LaTeXName( inner_parts[2] );
                         
-                        Add( current_names, Concatenation( "$\\left(\\myboxed{", name , "^1},\\ldots,\\myboxed{", name, "^", length, "}\\right)$" ) );
+                        Add( current_names, Concatenation( "$\\left(\\bboxed{", name , "^1},\\ldots,\\bboxed{", name, "^", length, "}\\right)$" ) );
                         
                     else
                         
@@ -2861,9 +2863,15 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         
     fi;
     
-    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
-    
-    return latex_string;
+    if LATEX_OUTPUT then
+        
+        return latex_string;
+        
+    else
+        
+        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+        
+    fi;
     
 end );
 
@@ -3031,9 +3039,15 @@ BindGlobal( "PRINT_THEOREM", function ( type, args... )
     
     #latex_string := Concatenation( "\\text{(claim)}\\quad ", latex_string );
     
-    Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
-    
-    return latex_string;
+    if LATEX_OUTPUT then
+        
+        return latex_string;
+        
+    else
+        
+        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+        
+    fi;
     
 end );
 
@@ -3455,13 +3469,19 @@ StateProposition := function ( proposition_id, variable_name_translator )
     
     cat_description := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.description;
     
-    Print( "Proposition: ", UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n\n" );
-    
-    return Concatenation(
-        "\\begin{proposition}\n",
-        UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n",
-        "\\end{proposition}"
-    );
+    if LATEX_OUTPUT then
+        
+        return Concatenation(
+            "\\begin{proposition}\n",
+            UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n",
+            "\\end{proposition}"
+        );
+        
+    else
+        
+        Print( "Proposition: ", UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n\n" );
+        
+    fi;
     
 end;
 
@@ -3490,9 +3510,16 @@ StateNextLemma := function ( )
     
     active_lemma_index := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index;
     
-    Print( "Next lemma:\n" );
-    
-    return StateLemma( lemmata[active_lemma_index].func, lemmata[active_lemma_index].input_types );
+    if LATEX_OUTPUT then
+        
+        return StateLemma( lemmata[active_lemma_index].func, lemmata[active_lemma_index].input_types );
+        
+    else
+        
+        Print( "Next lemma:\n" );
+        StateLemma( lemmata[active_lemma_index].func, lemmata[active_lemma_index].input_types );
+        
+    fi;
     
 end;
 
