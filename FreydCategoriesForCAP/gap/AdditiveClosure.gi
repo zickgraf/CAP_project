@@ -52,17 +52,18 @@ InstallGlobalFunction( NullMatImmutable, function ( arg... )
     
 end );
 
-InstallGlobalFunction( UnionOfRowsListList, function ( nr_cols, matrices )
-    
-    return Concatenation( matrices );
-    
-end );
-
 ConcatenationWithGivenLengths := function ( lengths, lists )
     
     return Concatenation( lists );
     
 end;
+
+InstallGlobalFunction( UnionOfRowsListList, function ( row_lengths, nr_cols, matrices )
+    #% CAP_JIT_RESOLVE_FUNCTION
+    
+    return ConcatenationWithGivenLengths( row_lengths, matrices );
+    
+end );
 
 InstallGlobalFunction( UnionOfColumnsListList, function ( nr_rows, column_lengths, matrices )
     #% CAP_JIT_RESOLVE_FUNCTION
@@ -946,7 +947,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
       function( cat, diagram, test_object, morphisms, direct_sum )
         local listlist;
         
-        listlist := UnionOfRowsListList( Length( ObjectList( test_object ) ), List( morphisms, tau -> MorphismMatrix( tau ) ) );
+        listlist := UnionOfRowsListList( List( diagram, d -> Length( ObjectList( d ) ) ), Length( ObjectList( test_object ) ), List( morphisms, tau -> MorphismMatrix( tau ) ) );
         
         return AdditiveClosureMorphism( cat, direct_sum,
                                         listlist,
