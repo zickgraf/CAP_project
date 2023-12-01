@@ -967,6 +967,20 @@ CapJitAddTypeSignature( "Concatenation", "any", function ( input_types )
     
 end );
 
+ConcatenationWithGivenLengths := function ( lengths, lists )
+    
+    return Concatenation( lists );
+    
+end;
+
+CapJitAddTypeSignature( "ConcatenationWithGivenLengths", [ IsList, IsList ], function ( input_types )
+    
+    Assert( 0, input_types[1].element_type.filter = IsInt );
+    Assert( 0, input_types[2].element_type.filter = IsList );
+    return rec( filter := IsList, element_type := input_types[2].element_type.element_type );
+    
+end );
+
 CapJitAddTypeSignature( "Difference", [ IsList, IsList ], function ( input_types )
     
     Assert( 0, input_types[1] = input_types[2] );
