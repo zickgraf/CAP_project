@@ -58,9 +58,16 @@ InstallGlobalFunction( UnionOfRowsListList, function ( nr_cols, matrices )
     
 end );
 
-InstallGlobalFunction( UnionOfColumnsListList, function ( nr_rows, matrices )
+ConcatenationWithGivenLengths := function ( lengths, lists )
     
-    return List( [ 1 .. nr_rows ], i -> Concatenation( List( matrices, mat -> mat[i] ) ) );
+    return Concatenation( lists );
+    
+end;
+
+InstallGlobalFunction( UnionOfColumnsListList, function ( nr_rows, column_lengths, matrices )
+    #% CAP_JIT_RESOLVE_FUNCTION
+    
+    return List( [ 1 .. nr_rows ], i -> ConcatenationWithGivenLengths( column_lengths, List( matrices, mat -> mat[i] ) ) );
     
 end );
 
@@ -926,7 +933,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
       function( cat, diagram, test_object, morphisms, direct_sum )
         local listlist;
         
-        listlist := UnionOfColumnsListList( Length( ObjectList( test_object ) ), List( morphisms, tau -> MorphismMatrix( tau ) ) );
+        listlist := UnionOfColumnsListList( Length( ObjectList( test_object ) ), List( diagram, d -> Length( ObjectList( d ) ) ), List( morphisms, tau -> MorphismMatrix( tau ) ) );
         
         return AdditiveClosureMorphism( cat, test_object,
                                         listlist,
@@ -950,7 +957,7 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
     ##
     AddComponentOfMorphismIntoDirectSum( category,
       function( cat, morphism, summands, nr )
-        local lengths, offset, start, stop;
+        local lengths, offset, start, stop, matrix;
         
         lengths := List( summands, s -> Length( ObjectList( s ) ) );
         
@@ -959,8 +966,10 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
         start := offset + 1;
         stop := offset + lengths[nr];
         
+        matrix := MorphismMatrix( morphism );
+        
         return AdditiveClosureMorphism( cat, Source( morphism ),
-                                        List( MorphismMatrix( morphism ), row -> row{[ start .. stop ]} ), # CertainColumns
+                                        List( [ 1 .. NrRows( matrix ) ], i -> matrix[i]{[ start .. stop ]} ), # CertainColumns
                                         summands[nr] );
         
     end );
