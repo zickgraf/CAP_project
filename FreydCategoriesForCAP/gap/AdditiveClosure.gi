@@ -58,6 +58,33 @@ ConcatenationWithGivenLengths := function ( lengths, lists )
     
 end;
 
+DecatenationWithGivenLengths := function ( lengths, list )
+  local result, total_length, length;
+    
+    result := [ ];
+    
+    total_length := 0;
+    
+    for length in lengths do
+        
+        Add( result, list{[ total_length + 1 .. total_length + length ]} );
+        
+        total_length := total_length + length;
+        
+    od;
+    
+    return result;
+    
+end;
+
+CapJitAddTypeSignature( "DecatenationWithGivenLengths", [ IsList, IsList ], function ( input_types )
+    
+    Assert( 0, input_types[1].element_type.filter = IsInt );
+    
+    return rec( filter := IsList, element_type := rec( filter := IsList, element_type := input_types[2].element_type ) );
+    
+end );
+
 InstallGlobalFunction( UnionOfRowsListList, function ( row_lengths, nr_cols, matrices )
     #% CAP_JIT_RESOLVE_FUNCTION
     
@@ -71,6 +98,23 @@ InstallGlobalFunction( UnionOfColumnsListList, function ( nr_rows, column_length
     return List( [ 1 .. nr_rows ], i -> ConcatenationWithGivenLengths( column_lengths, List( matrices, mat -> mat[i] ) ) );
     
 end );
+
+PartitionOfRowsListList := function ( row_lengths, nr_cols, matrix )
+    #% CAP_JIT_RESOLVE_FUNCTION
+    
+    return DecatenationWithGivenLengths( row_lengths, matrix );
+    
+end;
+
+PartitionOfColumnsListList := function ( nr_rows, column_lengths, matrix )
+  local partitions;
+    #% CAP_JIT_RESOLVE_FUNCTION
+    
+    partitions := List( [ 1 .. nr_rows ], i -> DecatenationWithGivenLengths( column_lengths, matrix[i] ) );
+    
+    return List( [ 1 .. Length( column_lengths ) ], j -> List( [ 1 .. nr_rows ], i -> partitions[i][j] ) );
+    
+end;
 
 ####################################
 ##
@@ -932,9 +976,15 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
     ##
     AddUniversalMorphismIntoDirectSumWithGivenDirectSum( category,
       function( cat, diagram, test_object, morphisms, direct_sum )
-        local listlist;
+        local nr_rows, column_lengths, matrices, listlist;
         
-        listlist := UnionOfColumnsListList( Length( ObjectList( test_object ) ), List( diagram, d -> Length( ObjectList( d ) ) ), List( morphisms, tau -> MorphismMatrix( tau ) ) );
+        nr_rows := Length( ObjectList( test_object ) );
+        
+        column_lengths := List( [ 1 .. Length( diagram ) ], i -> Length( ObjectList( diagram[i] ) ) );
+        
+        matrices := List( [ 1 .. Length( morphisms ) ], j -> MorphismMatrix( morphisms[j] ) );
+        
+        listlist := UnionOfColumnsListList( nr_rows, column_lengths, matrices );
         
         return AdditiveClosureMorphism( cat, test_object,
                                         listlist,
@@ -945,9 +995,15 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
     ##
     AddUniversalMorphismFromDirectSumWithGivenDirectSum( category,
       function( cat, diagram, test_object, morphisms, direct_sum )
-        local listlist;
+        local nr_cols, row_lengths, matrices, listlist;
         
-        listlist := UnionOfRowsListList( List( diagram, d -> Length( ObjectList( d ) ) ), Length( ObjectList( test_object ) ), List( morphisms, tau -> MorphismMatrix( tau ) ) );
+        nr_cols := Length( ObjectList( test_object ) );
+        
+        row_lengths := List( [ 1 .. Length( diagram ) ], i -> Length( ObjectList( diagram[i] ) ) );
+        
+        matrices := List( [ 1 .. Length( morphisms ) ], j -> MorphismMatrix( morphisms[j] ) );
+        
+        listlist := UnionOfRowsListList( row_lengths, nr_cols, matrices );
         
         return AdditiveClosureMorphism( cat, direct_sum,
                                         listlist,
@@ -957,37 +1013,50 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_ADDITIVE_CLOSURE,
     
     ##
     AddComponentOfMorphismIntoDirectSum( category,
-      function( cat, morphism, summands, nr )
-        local lengths, offset, start, stop, matrix;
+      function( cat, morphism, diagram, nr )
+        local nr_rows, column_lengths, listlistlist;
         
-        lengths := List( summands, s -> Length( ObjectList( s ) ) );
+        nr_rows := Length( ObjectList( Source( morphism ) ) );
         
-        offset := Sum( lengths{[ 1 .. nr-1 ]} );
+        column_lengths := List( [ 1 .. Length( diagram ) ], i -> Length( ObjectList( diagram[i] ) ) );
         
-        start := offset + 1;
-        stop := offset + lengths[nr];
-        
-        matrix := MorphismMatrix( morphism );
+        listlistlist := PartitionOfColumnsListList( nr_rows, column_lengths, MorphismMatrix( morphism ) );
         
         return AdditiveClosureMorphism( cat, Source( morphism ),
-                                        List( [ 1 .. NrRows( matrix ) ], i -> matrix[i]{[ start .. stop ]} ), # CertainColumns
-                                        summands[nr] );
+                                        listlistlist[nr],
+                                        diagram[nr] );
         
+        #local lengths, offset, start, stop, matrix;
+        #
+        #lengths := List( [ 1 .. Length( diagram ) ], i -> Length( ObjectList( diagram[i] ) ) );
+        #
+        #offset := Sum( lengths{[ 1 .. nr-1 ]} );
+        #
+        #start := offset + 1;
+        #
+        #stop := offset + lengths[nr];
+        #
+        #matrix := MorphismMatrix( morphism );
+        #
+        #return AdditiveClosureMorphism( cat, Source( morphism ),
+        #                                List( [ 1 .. NrRows( matrix ) ], i -> matrix[i]{[ start .. stop ]} ), # CertainColumns
+        #                                diagram[nr] );
+        #
     end );
     
     ##
     AddComponentOfMorphismFromDirectSum( category,
-      function( cat, morphism, summands, nr )
+      function( cat, morphism, diagram, nr )
         local lengths, offset, start, stop;
         
-        lengths := List( summands, s -> Length( ObjectList( s ) ) );
+        lengths := List( [ 1 .. Length( diagram ) ], i -> Length( ObjectList( diagram[i] ) ) );
         
         offset := Sum( lengths{[ 1 .. nr-1 ]} );
         
         start := offset + 1;
         stop := offset + lengths[nr];
         
-        return AdditiveClosureMorphism( cat, summands[nr],
+        return AdditiveClosureMorphism( cat, diagram[nr],
                                         MorphismMatrix( morphism ){[ start .. stop ]}, # CertainRows
                                         Range( morphism ) );
         

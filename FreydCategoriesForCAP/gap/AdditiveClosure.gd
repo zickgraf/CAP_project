@@ -362,14 +362,16 @@ CapJitAddTypeSignature( "NullMatImmutable", [ IsInt, IsInt ], CapJitDataTypeOfLi
 #! @Returns a list of lists
 DeclareGlobalFunction( "UnionOfRowsListList" );
 
-CapJitAddTypeSignature( "UnionOfRowsListList", [ IsInt, IsList ], function ( input_types )
-    
-    Assert( 0, input_types[2].element_type.filter = IsList );
-    Assert( 0, input_types[2].element_type.element_type.filter = IsList );
-    
-    return input_types[2].element_type;
-    
-end );
+#CapJitAddTypeSignature( "UnionOfRowsListList", [ IsInt, IsList ], function ( input_types )
+#    
+#    Error("asd");
+#    
+#    Assert( 0, input_types[2].element_type.filter = IsList );
+#    Assert( 0, input_types[2].element_type.element_type.filter = IsList );
+#    
+#    return input_types[2].element_type;
+#    
+#end );
 
 #! @Description
 #!   Augments the matrices (lists of lists) in the list <A>L</A>. The matrices must have `nr_rows` rows.
@@ -377,11 +379,13 @@ end );
 #! @Returns a list of lists
 DeclareGlobalFunction( "UnionOfColumnsListList" );
 
-CapJitAddTypeSignature( "UnionOfColumnsListList", [ IsInt, IsList ], function ( input_types )
-    
-    Assert( 0, input_types[2].element_type.filter = IsList );
-    Assert( 0, input_types[2].element_type.element_type.filter = IsList );
-    
-    return input_types[2].element_type;
-    
-end );
+#CapJitAddTypeSignature( "UnionOfColumnsListList", [ IsInt, IsList ], function ( input_types )
+#    
+#    Error("asd");
+#    
+#    Assert( 0, input_types[2].element_type.filter = IsList );
+#    Assert( 0, input_types[2].element_type.element_type.filter = IsList );
+#    
+#    return input_types[2].element_type;
+#    
+#end );
