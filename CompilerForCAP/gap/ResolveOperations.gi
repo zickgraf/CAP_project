@@ -144,6 +144,22 @@ InstallGlobalFunction( CapJitResolvedOperations, function ( tree )
                     Assert( 0, CanCompute( category, operation_name ) );
                     Assert( 0, tree.args.length = Length( info.filter_list ) );
                     
+                    if CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED then
+                        
+                        if not IsBound( tree.data_type ) then
+                            
+                            return tree;
+                            
+                        fi;
+                        
+                        #if IsBound( tree.data_type ) then
+                        #    
+                        #    Display( "asd" );
+                        #    
+                        #fi;
+                        
+                    fi;
+                    
                     if IsBound( category!.stop_compilation ) and category!.stop_compilation = true then
                         
                         return tree;
