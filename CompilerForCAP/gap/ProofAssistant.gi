@@ -2672,7 +2672,7 @@ BindGlobal( "StateLemma", function ( args... )
 end );
 
 BindGlobal( "ApplyLogicTemplate", function ( logic_template )
-  local func, cat, input_filters, old_logic_templates, old_tree, new_tree;
+  local func, cat, input_filters, old_tree, new_tree;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     
@@ -2689,7 +2689,13 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
         
     fi;
     
-    old_logic_templates := StructuralCopy( CAP_JIT_LOGIC_TEMPLATES );
+    logic_template := ShallowCopy( logic_template );
+    
+    if not IsBound( logic_template.number_of_applications ) then
+        
+        logic_template.number_of_applications := 1;
+        
+    fi;
     
     CapJitAddLogicTemplate( logic_template );
     
@@ -2699,19 +2705,23 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     
     new_tree := ENHANCED_SYNTAX_TREE( func );
     
+    if ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> t.number_of_applications <> infinity and t.number_of_applications <> 0 ) then
+        
+        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
+        
+        Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if t.number_of_applications <> infinity and t.number_of_applications <> 0 then Display( t.number_of_applications ); fi; end );
+        
+        Error( "there are logic templates with a non-zero number of remaining applications" );
+        
+    fi;
+    
     if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
         
         Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
         
-        Error( "applying the logic template did not have an effect" );
+        Error( "applying the logic template did not change the tree" );
         
     fi;
-    
-    MakeReadWriteGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
-    
-    CAP_JIT_LOGIC_TEMPLATES := old_logic_templates;
-    
-    MakeReadOnlyGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled := true;
@@ -2719,7 +2729,7 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
 end );
 
 BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template, args... )
-  local func, cat, input_filters, old_logic_templates, latex_string, old_tree, new_tree;
+  local func, cat, input_filters, latex_string, old_tree, new_tree;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     
@@ -2736,7 +2746,13 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
         
     fi;
     
-    old_logic_templates := StructuralCopy( CAP_JIT_LOGIC_TEMPLATES );
+    logic_template := ShallowCopy( logic_template );
+    
+    if not IsBound( logic_template.number_of_applications ) then
+        
+        logic_template.number_of_applications := 1;
+        
+    fi;
     
     latex_string := CallFuncList( CapJitAddLogicTemplateAndReturnLaTeXString, Concatenation( [ logic_template ], args ) );
     
@@ -2746,19 +2762,23 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
     
     new_tree := ENHANCED_SYNTAX_TREE( func );
     
+    if ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> t.number_of_applications <> infinity and t.number_of_applications <> 0 ) then
+        
+        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
+        
+        Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if t.number_of_applications <> infinity and t.number_of_applications <> 0 then Display( t.number_of_applications ); fi; end );
+        
+        Error( "there are logic templates with a non-zero number of remaining applications" );
+        
+    fi;
+    
     if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
         
         Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
         
-        Error( "applying the logic template did not have an effect" );
+        Error( "applying the logic template did not change the tree" );
         
     fi;
-    
-    MakeReadWriteGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
-    
-    CAP_JIT_LOGIC_TEMPLATES := old_logic_templates;
-    
-    MakeReadOnlyGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func := func;
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.ever_compiled := true;
