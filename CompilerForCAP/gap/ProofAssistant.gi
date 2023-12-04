@@ -2467,7 +2467,7 @@ CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool )
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
 BindGlobal( "STATE_THEOREM", function ( type, func, args... )
-  local cat, input_filters, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, inner_parts, source, range, length, tree, condition_func, conditions, result, latex_string, i, condition;
+  local cat, input_filters, tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, i, j, condition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2878,6 +2878,19 @@ end );
 BindGlobal( "StateLemma", function ( args... )
     
     return CallFuncList( STATE_THEOREM, Concatenation( [ "lemma" ], args ) );
+    
+end );
+
+BindGlobal( "ApplyLogicTemplateNTimes", function ( n, args... )
+  local i;
+    
+    Assert( 0, IsPosInt( n ) );
+    
+    for i in [ 1 .. n ] do
+        
+        CallFuncList( ApplyLogicTemplate, args );
+        
+    od;
     
 end );
 
