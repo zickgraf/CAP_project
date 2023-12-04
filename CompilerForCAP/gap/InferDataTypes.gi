@@ -111,9 +111,9 @@ InstallGlobalFunction( "CAP_JIT_INTERNAL_GET_OUTPUT_TYPE_OF_GLOBAL_FUNCTION_BY_I
         
         info := CAP_INTERNAL_METHOD_NAME_RECORD.(gvar);
         
-        if IsSpecializationOfFilterList( CAP_INTERNAL_REPLACED_STRINGS_WITH_FILTERS( info.filter_list, input_types[1].category ), input_filters ) then
-            
-            Assert( 0, info.filter_list[1] = "category" );
+        Assert( 0, info.filter_list[1] = "category" );
+        
+        if IsSpecializationOfFilter( "category", input_types[1].filter ) and IsSpecializationOfFilterList( CAP_INTERNAL_REPLACED_STRINGS_WITH_FILTERS( info.filter_list, input_types[1].category ), input_filters ) then
             
             return CAP_INTERNAL_GET_DATA_TYPE_FROM_STRING( info.return_type, input_types[1].category );
             
