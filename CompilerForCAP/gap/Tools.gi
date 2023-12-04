@@ -2729,7 +2729,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     string := parenthesize_postfix( tree, " \\text{ is a technical morphism}", tree.args.1, result.args.1 ),
                 );
                 
-            elif tree.funcref.gvar = "IsZero" and tree.args.length = 1 and IsSpecializationOfFilter( IsHomalgMatrix, tree.args.1.data_type.filter ) then
+            elif tree.funcref.gvar = "IsZero" and tree.args.length = 1 and IsBoundGlobal( "IsHomalgMatrix" ) and IsSpecializationOfFilter( ValueGlobal( "IsHomalgMatrix" ), tree.args.1.data_type.filter ) then
                 
                 math_record := rec(
                     type := "plain",
