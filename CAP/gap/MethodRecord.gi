@@ -3313,6 +3313,30 @@ MonomorphismIntoSomeInjectiveObjectWithGivenSomeInjectiveObject := rec(
   dual_operation := "EpimorphismFromSomeProjectiveObjectWithGivenSomeProjectiveObject",
   is_merely_set_theoretic := true ),
 
+DecompositionOfMorphismIntoDirectSum := rec(
+  filter_list := [ "category", "list_of_objects", "morphism" ],
+  input_arguments_names := [ "cat", "S", "u" ],
+  #output_source_getter_string := "Source( alpha )",
+  #output_source_getter_preconditions := [ ],
+  #output_range_getter_string := "S[i]",
+  #output_range_getter_preconditions := [ ],
+  return_type := "list_of_morphisms",
+  #dual_operation := "ComponentOfMorphismFromDirectSum",
+  #compatible_with_congruence_of_morphisms := true, # TODO
+),
+
+DecompositionOfMorphismFromDirectSum := rec(
+  filter_list := [ "category", "list_of_objects", "morphism" ],
+  input_arguments_names := [ "cat", "S", "u" ],
+  #output_source_getter_string := "Source( alpha )",
+  #output_source_getter_preconditions := [ ],
+  #output_range_getter_string := "S[i]",
+  #output_range_getter_preconditions := [ ],
+  return_type := "list_of_morphisms",
+  #dual_operation := "ComponentOfMorphismFromDirectSum",
+  #compatible_with_congruence_of_morphisms := true, # TODO
+),
+
 ComponentOfMorphismIntoDirectSum := rec(
   filter_list := [ "category", "morphism", "list_of_objects", "integer" ],
   input_arguments_names := [ "cat", "alpha", "S", "i" ],
