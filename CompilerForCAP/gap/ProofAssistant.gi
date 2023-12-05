@@ -2870,6 +2870,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     else
         
         Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+        return "";
         
     fi;
     
@@ -3059,6 +3060,7 @@ BindGlobal( "PRINT_THEOREM", function ( type, args... )
     else
         
         Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+        return "";
         
     fi;
     
@@ -3293,6 +3295,122 @@ specifications := rec(
         postconditions := [
         ],
     ),
+    DistinguishedObjectOfHomomorphismStructure := rec( ),
+    HomomorphismStructureOnObjects := rec( ),
+    HomomorphismStructureOnMorphisms := rec(
+        postconditions := [
+            # H( id, id ) = id
+            rec(
+                input_types := [ "category", "object", "object" ],
+                func := function ( cat, A, B )
+                    
+                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
+                        HomomorphismStructureOnMorphisms( cat, IdentityMorphism( cat, A ), IdentityMorphism( cat, B ) ),
+                        IdentityMorphism( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnObjects( cat, A, B ) )
+                    );
+                    
+                end,
+            ),
+            # H( α₁, β₁ ) ⋅ H( α₂, β₂ ) = H( α₂ ⋅ α₁, β₁ ⋅ β₂ )
+            rec(
+                input_types := [ "category", "morphism", "morphism", "morphism", "morphism" ],
+                func := function ( cat, alpha_1, alpha_2, beta_1, beta_2 )
+                    
+                    CapJitAddLocalReplacement( Target( alpha_2 ), Source( alpha_1 ) );
+                    CapJitAddLocalReplacement( Source( beta_2 ), Target( beta_1 ) );
+                    
+                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
+                        PreCompose( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta_2 ) ),
+                        HomomorphismStructureOnMorphisms( cat, PreCompose( cat, alpha_2, alpha_1 ), PreCompose( cat, beta_1, beta_2 ) )
+                    );
+                    
+                end,
+            ),
+            # H( α₁, β ) + H( α₂, β ) = H( α₁ + α₂, β ), TODO
+            rec(
+                input_types := [ "category", "morphism", "morphism", "morphism" ],
+                func := function ( cat, alpha_1, alpha_2, beta )
+                    
+                    CapJitAddLocalReplacement( Source( alpha_2 ), Source( alpha_1 ) );
+                    CapJitAddLocalReplacement( Target( alpha_2 ), Target( alpha_1 ) );
+                    
+                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
+                        AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta ) ),
+                        HomomorphismStructureOnMorphisms( cat, AdditionForMorphisms( cat, alpha_1, alpha_2 ), beta )
+                    );
+                    
+                end,
+            ),
+            # H( α, β₁ ) + H( α, β₂ ) = H( α, β₁ + β₂ ), TODO
+            rec(
+                input_types := [ "category", "morphism", "morphism", "morphism" ],
+                func := function ( cat, alpha, beta_1, beta_2 )
+                    
+                    CapJitAddLocalReplacement( Source( beta_2 ), Source( beta_1 ) );
+                    CapJitAddLocalReplacement( Target( beta_2 ), Target( beta_1 ) );
+                    
+                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
+                        AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha, beta_2 ) ),
+                        HomomorphismStructureOnMorphisms( cat, alpha, AdditionForMorphisms( cat, beta_1, beta_2 ) )
+                    );
+                    
+                end,
+            ),
+        ],
+    ),
+    InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure := rec(
+        postconditions := [ ], # see InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism
+    ),
+    InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism := rec(
+        preconditions := """
+            CapJitAddLocalReplacement( Source( alpha ), DistinguishedObjectOfHomomorphismStructure( cat ) );
+            CapJitAddLocalReplacement( Target( alpha ), HomomorphismStructureOnObjects( cat, source, range ) );
+        """,
+        postconditions := [
+            rec(
+                # ν⁻¹(ν(α)) = α
+                input_types := [ "category", "morphism" ],
+                func := function ( cat, alpha )
+                    
+                    return IsCongruentForMorphisms( cat,
+                        InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, Source( alpha ), Target( alpha ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, alpha ) ),
+                        alpha
+                    );
+                    
+                end,
+            ),
+            rec(
+                # ν(ν⁻¹(α)) = α
+                input_types := [ "category", "object", "object", "morphism_in_range_category_of_homomorphism_structure" ],
+                func := function ( cat, S, T, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), DistinguishedObjectOfHomomorphismStructure( cat ) );
+                    CapJitAddLocalReplacement( Target( alpha ), HomomorphismStructureOnObjects( cat, S, T ) );
+                    
+                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
+                        InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, S, T, alpha ) ),
+                        alpha
+                    );
+                    
+                end,
+            ),
+            rec(
+                # naturality of ν: ν(α ⋅ X ⋅ β) = ν(X) ⋅ H(α, β)
+                input_types := [ "category", "morphism", "morphism", "morphism" ],
+                func := function ( cat, alpha, X, beta )
+                    
+                    CapJitAddLocalReplacement( Target( alpha ), Source( X ) );
+                    CapJitAddLocalReplacement( Source( beta ), Target( X ) );
+                    
+                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
+                        InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, PreComposeList( cat, Source( alpha ), [ alpha, X, beta ], Target( beta ) ) ),
+                        PreCompose( RangeCategoryOfHomomorphismStructure( cat ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, X ), HomomorphismStructureOnMorphisms( cat, alpha, beta ) )
+                    );
+                    
+                end,
+            ),
+        ],
+    ),
 );
 
 propositions := rec(
@@ -3320,10 +3438,14 @@ propositions := rec(
         description := "has kernels",
         operations := [ "KernelObject", "KernelEmbedding", "KernelLift" ],
     ),
+    is_equipped_with_hom_structure := rec(
+        description := "is equipped with a homomorphism structure",
+        operations := [ "DistinguishedObjectOfHomomorphismStructure", "HomomorphismStructureOnObjects", "HomomorphismStructureOnMorphisms", "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure", "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" ],
+    ),
 );
 
 enhance_propositions := function ( propositions )
-  local prop, info, specification, preconditions, enhanced_arguments, is_well_defined, source_string, range_string, id, operation;
+  local prop, info, specification, preconditions, enhanced_arguments, is_well_defined, is_well_defined_category, source_string, range_string, id, operation;
     
     for id in RecNames( propositions ) do
         
@@ -3371,12 +3493,28 @@ enhance_propositions := function ( propositions )
             if info.return_type = "object" then
                 
                 is_well_defined := "IsWellDefinedForObjects";
+                is_well_defined_category := "cat";
+                source_string := "";
+                range_string := "";
+                
+            elif info.return_type = "object_in_range_category_of_homomorphism_structure" then
+                
+                is_well_defined := "IsWellDefinedForObjects";
+                is_well_defined_category := "RangeCategoryOfHomomorphismStructure( cat )";
                 source_string := "";
                 range_string := "";
                 
             elif info.return_type = "morphism" then
                 
                 is_well_defined := "IsWellDefinedForMorphismsWithGivenSourceAndRange";
+                is_well_defined_category := "cat";
+                source_string := Concatenation( ", ", info.output_source_getter_string );
+                range_string := Concatenation( ", ", info.output_range_getter_string );
+                
+            elif info.return_type = "morphism_in_range_category_of_homomorphism_structure" then
+                
+                is_well_defined := "IsWellDefinedForMorphismsWithGivenSourceAndRange";
+                is_well_defined_category := "RangeCategoryOfHomomorphismStructure( cat )";
                 source_string := Concatenation( ", ", info.output_source_getter_string );
                 range_string := Concatenation( ", ", info.output_range_getter_string );
                 
@@ -3393,11 +3531,12 @@ enhance_propositions := function ( propositions )
                         
                         preconditions
                         
-                        return is_well_defined( cat source, operation( enhanced_arguments... ) range );
+                        return is_well_defined( category source, operation( enhanced_arguments... ) range );
                         
                     end""",
                     rec(
                         is_well_defined := is_well_defined,
+                        category := is_well_defined_category,
                         operation := operation,
                         input_arguments := info.input_arguments_names,
                         enhanced_arguments := enhanced_arguments,
