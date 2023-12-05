@@ -3,14 +3,6 @@ LoadPackage( "CompilerForCAP" : OnlyNeeded );
 
 CapJitEnableProofAssistantMode( );
 
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "i", "j", "list" ],
-        src_template := "CAP_JIT_INTERNAL_EXPR_CASE( i = j, list[i], true, list[j] )",
-        dst_template := "list[j]",
-    )
-);
-
 # FIXME
 CapJitAddLogicTemplate(
     rec(
@@ -27,23 +19,6 @@ CapJitAddLogicTemplate(
         variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
         src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
         dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
-    )
-);
-
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "lengths", "lists" ],
-        variable_filters := [ IsList, IsList ],
-        src_template := "DecatenationWithGivenLengths( lengths, ConcatenationWithGivenLengths( lengths, lists ) )",
-        dst_template := "lists",
-    )
-);
-
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "list", "lengths" ],
-        src_template := "ConcatenationWithGivenLengths( lengths, DecatenationWithGivenLengths( lengths, list ) )",
-        dst_template := "list",
     )
 );
 

@@ -3,14 +3,6 @@ LoadPackage( "CompilerForCAP" : OnlyNeeded );
 
 CapJitEnableProofAssistantMode( );
 
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "i", "j", "list" ],
-        src_template := "CAP_JIT_INTERNAL_EXPR_CASE( i = j, list[i], true, list[j] )",
-        dst_template := "list[j]",
-    )
-);
-
 # FIXME
 CapJitAddLogicTemplate(
     rec(
