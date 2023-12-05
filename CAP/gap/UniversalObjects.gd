@@ -880,6 +880,26 @@ DeclareOperation( "MorphismBetweenDirectSumsWithGivenDirectSums",
                   [ IsCapCategoryObject, IsList, IsList, IsList, IsCapCategoryObject ] );
 
 #! @Description
+#! The arguments are a list of objects $D = (S_1, \dots, S_n)$ and a morphism $u$ in $\mathrm{Hom}(T, \bigoplus_{i=1}^n S_i)$.
+#! The output is the list of morphisms
+#! $\tau = ( \tau_i: T \rightarrow S_i )_{i = 1 \dots n}$
+#! corresponding to $u$ under the universal property of the direct sum.
+#! @Returns a list of morphisms $\tau = ( \tau_i: T \rightarrow S_i )_{i = 1 \dots n}$
+#! @Arguments D, u
+DeclareOperation( "DecompositionOfMorphismIntoDirectSum",
+                  [ IsList, IsCapCategoryMorphism ] );
+
+#! @Description
+#! The arguments are a list of objects $D = (S_1, \dots, S_n)$ and a morphism $u$ in $\mathrm{Hom}(\bigoplus_{i=1}^n S_i, T)$.
+#! The output is the list of morphisms
+#! $\tau = ( \tau_i: S_i \rightarrow T )_{i = 1 \dots n}$
+#! corresponding to $u$ under the universal property of the direct sum.
+#! @Returns a list of morphisms $\tau = ( \tau_i: S_i \rightarrow T )_{i = 1 \dots n}$
+#! @Arguments D, u
+DeclareOperation( "DecompositionOfMorphismFromDirectSum",
+                  [ IsList, IsCapCategoryMorphism ] );
+
+#! @Description
 #! The arguments are a morphism $\alpha: A \rightarrow S$,
 #! a list $D = (S_1, \dots, S_n)$ of objects with $S = \bigoplus_{j=1}^n S_j$,
 #! and an integer $k$.
