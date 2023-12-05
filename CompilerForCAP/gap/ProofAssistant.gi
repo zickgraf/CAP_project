@@ -3662,7 +3662,12 @@ StateNextLemma := function ( )
         
     fi;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM = fail );
+    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail then
+        
+        Display( "There already is an active lemma." );
+        return;
+        
+    fi;
     
     lemmata := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata;
     
