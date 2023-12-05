@@ -6,7 +6,9 @@ CapJitEnableProofAssistantMode( );
 ZZ := HomalgRingOfIntegersInSingular( );
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
+        "IsWellDefinedForObjects",
         "IsWellDefinedForMorphisms",
+        "IsEqualForObjects",
 		"IsCongruentForMorphisms",
 		"IdentityMorphism",
         "PreComposeList",
@@ -39,16 +41,83 @@ Assert( 0, CanCompute( dummy, "DistinguishedObjectOfHomomorphismStructure" ) );
 Assert( 0, CanCompute( dummy, "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure" ) );
 Assert( 0, CanCompute( dummy, "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" ) );
 
-# TODO
-proposition := function ( cat, A, B )
+StateProposition( "is_equipped_with_hom_structure", function ( name )
     
-    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-		HomomorphismStructureOnMorphisms( cat, IdentityMorphism( cat, A ), IdentityMorphism( cat, B ) ),
-		IdentityMorphism( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnObjects( cat, A, B ) )
-	);
+    #if name = "alpha" then
+    #    
+    #    return "M__m__n"; # TODO
+    #    return rec(
+    #        type := "morphism",
+    #        string := "\\myboxed{M}",
+    #        source := "\\myboxed{m}",
+    #        target := "\\myboxed{n}",
+    #    );
+    #    
+    #fi;
     
-end;
-StateLemma( proposition, dummy, [ "category", "object", "object" ] );
+    return name;
+    
+end );;
+
+LATEX_OUTPUT := false;
+
+# DistinguishedObjectOfHomomorphismStructure is well-defined
+
+StateNextLemma( );
+
+AssumeValidInputs( );
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ ],
+        src_template := "1 >= 0",
+        dst_template := "true",
+    )
+);
+
+AssertLemma( );
+
+# HomomorphismStructureOnObjects is well-defined
+StateNextLemma( );
+
+AssumeValidInputs( );
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "list" ],
+        variable_filters := [ IsList ],
+        src_template := "Length( list ) >= 0",
+        dst_template := "true",
+    )
+);
+
+AssertLemma( );
+
+# HomomorphismStructureOnMorphisms is well-defined
+StateNextLemma( );
+
+AssumeValidInputs( ); # TODO: throw error if nothing changes
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "entries", "nr_rows", "nr_cols", "ring" ],
+        src_template := "NumberRows( HomalgMatrixListList( entries, nr_rows, nr_cols, ring ) )",
+        dst_template := "nr_rows",
+    )
+);
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "entries", "nr_rows", "nr_cols", "ring" ],
+        src_template := "NumberColumns( HomalgMatrixListList( entries, nr_rows, nr_cols, ring ) )",
+        dst_template := "nr_cols",
+    )
+);
+
+AssertLemma( );
+
+# HomomorphismStructureOnMorphisms on identities
+StateNextLemma( );
 
 # identites in PreComposeList
 ApplyLogicTemplate(
@@ -104,21 +173,12 @@ ApplyLogicTemplateNTimes( 2,
         dst_template := "CommutativeRingOfLinearCategory( cat )",
     )
 );
+
 AssertLemma( );
 
-# TODO
-proposition := function ( cat, alpha_1, alpha_2, beta_1, beta_2 )
-    
-	CapJitAddLocalReplacement( Target( alpha_2 ), Source( alpha_1 ) );
-	CapJitAddLocalReplacement( Source( beta_2 ), Target( beta_1 ) );
-    
-    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-		PreCompose( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta_2 ) ),
-		HomomorphismStructureOnMorphisms( cat, PreCompose( cat, alpha_2, alpha_1 ), PreCompose( cat, beta_1, beta_2 ) )
-	);
-    
-end;
-result := StateLemma( proposition, dummy, [ "category", "morphism", "morphism", "morphism", "morphism" ] );
+
+# HomomorphismStructureOnMorphisms compatible with composition
+StateNextLemma( );
 
 # TODO
 # flatten PreComposeList
@@ -264,20 +324,8 @@ ApplyLogicTemplate(
 
 result := AssertLemma( );
 
-# TODO
-proposition := function ( cat, alpha_1, alpha_2, beta )
-    
-    CapJitAddLocalReplacement( Source( alpha_2 ), Source( alpha_1 ) );
-    CapJitAddLocalReplacement( Target( alpha_2 ), Target( alpha_1 ) );
-    
-    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-		AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta ) ),
-		HomomorphismStructureOnMorphisms( cat, AdditionForMorphisms( cat, alpha_1, alpha_2 ), beta )
-	);
-    
-end;
-
-result := StateLemma( proposition, dummy, [ "category", "morphism", "morphism", "morphism" ] );
+# HomomorphismStructureOnMorphisms additive in first component
+StateNextLemma( );
 
 # matrix addition for HomalgMatrixListList
 ApplyLogicTemplate(
@@ -380,20 +428,11 @@ ApplyLogicTemplate(
 
 AssertLemma( );
 
-# TODO
-proposition := function ( cat, alpha, beta_1, beta_2 )
-    
-    CapJitAddLocalReplacement( Source( beta_2 ), Source( beta_1 ) );
-    CapJitAddLocalReplacement( Target( beta_2 ), Target( beta_1 ) );
-    
-    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-		AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha, beta_2 ) ),
-		HomomorphismStructureOnMorphisms( cat, alpha, AdditionForMorphisms( cat, beta_1, beta_2 ) )
-	);
-    
-end;
 
-result := StateLemma( proposition, dummy, [ "category", "morphism", "morphism", "morphism" ] );
+
+
+# HomomorphismStructureOnMorphisms additive in second component
+StateNextLemma( );
 
 # matrix addition for HomalgMatrixListList
 ApplyLogicTemplate(
@@ -522,17 +561,41 @@ ApplyLogicTemplate(
 
 result := AssertLemma( );
 
-# TODO
-proposition := function ( cat, alpha )
-    
-    return IsCongruentForMorphisms( cat,
-		InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, Source( alpha ), Target( alpha ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, alpha ) ),
-		alpha
-	);
-    
-end;
+# InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure well-defined
+StateNextLemma( );
 
-result := StateLemma( proposition, dummy, [ "category", "morphism" ] );
+AssumeValidInputs( );
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "entries", "nr_cols", "ring" ],
+        src_template := "NumberRows( HomalgRowVector( entries, nr_cols, ring ) )",
+        dst_template := "1",
+    )
+);
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "entries", "nr_cols", "ring" ],
+        src_template := "NumberColumns( HomalgRowVector( entries, nr_cols, ring ) )",
+        dst_template := "nr_cols",
+    )
+);
+
+AssertLemma( );
+
+
+# InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism well-defined
+StateNextLemma( );
+
+AssumeValidInputs( );
+
+AssertLemma( );
+
+
+
+# InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure injective
+StateNextLemma( );
 
 # EntriesOfHomalgRowVector( HomalgRowVector )
 ApplyLogicTemplate(
@@ -561,20 +624,9 @@ ApplyLogicTemplate(
 
 result := AssertLemma( );
 
-# TODO
-proposition := function ( cat, S, T, alpha )
-    
-    CapJitAddLocalReplacement( Source( alpha ), DistinguishedObjectOfHomomorphismStructure( cat ) );
-    CapJitAddLocalReplacement( Target( alpha ), HomomorphismStructureOnObjects( cat, S, T ) );
-    
-    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-		InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, S, T, alpha ) ),
-		alpha
-	);
-    
-end;
 
-result := StateLemma( proposition, dummy, [ "category", "object", "object", "morphism_in_range_category_of_homomorphism_structure" ] );
+# InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure surjective
+StateNextLemma( );
 
 # coefficients of a linear combination of a basis
 ApplyLogicTemplate(
@@ -596,20 +648,9 @@ ApplyLogicTemplate(
 
 result := AssertLemma( );
 
-# TODO
-proposition := function ( cat, alpha, X, beta )
-    
-	CapJitAddLocalReplacement( Target( alpha ), Source( X ) );
-	CapJitAddLocalReplacement( Source( beta ), Target( X ) );
-	
-    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-		InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, PreComposeList( cat, Source( alpha ), [ alpha, X, beta ], Target( beta ) ) ),
-		PreCompose( RangeCategoryOfHomomorphismStructure( cat ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, X ), HomomorphismStructureOnMorphisms( cat, alpha, beta ) )
-	);
-    
-end;
 
-result := StateLemma( proposition, dummy, [ "category", "morphism", "morphism", "morphism" ] );
+# naturality of InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure
+StateNextLemma( );
 
 # matrix multiplication for HomalgRowVector and HomalgMatrixListList
 ApplyLogicTemplate(
@@ -725,3 +766,7 @@ ApplyLogicTemplate(
 );
 
 result := AssertLemma( );
+
+
+
+AssertProposition( );

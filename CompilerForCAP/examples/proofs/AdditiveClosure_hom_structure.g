@@ -26,6 +26,7 @@ StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy_range );
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForMorphisms",
+		"IsCongruentForMorphisms",
 		"IdentityMorphism",
 		"ZeroMorphism",
     ],
