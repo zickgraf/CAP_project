@@ -5,14 +5,16 @@ CapJitEnableProofAssistantMode( );
 
 dummy_range := DummyCategory( rec(
     list_of_operations_to_install := [
+        "IsWellDefinedForObjects",
         "IsWellDefinedForMorphisms",
-		"IsCongruentForMorphisms",
-		"IdentityMorphism",
-		"PreCompose",
-		"DirectSum",
-		"ProjectionInFactorOfDirectSum",
-		"UniversalMorphismIntoDirectSum",
-		"MorphismBetweenDirectSums",
+        "IsEqualForObjects",
+        "IsCongruentForMorphisms",
+        "IdentityMorphism",
+        "PreCompose",
+        "DirectSum",
+        "ProjectionInFactorOfDirectSum",
+        "UniversalMorphismIntoDirectSum",
+        "MorphismBetweenDirectSums",
     ],
     properties := [
         "IsAdditiveCategory",
@@ -25,13 +27,15 @@ StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy_range );
 
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
+        "IsWellDefinedForObjects",
         "IsWellDefinedForMorphisms",
-		"IsCongruentForMorphisms",
-		"IdentityMorphism",
-		"ZeroMorphism",
+        "IsEqualForObjects",
+        "IsCongruentForMorphisms",
+        "IdentityMorphism",
+        "ZeroMorphism",
     ],
     properties := [
-		"IsAbCategory",
+        "IsAbCategory",
     ],
 ) : FinalizeCategory := false );
 SetRangeCategoryOfHomomorphismStructure( dummy, dummy_range );
@@ -56,13 +60,66 @@ Assert( 0, CanCompute( cat, "InterpretMorphismAsMorphismFromDistinguishedObjectT
 Assert( 0, CanCompute( cat, "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" ) );
 
 
+StateProposition( "is_equipped_with_hom_structure", function ( name )
+    
+    if name = "a" then
+        
+        return "A";
+        
+    fi;
+    
+    if name = "b" then
+        
+        return "B";
+        
+    fi;
+    
+    if name = "alpha" then
+        
+        return "alpha__A__B";
+        
+    fi;
+    
+    if name = "beta" then
+        
+        return "beta__C__D";
+        
+    fi;
+    
+    if name = "gamma" then
+        
+        return "gamma__E__F";
+        
+    fi;
+    
+    return name;
+    
+end );
 
-proposition := function ( cat, A, B )
-    
-    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-		HomomorphismStructureOnMorphisms( cat, IdentityMorphism( cat, A ), IdentityMorphism( cat, B ) ),
-		IdentityMorphism( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnObjects( cat, A, B ) )
-	);
-    
-end;
-result := StateLemma( proposition, cat, [ "category", "object", "object" ] );
+LATEX_OUTPUT := false;
+
+# DistinguishedObjectOfHomomorphismStructure is well-defined
+StateNextLemma( );
+
+AssumeValidInputs( );
+
+AssertLemma( );
+
+# HomomorphismStructureOnObjects is well-defined
+StateNextLemma( );
+
+AssumeValidInputs( );
+
+AssertLemma( );
+
+# HomomorphismStructureOnMorphisms is well-defined
+StateNextLemma( );
+
+PrintLemma( );
+
+AssumeValidInputs( );
+
+AssertLemma( );
+
+# HomomorphismStructureOnMorphisms preserves identities
+StateNextLemma( );

@@ -26,7 +26,7 @@ dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForObjects",
         "IsWellDefinedForMorphisms",
-		"IsEqualForObjects",
+        "IsEqualForObjects",
         "IsCongruentForMorphisms",
         "PreCompose",
         "IdentityMorphism",
