@@ -1408,6 +1408,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 string := Concatenation( result.left.string, " \\geq ", result.right.string ),
             );
             
+        elif tree.type = "EXPR_LT" then
+            
+            return rec(
+                type := "plain",
+                string := Concatenation( result.left.string, " < ", result.right.string ),
+            );
+            
         elif tree.type = "EXPR_AND" then
             
             return rec(
@@ -2323,6 +2330,26 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     math_record := rec(
                         type := "plain",
                         string := Concatenation( "\\mathrm{UnderlyingRingElement}(", result.args.1.string, ")" ),
+                    );
+                    
+                fi;
+                
+            elif tree.funcref.gvar = "UnderlyingMatrix" and IsSpecializationOfFilter( "morphism", tree.args.1.data_type.filter ) then
+                
+                # TODO
+                
+                if Length( result.args.1.string ) >= 8 and result.args.1.string{[1 .. 8]} = "\\bboxed{" and Last( result.args.1.string ) = '}' then
+                    
+                    math_record := rec(
+                        type := "plain",
+                        string := result.args.1.string{[ 9 .. Length( result.args.1.string ) - 1 ]},
+                    );
+                    
+                else
+                    
+                    math_record := rec(
+                        type := "plain",
+                        string := Concatenation( "\\mathrm{UnderlyingMatrix}(", result.args.1.string, ")" ),
                     );
                     
                 fi;
