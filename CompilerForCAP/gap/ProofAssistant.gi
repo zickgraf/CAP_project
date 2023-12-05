@@ -2881,19 +2881,6 @@ BindGlobal( "StateLemma", function ( args... )
     
 end );
 
-BindGlobal( "ApplyLogicTemplateNTimes", function ( n, args... )
-  local i;
-    
-    Assert( 0, IsPosInt( n ) );
-    
-    for i in [ 1 .. n ] do
-        
-        CallFuncList( ApplyLogicTemplate, args );
-        
-    od;
-    
-end );
-
 BindGlobal( "ApplyLogicTemplate", function ( logic_template )
   local tree, cat, input_filters, old_tree, new_tree;
     
@@ -2936,6 +2923,19 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     fi;
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := new_tree;
+    
+end );
+
+BindGlobal( "ApplyLogicTemplateNTimes", function ( n, args... )
+  local i;
+    
+    Assert( 0, IsPosInt( n ) );
+    
+    for i in [ 1 .. n ] do
+        
+        CallFuncList( ApplyLogicTemplate, args );
+        
+    od;
     
 end );
 
@@ -3194,6 +3194,21 @@ specifications := rec(
                 # multiplication is distributive from the left
                 input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := { cat, r, alpha, beta } -> IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, AdditionForMorphisms( cat, alpha, beta ) ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ) ),
+            ),
+            rec(
+                # multiplication has a neutral element
+                input_types := [ "category", "morphism" ],
+                func := { cat, alpha } -> IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, One( CommutativeRingOfLinearCategory( cat ) ), alpha ), alpha ),
+            ),
+            rec(
+                # composition is linear with regard to multiplication in the first component
+                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
+                func := { cat, r, alpha, beta } -> IsCongruentForMorphisms( cat, PreCompose( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), beta ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) ),
+            ),
+            rec(
+                # composition is linear with regard to multiplication in the second component
+                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
+                func := { cat, r, alpha, beta } -> IsCongruentForMorphisms( cat, PreCompose( cat, alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) ),
             ),
         ],
     ),
@@ -3539,11 +3554,20 @@ end;
 AssertProposition := function ( )
   local cat_description, proposition_description;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail );
+    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail then
+        Error( "no active proposition" );
+        return;
+    fi;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM = fail );
+    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail then
+        Error( "there is an active unproven lemma" );
+        return;
+    fi;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata ) );
+    if not CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata ) then
+        Error( "not all lemmata proven" );
+        return;
+    fi;
     
     cat_description := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.description;
     proposition_description := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description;
