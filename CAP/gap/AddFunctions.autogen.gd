@@ -658,6 +658,44 @@ DeclareOperation( "AddCoproductFunctorialWithGivenCoproducts",
 #! @Description
 #! The arguments are a category $C$ and a function $F$.
 #! This operation adds the given function $F$
+#! to the category for the basic operation `DecompositionOfMorphismFromDirectSum`.
+#! $F: ( S, u ) \mapsto \mathtt{DecompositionOfMorphismFromDirectSum}(S, u)$.
+#! @Returns nothing
+#! @Arguments C, F
+DeclareOperation( "AddDecompositionOfMorphismFromDirectSum",
+                  [ IsCapCategory, IsFunction ] );
+
+DeclareOperation( "AddDecompositionOfMorphismFromDirectSum",
+                  [ IsCapCategory, IsFunction, IsInt ] );
+
+DeclareOperation( "AddDecompositionOfMorphismFromDirectSum",
+                  [ IsCapCategory, IsList, IsInt ] );
+
+DeclareOperation( "AddDecompositionOfMorphismFromDirectSum",
+                  [ IsCapCategory, IsList ] );
+
+#! @Description
+#! The arguments are a category $C$ and a function $F$.
+#! This operation adds the given function $F$
+#! to the category for the basic operation `DecompositionOfMorphismIntoDirectSum`.
+#! $F: ( S, u ) \mapsto \mathtt{DecompositionOfMorphismIntoDirectSum}(S, u)$.
+#! @Returns nothing
+#! @Arguments C, F
+DeclareOperation( "AddDecompositionOfMorphismIntoDirectSum",
+                  [ IsCapCategory, IsFunction ] );
+
+DeclareOperation( "AddDecompositionOfMorphismIntoDirectSum",
+                  [ IsCapCategory, IsFunction, IsInt ] );
+
+DeclareOperation( "AddDecompositionOfMorphismIntoDirectSum",
+                  [ IsCapCategory, IsList, IsInt ] );
+
+DeclareOperation( "AddDecompositionOfMorphismIntoDirectSum",
+                  [ IsCapCategory, IsList ] );
+
+#! @Description
+#! The arguments are a category $C$ and a function $F$.
+#! This operation adds the given function $F$
 #! to the category for the basic operation `DirectProduct`.
 #! $F: ( objects ) \mapsto \mathtt{DirectProduct}(objects)$.
 #! @Returns nothing
