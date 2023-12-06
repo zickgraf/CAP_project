@@ -88,8 +88,16 @@ DeclareOperation( "AdditiveClosureMorphism",
                   [ IsAdditiveClosureObject, IsList, IsAdditiveClosureObject ] );
 
 CapJitAddTypeSignature( "AdditiveClosureMorphism", [ IsAdditiveClosureCategory, IsAdditiveClosureObject, IsList, IsAdditiveClosureObject ], function ( input_types )
+  local cat;
     
-    return CapJitDataTypeOfMorphismOfCategory( input_types[1].category );
+    cat := input_types[1].category;
+    
+    Assert( 0, IsIdenticalObj( input_types[2].category, cat ) );
+    Assert( 0, IsIdenticalObj( input_types[4].category, cat ) );
+    
+    Assert( 0, IsSpecializationOfFilter( IsList, input_types[3].element_type.filter ) and IsSpecializationOfFilter( MorphismFilter( UnderlyingCategory( cat ) ), input_types[3].element_type.element_type.filter ) and IsIdenticalObj( input_types[3].element_type.element_type.category, UnderlyingCategory( cat ) ) );
+    
+    return CapJitDataTypeOfMorphismOfCategory( cat );
     
 end );
 
