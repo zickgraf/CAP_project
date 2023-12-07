@@ -2869,7 +2869,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         
     else
         
-        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+        Display( func );
         return "";
         
     fi;
