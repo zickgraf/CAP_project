@@ -1,9 +1,11 @@
 LoadPackage( "FreydCategoriesForCAP" : OnlyNeeded );
-LoadPackage( "CompilerForCAP" : OnlyNeeded );
 
-CapJitEnableProofAssistantMode( );
+k := DummyCommutativeRing( );
+# CategoryOfRows expects a *homalg* ring
+SetFilterObj( k, IsHomalgRing );
+k!.RingFilter := IsHomalgRing;
+k!.RingElementFilter := IsHomalgRingElement;
 
-ZZ := HomalgRingOfIntegersInSingular( );
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForObjects",
@@ -12,27 +14,39 @@ dummy := DummyCategory( rec(
 		"IsCongruentForMorphisms",
 		"IdentityMorphism",
         "PreComposeList",
-        #"BasisOfExternalHom",
-        #"CoefficientsOfMorphism",
-        "MultiplyWithElementOfCommutativeRingForMorphisms",
         "AdditionForMorphisms",
         "SumOfMorphisms",
+        "MultiplyWithElementOfCommutativeRingForMorphisms",
         "LinearCombinationOfMorphisms",
     ],
     properties := [
         "IsLinearCategoryOverCommutativeRing",
         "IsEquippedWithHomomorphismStructure",
     ],
-    commutative_ring_of_linear_category := ZZ,
+    commutative_ring_of_linear_category := k
 ) : FinalizeCategory := false );
-SetRangeCategoryOfHomomorphismStructure( dummy, CategoryOfRows( ZZ ) );
-AddBasisOfExternalHom( dummy, { cat, a, b } -> fail );
-AddCoefficientsOfMorphism( dummy, { cat, alpha } -> fail );
+SetRangeCategoryOfHomomorphismStructure( dummy, CategoryOfRows( k ) );
+AddBasisOfExternalHom( dummy, function ( cat, a, b )
+    
+    Error( "this is a dummy category without actual implementation" );
+    
+end );
+AddCoefficientsOfMorphism( dummy, function ( cat, alpha )
+    
+    Error( "this is a dummy category without actual implementation" );
+    
+end );
 Finalize( dummy );
+
+LoadPackage( "CompilerForCAP" : OnlyNeeded );
 
 StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
 
-SetCurrentCategory( dummy, "any category which is linear over a commutative ring" );
+CapJitEnableProofAssistantMode( );
+
+#### CONTINUE
+
+SetCurrentCategory( dummy, "any category which is linear over a commutative ring" ); # TODO
 SetCurrentCategory( dummy, "a $k$-linear category with a $k$-basis" ); # TODO
 
 Assert( 0, CanCompute( dummy, "HomomorphismStructureOnObjects" ) );
