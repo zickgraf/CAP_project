@@ -286,7 +286,7 @@ InstallGlobalFunction( CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE, function 
         
         if not IsBound( tree.bindings.BINDING_RETURN_VALUE.data_type ) then
             
-            PrintWithCurrentlyCompiledFunctionLocation( "WARNING: Could not determine data type. This is not supported in proof assistant mode." );
+            ErrorWithCurrentlyCompiledFunctionLocation( "Could not determine data type. This is not supported in proof assistant mode." );
             
         fi;
         
