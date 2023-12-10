@@ -42,8 +42,8 @@ CapJitAddLogicTemplate(
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForObjects",
-        "IsWellDefinedForMorphisms",
-		"IsEqualForObjects",
+        "IsWellDefinedForMorphismsWithGivenSourceAndRange",
+        "IsEqualForObjects",
         "IsCongruentForMorphisms",
         "PreCompose",
         "IdentityMorphism",

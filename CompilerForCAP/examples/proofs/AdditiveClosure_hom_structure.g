@@ -6,7 +6,7 @@ CapJitEnableProofAssistantMode( );
 dummy_range := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForObjects",
-        "IsWellDefinedForMorphisms",
+        "IsWellDefinedForMorphismsWithGivenSourceAndRange",
         "IsEqualForObjects",
         "IsCongruentForMorphisms",
         "PreCompose",
@@ -36,7 +36,7 @@ StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy_range );
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForObjects",
-        "IsWellDefinedForMorphisms",
+        "IsWellDefinedForMorphismsWithGivenSourceAndRange",
         "IsEqualForObjects",
         "IsCongruentForMorphisms",
         "PreCompose",
