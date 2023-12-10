@@ -9,10 +9,10 @@ k!.RingElementFilter := IsHomalgRingElement;
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForObjects",
-        "IsWellDefinedForMorphisms",
+        "IsWellDefinedForMorphismsWithGivenSourceAndRange",
         "IsEqualForObjects",
-		"IsCongruentForMorphisms",
-		"IdentityMorphism",
+        "IsCongruentForMorphisms",
+        "IdentityMorphism",
         "PreComposeList",
         "AdditionForMorphisms",
         "SumOfMorphisms",

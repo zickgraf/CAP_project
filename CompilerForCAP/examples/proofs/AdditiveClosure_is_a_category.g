@@ -3,30 +3,30 @@ LoadPackage( "CompilerForCAP" : OnlyNeeded );
 
 CapJitEnableProofAssistantMode( );
 
-# FIXME
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "additive_closure_morphism", "i", "j" ],
-        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
-        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
-        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
-    )
-);
-
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "additive_closure_morphism", "i", "j" ],
-        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
-        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
-        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
-    )
-);
+## FIXME
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "additive_closure_morphism", "i", "j" ],
+#        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+#        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
+#        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
+#    )
+#);
+#
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "additive_closure_morphism", "i", "j" ],
+#        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+#        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
+#        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
+#    )
+#);
 
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForObjects",
-        "IsWellDefinedForMorphisms",
-		"IsEqualForObjects",
+        "IsWellDefinedForMorphismsWithGivenSourceAndRange",
+        "IsEqualForObjects",
         "IsCongruentForMorphisms",
         "PreCompose",
         "IdentityMorphism",
@@ -131,6 +131,23 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "morphism", "morphism" ], "=", "."
 );
 
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
+    )
+);
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
+    )
+);
+
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "m", "n", "alpha", "A", "B" ],
@@ -146,6 +163,16 @@ AssertLemma( );
 StateNextLemma( );
 
 AssumeValidInputs( );
+
+#ApplyLogicTemplateAndReturnLaTeXString(
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "i", "j", "list" ],
+        src_template := "CAP_JIT_INTERNAL_EXPR_CASE( i = j, list[i], true, list[j] )",
+        dst_template := "list[j]",
+    )#,
+    #dummy, [ "category", "integer", "integer", "morphism", "object", "object" ], "="
+);
 
 AssertLemma( );
 
@@ -181,6 +208,14 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "object", "object" ], "=", "."
 );
 
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
+    )
+);
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "l", "i", "alpha", "B_1", "B_2" ],
@@ -254,6 +289,15 @@ ApplyLogicTemplate(
 #        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
 #    )
 #);
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
+    )
+);
 
 # SumOfMorphisms( List( ... , KroneckerDelta( ..., ..., value, 0 ) ) ) => value
 ApplyLogicTemplate(

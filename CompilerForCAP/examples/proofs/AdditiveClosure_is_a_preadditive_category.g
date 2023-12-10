@@ -4,28 +4,28 @@ LoadPackage( "CompilerForCAP" : OnlyNeeded );
 CapJitEnableProofAssistantMode( );
 
 # FIXME
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "additive_closure_morphism", "i", "j" ],
-        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
-        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
-        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
-    )
-);
-
-CapJitAddLogicTemplate(
-    rec(
-        variable_names := [ "additive_closure_morphism", "i", "j" ],
-        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
-        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
-        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
-    )
-);
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "additive_closure_morphism", "i", "j" ],
+#        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+#        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
+#        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
+#    )
+#);
+#
+#CapJitAddLogicTemplate(
+#    rec(
+#        variable_names := [ "additive_closure_morphism", "i", "j" ],
+#        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+#        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
+#        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
+#    )
+#);
 
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForObjects",
-        "IsWellDefinedForMorphisms",
+        "IsWellDefinedForMorphismsWithGivenSourceAndRange",
         "IsEqualForObjects",
         "IsCongruentForMorphisms",
         "PreCompose",
@@ -108,6 +108,22 @@ PrintLemma( );
 
 AssumeValidInputs( );
 
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
+    )
+);
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
+    )
+);
 PrintLemma( );
 AssertLemma( );
 
@@ -242,6 +258,23 @@ StateNextLemma( );
 
 AssumeValidInputs( );
 
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
+    )
+);
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
+    )
+);
+
 PrintLemma( );
 AssertLemma( );
 
@@ -258,6 +291,23 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism" ], " = ", "."
 );
 
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
+    )
+);
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
+    )
+);
+
 PrintLemma( );
 AssertLemma( );
 
@@ -272,6 +322,23 @@ ApplyLogicTemplateAndReturnLaTeXString(
         dst_template := "ZeroMorphism( cat, Source( alpha ), Target( alpha ) )",
     ),
     dummy, [ "category", "morphism" ], " = ", "."
+);
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Source( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
+    )
+);
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "additive_closure_morphism", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Target( MorphismMatrix( additive_closure_morphism )[i][j] )",
+        dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
+    )
 );
 
 PrintLemma( );
