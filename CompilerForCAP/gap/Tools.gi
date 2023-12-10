@@ -1911,6 +1911,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 fi;
                 
+            elif tree.funcref.gvar = "ListWithIdenticalEntries" then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "\\mathrm{ListWithIdenticalEntries}(", result.args.1.string, ", ", result.args.2.string, ")" ),
+                );
+                
             elif tree.funcref.gvar = "ForAll" then
                 
                 if tree.args.2.type <> "EXPR_DECLARATIVE_FUNC" then
