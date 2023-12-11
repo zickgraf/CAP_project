@@ -1,4 +1,4 @@
-LoadPackage( "FreydCategoriesForCAP" : OnlyNeeded );
+LoadPackage( "FreydCategoriesForCAP", false : OnlyNeeded );
 
 k := DummyCommutativeRing( );
 # CategoryOfRows expects a *homalg* ring
@@ -38,48 +38,27 @@ AddCoefficientsOfMorphism( dummy, function ( cat, alpha )
 end );
 Finalize( dummy );
 
-LoadPackage( "CompilerForCAP" : OnlyNeeded );
-
-StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
+LoadPackage( "CompilerForCAP", false : OnlyNeeded );
 
 CapJitEnableProofAssistantMode( );
 
-#### CONTINUE
+StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
 
-SetCurrentCategory( dummy, "any category which is linear over a commutative ring" ); # TODO
-SetCurrentCategory( dummy, "a $k$-linear category with a $k$-basis" ); # TODO
+SetActiveCategory( dummy, "a Hom-finite $k$-linear category with free Hom-spaces" ); # TODO
 
+Assert( 0, CanCompute( dummy, "DistinguishedObjectOfHomomorphismStructure" ) );
 Assert( 0, CanCompute( dummy, "HomomorphismStructureOnObjects" ) );
 Assert( 0, CanCompute( dummy, "HomomorphismStructureOnMorphisms" ) );
-Assert( 0, CanCompute( dummy, "DistinguishedObjectOfHomomorphismStructure" ) );
 Assert( 0, CanCompute( dummy, "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure" ) );
 Assert( 0, CanCompute( dummy, "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" ) );
 
-StateProposition( "is_equipped_with_hom_structure", function ( name )
-    
-    #if name = "alpha" then
-    #    
-    #    return "M__m__n"; # TODO
-    #    return rec(
-    #        type := "morphism",
-    #        string := "\\myboxed{M}",
-    #        source := "\\myboxed{m}",
-    #        target := "\\myboxed{n}",
-    #    );
-    #    
-    #fi;
-    
-    return name;
-    
-end );;
-
-LATEX_OUTPUT := false;
+StateProposition( "is_equipped_with_hom_structure" );;
 
 # DistinguishedObjectOfHomomorphismStructure is well-defined
 
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 ApplyLogicTemplate(
     rec(
@@ -94,7 +73,7 @@ AssertLemma( );
 # HomomorphismStructureOnObjects is well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 ApplyLogicTemplate(
     rec(
@@ -110,7 +89,7 @@ AssertLemma( );
 # HomomorphismStructureOnMorphisms is well-defined
 StateNextLemma( );
 
-AssumeValidInputs( ); # TODO: throw error if nothing changes
+AttestValidInputs( );
 
 ApplyLogicTemplate(
     rec(
@@ -161,30 +140,12 @@ ApplyLogicTemplate(
     )
 );
 
-## List( list, func )[index]
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "list", "func", "index" ],
-#        src_template := "List( list, func )[index]",
-#        dst_template := "func( list[index] )",
-#    )
-#);
-
 # CoefficientsOfMorphism( BasisOfExternalHom[i] )[j]
 ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "i", "j" ],
         src_template := "CoefficientsOfMorphism( cat, BasisOfExternalHom( cat, A, B )[i] )[j]",
         dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( i = j, One( CommutativeRingOfLinearCategory( cat ) ), true, Zero( CommutativeRingOfLinearCategory( cat ) ) )",
-    )
-);
-
-# TODO
-ApplyLogicTemplateNTimes( 2,
-    rec(
-        variable_names := [ "cat" ],
-        src_template := "UnderlyingRing( RangeCategoryOfHomomorphismStructure( cat ) )",
-        dst_template := "CommutativeRingOfLinearCategory( cat )",
     )
 );
 
@@ -689,7 +650,7 @@ result := AssertLemma( );
 # InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 ApplyLogicTemplate(
     rec(
@@ -713,7 +674,7 @@ AssertLemma( );
 # InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 

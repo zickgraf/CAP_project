@@ -1,4 +1,4 @@
-LoadPackage( "FreydCategoriesForCAP", false );
+LoadPackage( "FreydCategoriesForCAP", false : OnlyNeeded );
 
 R := DummyRing( );;
 k := DummyCommutativeRing( );
@@ -11,42 +11,19 @@ SetCommutativeRingOfLinearCategory( cat, k );
 AddMultiplyWithElementOfCommutativeRingForMorphisms( cat, { cat, lambda, mor } -> RingAsCategoryMorphism( cat, lambda * UnderlyingRingElement( mor ) ) );
 Finalize( cat );
 
-LoadPackage( "CompilerForCAP", false );
-CapJitEnableProofAssistantMode( );
-SetCurrentCategory( cat, "the category defined by a $k$-algebra $R$" );
+LoadPackage( "CompilerForCAP", false : OnlyNeeded );
 
-StateProposition( "is_linear_category", function ( name )
-    
-    #if name = "alpha" then
-    #    
-    #    return "M__m__n"; # TODO
-    #    return rec(
-    #        type := "morphism",
-    #        string := "\\myboxed{M}",
-    #        source := "\\myboxed{m}",
-    #        target := "\\myboxed{n}",
-    #    );
-    #    
-    #fi;
-    
-    return name;
-    
-end );;
+CapJitEnableProofAssistantMode( );
+
+SetActiveCategory( cat, "the category defined by a $k$-algebra $R$" );
+
+StateProposition( "is_linear_category" );;
 
 # MultiplyWithElementOfCommutativeRingForMorphisms is well-defined
 StateNextLemma( );
 
-ApplyLogicTemplateAndReturnLaTeXString(
-    rec(
-        variable_names := [ "ring", "a" ],
-        variable_filters := [ RingFilter( R ), RingElementFilter( R ) ],
-        src_template := "a in ring",
-        dst_template := "true",
-    ),
-    cat, [ RingFilter( R ), RingElementFilter( R ) ], "="
-);
+AttestValidInputs( );
 
-PrintLemma( );
 AssertLemma( );
 
 # MultiplyWithElementOfCommutativeRingForMorphisms is associative
@@ -62,7 +39,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingElementFilter( k ), RingElementFilter( k ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # MultiplyWithElementOfCommutativeRingForMorphisms is distributive from the right
@@ -78,7 +54,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingElementFilter( k ), RingElementFilter( k ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # MultiplyWithElementOfCommutativeRingForMorphisms is distributive from the left
@@ -94,7 +69,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingElementFilter( k ), RingElementFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # MultiplyWithElementOfCommutativeRingForMorphisms has a neutral element
@@ -110,7 +84,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingFilter( k ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # composition is linear with regard to MultiplyWithElementOfCommutativeRingForMorphisms in the first component
@@ -126,7 +99,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingElementFilter( k ), RingElementFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # composition is linear with regard to MultiplyWithElementOfCommutativeRingForMorphisms in the second component
@@ -142,9 +114,8 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingElementFilter( k ), RingElementFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 
-
+#
 AssertProposition( );

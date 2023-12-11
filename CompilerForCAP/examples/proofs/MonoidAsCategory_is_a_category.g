@@ -1,4 +1,4 @@
-LoadPackage( "CAP", false );
+LoadPackage( "CAP", false : OnlyNeeded );
 
 cat := CreateCapCategoryWithDataTypes(
     "MonoidAsCategory( ZZ )", IsCapCategory,
@@ -30,36 +30,19 @@ AddIdentityMorphism( cat,
 
 Finalize( cat );
 
-LoadPackage( "CompilerForCAP", false );
-CapJitEnableProofAssistantMode( );
-SetCurrentCategory( cat, "$\\MonoidAsCategory(\\ZZ)$" ); # TODO: Current vs Active
+LoadPackage( "CompilerForCAP", false : OnlyNeeded );
 
-StateProposition( "is_category", function ( name )
-    
-    #if name = "alpha" then
-    #    
-    #    return "M__m__n"; # TODO
-    #    return rec(
-    #        type := "morphism",
-    #        string := "\\bboxed{M}",
-    #        source := "\\bboxed{m}",
-    #        target := "\\bboxed{n}",
-    #    );
-    #    
-    #fi;
-    
-    return name;
-    
-end );
+CapJitEnableProofAssistantMode( );
+
+SetActiveCategory( cat, "$\\boldsymbol{\\mathcal{C}}(\\mathbb{Z})$" );
+
+StateProposition( "is_category" );
 
 # PreCompose well-defined
 StateNextLemma( );
 
-PrintLemma( );
+AttestValidInputs( );
 
-AssumeValidInputs( );
-
-PrintLemma( );
 AssertLemma( );
 
 # PreCompose associative
@@ -75,23 +58,17 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ "integer", "integer", "integer" ], "=", "\\rlap{.}"
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # IdentityMorphism well-defined
 StateNextLemma( );
 
-PrintLemma( );
+AttestValidInputs( );
 
-AssumeValidInputs( );
-
-PrintLemma( );
 AssertLemma( );
 
 # IdentityMorphism left-neutral
 StateNextLemma( );
-
-PrintLemma( );
 
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
@@ -103,13 +80,10 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ "integer" ], "=", "\\rlap{.}"
 );;
 
-PrintLemma( );
 AssertLemma( );
 
 # IdentityMorphism right-neutral
 StateNextLemma( );
-
-PrintLemma( );
 
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
@@ -121,9 +95,8 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ "integer" ], "=", "\\rlap{.}"
 );;
 
-PrintLemma( );
 AssertLemma( );
 
 
-
+#
 AssertProposition( );

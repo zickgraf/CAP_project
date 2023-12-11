@@ -1,46 +1,21 @@
-LoadPackage( "FreydCategoriesForCAP", false );
+LoadPackage( "FreydCategoriesForCAP", false : OnlyNeeded );
 
 R := DummyRing( );;
 cat := RingAsCategory( R );;
 
-LoadPackage( "CompilerForCAP", false );
-CapJitEnableProofAssistantMode( );
-SetCurrentCategory( cat, "the category defined by a ring $R$" );
+LoadPackage( "CompilerForCAP", false : OnlyNeeded );
 
-StateProposition( "is_preadditive_category", function ( name )
-    
-    #if name = "alpha" then
-    #    
-    #    return "M__m__n"; # TODO
-    #    return rec(
-    #        type := "morphism",
-    #        string := "\\myboxed{M}",
-    #        source := "\\myboxed{m}",
-    #        target := "\\myboxed{n}",
-    #    );
-    #    
-    #fi;
-    
-    return name;
-    
-end );;
+CapJitEnableProofAssistantMode( );
+
+SetActiveCategory( cat, "the category defined by a ring $R$" );
+
+StateProposition( "is_preadditive_category" );;
 
 # AdditionForMorphisms well-defined
 StateNextLemma( );
 
-PrintLemma( );
+AttestValidInputs( );
 
-ApplyLogicTemplateAndReturnLaTeXString(
-    rec(
-        variable_names := [ "ring", "a" ],
-        variable_filters := [ RingFilter( R ), RingElementFilter( R ) ],
-        src_template := "a in ring",
-        dst_template := "true",
-    ),
-    cat, [ RingFilter( R ), RingElementFilter( R ) ], "="
-);
-
-PrintLemma( );
 AssertLemma( );
 
 # AdditionForMorphisms associative
@@ -55,7 +30,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingElementFilter( R ), RingElementFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditionForMorphisms commutative
@@ -70,7 +44,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingElementFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditionForMorphisms bilinear from the left
@@ -85,7 +58,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingElementFilter( R ), RingElementFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditionForMorphisms bilinear from the right
@@ -100,23 +72,13 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingElementFilter( R ), RingElementFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # Zero well-defined
 StateNextLemma( );
 
-ApplyLogicTemplateAndReturnLaTeXString(
-    rec(
-        variable_names := [ "ring", "a" ],
-        variable_filters := [ RingFilter( R ), RingElementFilter( R ) ],
-        src_template := "a in ring",
-        dst_template := "true",
-    ),
-    cat, [ RingFilter( R ), RingElementFilter( R ) ], "="
-);
+AttestValidInputs( );
 
-PrintLemma( );
 AssertLemma( );
 
 # Zero left neutral
@@ -132,7 +94,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # Zero right neutral
@@ -148,23 +109,13 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditiveInverse well-defined
 StateNextLemma( );
 
-ApplyLogicTemplateAndReturnLaTeXString(
-    rec(
-        variable_names := [ "ring", "a" ],
-        variable_filters := [ RingFilter( R ), RingElementFilter( R ) ],
-        src_template := "-a in ring",
-        dst_template := "true",
-    ),
-    cat, [ RingFilter( R ), RingElementFilter( R ) ], "="
-);
+AttestValidInputs( );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditiveInverse left inverse
@@ -180,7 +131,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditiveInverse right inverse
@@ -196,9 +146,8 @@ ApplyLogicTemplateAndReturnLaTeXString(
     cat, [ RingFilter( R ), RingElementFilter( R ) ], "="
 );
 
-PrintLemma( );
 AssertLemma( );
 
 
-
+#
 AssertProposition( );
