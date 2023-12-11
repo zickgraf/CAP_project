@@ -1,7 +1,4 @@
-LoadPackage( "FreydCategoriesForCAP" : OnlyNeeded );
-LoadPackage( "CompilerForCAP" : OnlyNeeded );
-
-CapJitEnableProofAssistantMode( );
+LoadPackage( "FreydCategoriesForCAP", false : OnlyNeeded );
 
 ## FIXME
 #CapJitAddLogicTemplate(
@@ -38,11 +35,15 @@ dummy := DummyCategory( rec(
     ],
 ) );
 
-StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
-
 cat := AdditiveClosure( dummy );
 
-SetCurrentCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive category $\\Ccat$", [
+LoadPackage( "CompilerForCAP", false : OnlyNeeded );
+
+CapJitEnableProofAssistantMode( );
+
+StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
+
+SetActiveCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive category $\\Ccat$", [
     rec(
         category := cat,
         symbol := "\\Ccat^\\oplus",
@@ -96,13 +97,14 @@ end );
 # PreCompose well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 
 # PreCompose associative
 StateNextLemma( );
 
+# PreCompose is additive in the first component
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "alpha__A__B", "C", "A", "l", "beta_k" ],
@@ -112,6 +114,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "object", "object", "integer", "morphism" ], "="
 );
 
+# PreCompose is additive in the second component
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "alpha__A__B", "B", "D", "l", "gamma_k" ],
@@ -121,6 +124,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "object", "object", "integer", "morphism" ], "=", "."
 );
 
+# PreCompose is associative
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "alpha", "beta", "gamma" ],
@@ -131,6 +135,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "morphism", "morphism" ], "=", "."
 );
 
+# TODO
 ApplyLogicTemplate(
     rec(
         variable_names := [ "additive_closure_morphism", "i", "j" ],
@@ -148,6 +153,7 @@ ApplyLogicTemplate(
     )
 );
 
+# swap sums
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "m", "n", "alpha", "A", "B" ],
@@ -162,16 +168,16 @@ AssertLemma( );
 # IdentityMorphism well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
-#ApplyLogicTemplateAndReturnLaTeXString(
-ApplyLogicTemplate(
+# if and else cases match
+ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "i", "j", "list" ],
         src_template := "CAP_JIT_INTERNAL_EXPR_CASE( i = j, list[i], true, list[j] )",
         dst_template := "list[j]",
-    )#,
-    #dummy, [ "category", "integer", "integer", "morphism", "object", "object" ], "="
+    ),
+    dummy, [ "integer", "integer", "list_of_objects" ], "="
 );
 
 AssertLemma( );
@@ -179,6 +185,7 @@ AssertLemma( );
 # IdentityMorphism left-neutral
 StateNextLemma( );
 
+# pull PreCompose into case distinction
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "alpha", "P", "beta_1", "beta_2" ],
@@ -188,6 +195,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "bool", "morphism", "morphism" ], "="
 );
 
+# identity is neutral w.r.t. composition
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "alpha", "B" ],
@@ -198,6 +206,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "object" ], "="
 );
 
+# composition is additive and in particular preserves zeros
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "alpha", "B_1", "B_2" ],
@@ -208,6 +217,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "object", "object" ], "=", "."
 );
 
+# TODO
 ApplyLogicTemplate(
     rec(
         variable_names := [ "additive_closure_morphism", "i", "j" ],
@@ -216,32 +226,45 @@ ApplyLogicTemplate(
         dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
     )
 );
+
+#ApplyLogicTemplateAndReturnLaTeXString(
+#    rec(
+#        variable_names := [ "cat", "l", "i", "alpha", "B_1", "B_2" ],
+#        variable_filters := [ IsDummyCategory, IsInt, IsInt, IsDummyCategoryMorphism, IsDummyCategoryObject, IsDummyCategoryObject ],
+#        src_template := "SumOfMorphisms( cat, B_1, List( [ 1 .. l ], k -> CAP_JIT_INTERNAL_EXPR_CASE( i = k, alpha, true, ZeroMorphism( cat, B_1, B_2 ) ) ), B_2 )",
+#        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( i in [ 1 .. l ], (k -> alpha)(i), true, ZeroMorphism( cat, B_1, B_2 ) )",
+#    ),
+#    dummy, [ "category", "integer", "integer", "morphism", "object", "object" ], "="
+#);
+#ApplyLogicTemplateAndReturnLaTeXString(
+#    rec(
+#        variable_names := [ "cat", "P", "alpha", "beta", "gamma" ],
+#        src_template := "IsCongruentForMorphisms( cat, CAP_JIT_INTERNAL_EXPR_CASE( P, alpha, true, beta ), gamma )",
+#        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( P, IsCongruentForMorphisms( cat, alpha, gamma ), true, IsCongruentForMorphisms( cat, beta, gamma ) )",
+#    ),
+#    dummy, [ "category", "bool", "morphism", "morphism", "morphism" ], "\\quad\\quad = \\quad\\quad"
+#);
+#
+#ApplyLogicTemplateAndReturnLaTeXString(
+#    rec(
+#        variable_names := [ "l1", "l2", "P", "Q" ],
+#        src_template := "ForAll( [ 1 .. l1 ], i -> ForAll( [ 1 .. l2 ], j -> CAP_JIT_INTERNAL_EXPR_CASE( i in [ 1 .. l1 ], P, true, Q ) ) )",
+#        dst_template := "ForAll( [ 1 .. l1 ], i -> ForAll( [ 1 .. l2 ], j -> CAP_JIT_INTERNAL_EXPR_CASE( true, P, true, Q ) ) )",
+#    ),
+#    dummy, [ "integer", "integer", "bool", "bool" ], "="
+#);
+
+
+# drop zeros
+# FIXME
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "l", "i", "alpha", "B_1", "B_2" ],
         variable_filters := [ IsDummyCategory, IsInt, IsInt, IsDummyCategoryMorphism, IsDummyCategoryObject, IsDummyCategoryObject ],
         src_template := "SumOfMorphisms( cat, B_1, List( [ 1 .. l ], k -> CAP_JIT_INTERNAL_EXPR_CASE( i = k, alpha, true, ZeroMorphism( cat, B_1, B_2 ) ) ), B_2 )",
-        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( i in [ 1 .. l ], (k -> alpha)(i), true, ZeroMorphism( cat, B_1, B_2 ) )",
+        dst_template := "(k -> alpha)(i)",
     ),
     dummy, [ "category", "integer", "integer", "morphism", "object", "object" ], "="
-);
-
-ApplyLogicTemplateAndReturnLaTeXString(
-    rec(
-        variable_names := [ "cat", "P", "alpha", "beta", "gamma" ],
-        src_template := "IsCongruentForMorphisms( cat, CAP_JIT_INTERNAL_EXPR_CASE( P, alpha, true, beta ), gamma )",
-        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( P, IsCongruentForMorphisms( cat, alpha, gamma ), true, IsCongruentForMorphisms( cat, beta, gamma ) )",
-    ),
-    dummy, [ "category", "bool", "morphism", "morphism", "morphism" ], "\\quad\\quad = \\quad\\quad"
-);
-
-ApplyLogicTemplateAndReturnLaTeXString(
-    rec(
-        variable_names := [ "l1", "l2", "P", "Q" ],
-        src_template := "ForAll( [ 1 .. l1 ], i -> ForAll( [ 1 .. l2 ], j -> CAP_JIT_INTERNAL_EXPR_CASE( i in [ 1 .. l1 ], P, true, Q ) ) )",
-        dst_template := "ForAll( [ 1 .. l1 ], i -> ForAll( [ 1 .. l2 ], j -> CAP_JIT_INTERNAL_EXPR_CASE( true, P, true, Q ) ) )",
-    ),
-    dummy, [ "integer", "integer", "bool", "bool" ], "="
 );
 
 AssertLemma( );
@@ -280,16 +303,7 @@ ApplyLogicTemplate(
     )
 );
 
-# normalize
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "additive_closure_morphism", "i", "j" ],
-#        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
-#        src_template := "List( MorphismMatrix( additive_closure_morphism ), row -> List( row, Source ) )[i][j]",
-#        dst_template := "ObjectList( Source( additive_closure_morphism ) )[i]",
-#    )
-#);
-
+# TODO
 ApplyLogicTemplate(
     rec(
         variable_names := [ "additive_closure_morphism", "i", "j" ],
@@ -300,28 +314,39 @@ ApplyLogicTemplate(
 );
 
 # SumOfMorphisms( List( ... , KroneckerDelta( ..., ..., value, 0 ) ) ) => value
+#ApplyLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "list", "other_index", "value", "source", "target" ],
+#        variable_filters := [ IsDummyCategory, IsList, IsInt, IsDummyCategoryMorphism, IsDummyCategoryObject, IsDummyCategoryObject ],
+#        src_template := "SumOfMorphisms( cat, source, List( list, i -> CAP_JIT_INTERNAL_EXPR_CASE( i = other_index, value, true, ZeroMorphism( cat, source, target ) ) ), target )",
+#        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( other_index in list, (i -> value)(other_index), true, ZeroMorphism( cat, source, target ) )",
+#    )
+#);
+#
+#ApplyLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "condition", "value1", "value2", "mor2" ],
+#        src_template := "IsCongruentForMorphisms( cat, CAP_JIT_INTERNAL_EXPR_CASE( condition, value1, true, value2 ), mor2 )",
+#        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( condition, IsCongruentForMorphisms( cat, value1, mor2 ), true, IsCongruentForMorphisms( cat, value2, mor2 ) )",
+#    )
+#);
+#
+#ApplyLogicTemplate(
+#    rec(
+#        variable_names := [ "list", "list2", "value1", "value2" ],
+#        src_template := "ForAll( list, x -> ForAll( list2, y -> CAP_JIT_INTERNAL_EXPR_CASE( y in list2, value1, true, value2 ) ) )",
+#        dst_template := "ForAll( list, x -> ForAll( list2, y -> CAP_JIT_INTERNAL_EXPR_CASE( true, value1, true, value2 ) ) )",
+#    )
+#);
+
+# drop zeros
+# FIXME
 ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "list", "other_index", "value", "source", "target" ],
         variable_filters := [ IsDummyCategory, IsList, IsInt, IsDummyCategoryMorphism, IsDummyCategoryObject, IsDummyCategoryObject ],
         src_template := "SumOfMorphisms( cat, source, List( list, i -> CAP_JIT_INTERNAL_EXPR_CASE( i = other_index, value, true, ZeroMorphism( cat, source, target ) ) ), target )",
-        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( other_index in list, (i -> value)(other_index), true, ZeroMorphism( cat, source, target ) )",
-    )
-);
-
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", "condition", "value1", "value2", "mor2" ],
-        src_template := "IsCongruentForMorphisms( cat, CAP_JIT_INTERNAL_EXPR_CASE( condition, value1, true, value2 ), mor2 )",
-        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( condition, IsCongruentForMorphisms( cat, value1, mor2 ), true, IsCongruentForMorphisms( cat, value2, mor2 ) )",
-    )
-);
-
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "list", "list2", "value1", "value2" ],
-        src_template := "ForAll( list, x -> ForAll( list2, y -> CAP_JIT_INTERNAL_EXPR_CASE( y in list2, value1, true, value2 ) ) )",
-        dst_template := "ForAll( list, x -> ForAll( list2, y -> CAP_JIT_INTERNAL_EXPR_CASE( true, value1, true, value2 ) ) )",
+        dst_template := "(i -> value)(other_index)",
     )
 );
 

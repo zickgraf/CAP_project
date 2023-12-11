@@ -108,7 +108,7 @@ StateProposition( "is_equipped_with_hom_structure", function ( name )
     
 end );
 
-LATEX_OUTPUT := false;
+#LATEX_OUTPUT := false;
 
 # DistinguishedObjectOfHomomorphismStructure is well-defined
 StateNextLemma( );
@@ -210,32 +210,12 @@ ApplyLogicTemplate(
     )
 );
 
-# TODO
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", ],
-        variable_filters := [ IsAdditiveClosureCategory ],
-        src_template := "RangeCategoryOfHomomorphismStructure( UnderlyingCategory( cat ) )",
-        dst_template := "RangeCategoryOfHomomorphismStructure( cat )",
-    )
-);
-
 ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "C" ],
         variable_filters := [ IsDummyCategory, IsDummyCategoryObject, IsDummyCategoryObject, IsDummyCategoryObject ],
         src_template := "HomomorphismStructureOnMorphisms( cat, IdentityMorphism( cat, A ), ZeroMorphism( cat, B, C ) )",
         dst_template := "ZeroMorphism( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnObjects( cat, A, B ), HomomorphismStructureOnObjects( cat, A, C ) )",
-    )
-);
-
-# TODO
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", ],
-        variable_filters := [ IsAdditiveClosureCategory ],
-        src_template := "RangeCategoryOfHomomorphismStructure( UnderlyingCategory( cat ) )",
-        dst_template := "RangeCategoryOfHomomorphismStructure( cat )",
     )
 );
 
@@ -272,16 +252,6 @@ ApplyLogicTemplate(
         variable_names := [ "k", "l", "list" ],
         src_template := "CAP_JIT_INTERNAL_EXPR_CASE( k = l, list[k], true, list[l] )",
         dst_template := "list[l]",
-    )
-);
-
-# TODO
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", ],
-        variable_filters := [ IsAdditiveClosureCategory ],
-        src_template := "RangeCategoryOfHomomorphismStructure( UnderlyingCategory( cat ) )",
-        dst_template := "RangeCategoryOfHomomorphismStructure( cat )",
     )
 );
 
@@ -357,16 +327,6 @@ ApplyLogicTemplate(
     )
 );
 
-# TODO
-ApplyLogicTemplateNTimes( 3,
-    rec(
-        variable_names := [ "cat", ],
-        variable_filters := [ IsAdditiveClosureCategory ],
-        src_template := "RangeCategoryOfHomomorphismStructure( UnderlyingCategory( cat ) )",
-        dst_template := "RangeCategoryOfHomomorphismStructure( cat )",
-    )
-);
-
 ApplyLogicTemplate(
     rec(
         variable_names := [ "alpha", "i", "j" ],
@@ -439,16 +399,6 @@ ApplyLogicTemplate(
     )
 );
 
-# TODO
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", ],
-        variable_filters := [ IsAdditiveClosureCategory ],
-        src_template := "RangeCategoryOfHomomorphismStructure( UnderlyingCategory( cat ) )",
-        dst_template := "RangeCategoryOfHomomorphismStructure( cat )",
-    )
-);
-
 AssertLemma( );
 
 # HomomorphismStructureOnMorphisms is compatible with addition in the second component
@@ -500,16 +450,6 @@ ApplyLogicTemplate(
         variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryMorphism, IsDummyCategoryMorphism ],
         src_template := "HomomorphismStructureOnMorphisms( cat, alpha, AdditionForMorphisms( cat, beta_1, beta_2 ) )",
         dst_template := "AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha, beta_2 ) )",
-    )
-);
-
-# TODO
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", ],
-        variable_filters := [ IsAdditiveClosureCategory ],
-        src_template := "RangeCategoryOfHomomorphismStructure( UnderlyingCategory( cat ) )",
-        dst_template := "RangeCategoryOfHomomorphismStructure( cat )",
     )
 );
 
@@ -750,16 +690,6 @@ ApplyLogicTemplate(
         variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryMorphism, IsDummyCategoryMorphism ],
         src_template := "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, PreCompose( cat, PreCompose( cat, alpha, X ), beta ) )",
         dst_template := "PreCompose( RangeCategoryOfHomomorphismStructure( cat ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, X ), HomomorphismStructureOnMorphisms( cat, alpha, beta ) )",
-    )
-);
-
-# TODO
-ApplyLogicTemplateNTimes( 3,
-    rec(
-        variable_names := [ "cat", ],
-        variable_filters := [ IsAdditiveClosureCategory ],
-        src_template := "RangeCategoryOfHomomorphismStructure( UnderlyingCategory( cat ) )",
-        dst_template := "RangeCategoryOfHomomorphismStructure( cat )",
     )
 );
 

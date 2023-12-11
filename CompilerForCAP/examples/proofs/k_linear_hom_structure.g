@@ -15,8 +15,6 @@ dummy := DummyCategory( rec(
         "IdentityMorphism",
         "PreComposeList",
         "AdditionForMorphisms",
-        "SumOfMorphisms",
-        "MultiplyWithElementOfCommutativeRingForMorphisms",
         "LinearCombinationOfMorphisms",
     ],
     properties := [

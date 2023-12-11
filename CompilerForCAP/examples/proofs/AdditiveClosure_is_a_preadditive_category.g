@@ -1,7 +1,4 @@
-LoadPackage( "FreydCategoriesForCAP" : OnlyNeeded );
-LoadPackage( "CompilerForCAP" : OnlyNeeded );
-
-CapJitEnableProofAssistantMode( );
+LoadPackage( "FreydCategoriesForCAP", false : OnlyNeeded );
 
 # FIXME
 #CapJitAddLogicTemplate(
@@ -40,11 +37,15 @@ dummy := DummyCategory( rec(
     ],
 ) );
 
-StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
-
 cat := AdditiveClosure( dummy );
 
-SetCurrentCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive category $\\Ccat$", [
+LoadPackage( "CompilerForCAP", false : OnlyNeeded );
+
+StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
+
+CapJitEnableProofAssistantMode( );
+
+SetActiveCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive category $\\Ccat$", [
     rec(
         category := cat,
         symbol := "\\Ccat^\\oplus",
@@ -104,10 +105,9 @@ end );
 # AdditionForMorphisms well-defined
 StateNextLemma( );
 
-PrintLemma( );
+AttestValidInputs( );
 
-AssumeValidInputs( );
-
+# FIXME
 ApplyLogicTemplate(
     rec(
         variable_names := [ "additive_closure_morphism", "i", "j" ],
@@ -124,12 +124,13 @@ ApplyLogicTemplate(
         dst_template := "ObjectList( Target( additive_closure_morphism ) )[j]",
     )
 );
-PrintLemma( );
+
 AssertLemma( );
 
 # AdditionForMorphisms associative
 StateNextLemma( );
 
+# addition is associative
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "alpha", "beta", "gamma" ],
@@ -137,15 +138,15 @@ ApplyLogicTemplateAndReturnLaTeXString(
         src_template := "AdditionForMorphisms( cat, AdditionForMorphisms( cat, alpha, beta ), gamma )",
         dst_template := "AdditionForMorphisms( cat, alpha, AdditionForMorphisms( cat, beta, gamma ) )",
     ),
-    dummy, [ "category", "morphism", "morphism", "morphism" ], " = ", "."
+    dummy, [ "category", "morphism", "morphism", "morphism" ], "=", "."
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditionForMorphisms commutative
 StateNextLemma( );
 
+# addition is commutative
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
         variable_names := [ "cat", "alpha", "beta" ],
@@ -153,10 +154,9 @@ ApplyLogicTemplateAndReturnLaTeXString(
         src_template := "AdditionForMorphisms( cat, alpha, beta )",
         dst_template := "AdditionForMorphisms( cat, beta, alpha )",
     ),
-    dummy, [ "category", "morphism", "morphism" ], " = ", "."
+    dummy, [ "category", "morphism", "morphism" ], "=", "."
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditionForMorphisms bilinear from the left
@@ -170,7 +170,7 @@ ApplyLogicTemplate(
         dst_template := "SumOfMorphisms( cat, source, List( list, x -> AdditionForMorphisms( cat, func1( x ), func2( x ) ) ), target )",
         new_funcs := [ [ "x" ] ],
     )#,
-    #dummy, [ "category", "morphism", "morphism" ], " = ", "."
+    #dummy, [ "category", "morphism", "morphism" ], "=", "."
 );
 
 ApplyLogicTemplate(
@@ -180,10 +180,9 @@ ApplyLogicTemplate(
         src_template := "PreCompose( cat, mor, AdditionForMorphisms( cat, alpha, beta ) )",
         dst_template := "AdditionForMorphisms( cat, PreCompose( cat, mor, alpha ), PreCompose( cat, mor, beta ) )",
     )#,
-    #dummy, [ "category", "morphism", "morphism" ], " = ", "."
+    #dummy, [ "category", "morphism", "morphism" ], "=", "."
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditionForMorphisms bilinear from the right
@@ -197,7 +196,7 @@ ApplyLogicTemplate(
         dst_template := "SumOfMorphisms( cat, source, List( list, x -> AdditionForMorphisms( cat, func1( x ), func2( x ) ) ), target )",
         new_funcs := [ [ "x" ] ],
     )#,
-    #dummy, [ "category", "morphism", "morphism" ], " = ", "."
+    #dummy, [ "category", "morphism", "morphism" ], "=", "."
 );
 
 ApplyLogicTemplate(
@@ -207,7 +206,7 @@ ApplyLogicTemplate(
         src_template := "PreCompose( cat, AdditionForMorphisms( cat, alpha, beta ), mor )",
         dst_template := "AdditionForMorphisms( cat, PreCompose( cat, alpha, mor ), PreCompose( cat, beta, mor ) )",
     )#,
-    #dummy, [ "category", "morphism", "morphism" ], " = ", "."
+    #dummy, [ "category", "morphism", "morphism" ], "=", "."
 );
 
 PrintLemma( );
@@ -216,7 +215,7 @@ AssertLemma( );
 # Zero well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 PrintLemma( );
 AssertLemma( );
@@ -231,7 +230,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
         src_template := "AdditionForMorphisms( cat, ZeroMorphism( cat, A, B ), alpha )",
         dst_template := "alpha",
     ),
-    dummy, [ "category", "morphism", "object", "object" ], " = ", "."
+    dummy, [ "category", "morphism", "object", "object" ], "=", "."
 );
 
 PrintLemma( );
@@ -247,7 +246,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
         src_template := "AdditionForMorphisms( cat, alpha, ZeroMorphism( cat, A, B ) )",
         dst_template := "alpha",
     ),
-    dummy, [ "category", "morphism", "object", "object" ], " = ", "."
+    dummy, [ "category", "morphism", "object", "object" ], "=", "."
 );
 
 PrintLemma( );
@@ -256,7 +255,7 @@ AssertLemma( );
 # AdditiveInverse well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 ApplyLogicTemplate(
     rec(
@@ -288,7 +287,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
         src_template := "AdditionForMorphisms( cat, AdditiveInverseForMorphisms( cat, alpha ), alpha )",
         dst_template := "ZeroMorphism( cat, Source( alpha ), Target( alpha ) )",
     ),
-    dummy, [ "category", "morphism" ], " = ", "."
+    dummy, [ "category", "morphism" ], "=", "."
 );
 
 ApplyLogicTemplate(
@@ -321,7 +320,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
         src_template := "AdditionForMorphisms( cat, alpha, AdditiveInverseForMorphisms( cat, alpha ) )",
         dst_template := "ZeroMorphism( cat, Source( alpha ), Target( alpha ) )",
     ),
-    dummy, [ "category", "morphism" ], " = ", "."
+    dummy, [ "category", "morphism" ], "=", "."
 );
 
 ApplyLogicTemplate(
