@@ -20,7 +20,7 @@ dummy := DummyCategory( rec(
         "LinearCombinationOfMorphisms",
     ],
     properties := [
-        "IsLinearCategoryOverCommutativeRing",
+        "IsLinearCategoryOverCommutativeRingWithFinitelyGeneratedFreeExternalHoms",
         "IsEquippedWithHomomorphismStructure",
     ],
     commutative_ring_of_linear_category := k
@@ -44,7 +44,7 @@ CapJitEnableProofAssistantMode( );
 
 StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
 
-SetActiveCategory( dummy, "a Hom-finite $k$-linear category with free Hom-spaces" ); # TODO
+SetActiveCategory( dummy, "a linear category with finitely generated free external homs" );
 
 Assert( 0, CanCompute( dummy, "DistinguishedObjectOfHomomorphismStructure" ) );
 Assert( 0, CanCompute( dummy, "HomomorphismStructureOnObjects" ) );
@@ -204,40 +204,27 @@ ApplyLogicTemplate(
     )
 );
 
-# decide equality of CoefficientsOfMorphism by taking the linear combination with the corresponding basis
+# decide equality with CoefficientsOfMorphism by taking the linear combination with the corresponding basis
 ApplyLogicTemplate(
     rec(
         variable_names := [ "list", "cat", "mor" ],
         src_template := "list = CoefficientsOfMorphism( cat, mor )",
         dst_template := """
-			IsCongruentForMorphisms( cat,
-				SumOfMorphisms( cat,
-					Source( mor ),
-					List( [ 1 .. Length( list ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, list[j], BasisOfExternalHom( cat, Source( mor ), Target( mor ) )[j] ) ),
-					Target( mor )
-				),
-				mor
-			)
-		""",
-		new_funcs := [ [ "j" ] ],
+            Length( list ) = Length( BasisOfExternalHom( cat, Source( mor ), Target( mor ) ) ) and
+            IsCongruentForMorphisms( cat,
+                LinearCombinationOfMorphisms( cat, Source( mor ), list, BasisOfExternalHom( cat, Source( mor ), Target( mor ) ), Target( mor ) ),
+                mor
+            )
+        """,
     )
 );
-
-# List( list, func )[index]
-#ApplyLogicTemplateNTimes( 2,
-#    rec(
-#        variable_names := [ "list", "func", "index" ],
-#        src_template := "List( list, func )[index]",
-#        dst_template := "func( list[index] )",
-#    )
-#);
 
 # swap sums
 ApplyLogicTemplate(
     rec(
-        variable_names := [ "cat", "source", "list1", "list2", "value1", "value2", "mor", "target" ],
-        src_template := "SumOfMorphisms( cat, source, List( list1, j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, Sum( list2, k -> value1 * value2 ), mor ) ), target )",
-        dst_template := "SumOfMorphisms( cat, source, List( list2, k -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, value1, SumOfMorphisms( cat, source, List( list1, j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, value2, mor ) ), target ) ) ), target )",
+        variable_names := [ "cat", "source", "list1", "list2", "value1", "value2", "list_of_morphisms", "target" ],
+        src_template := "LinearCombinationOfMorphisms( cat, source, List( list1, j -> Sum( list2, k -> value1 * value2 ) ), list_of_morphisms, target )",
+        dst_template := "LinearCombinationOfMorphisms( cat, source, List( list2, k -> value1 ), List( list2, k -> LinearCombinationOfMorphisms( cat, source, List( list1, j -> value2 ), list_of_morphisms, target ) ), target )",
     )
 );
 
@@ -246,12 +233,12 @@ ApplyLogicTemplate(
 #    rec(
 #        variable_names := [ "cat", "alpha", "beta", "mor" ],
 #        src_template := """
-#			SumOfMorphisms( cat,
-#				Source( alpha ),
-#				List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ alpha, mor, beta ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
-#				Target( beta )
-#			)
-#		""",
+#            SumOfMorphisms( cat,
+#                Source( alpha ),
+#                List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ alpha, mor, beta ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
+#                Target( beta )
+#            )
+#        """,
 #        dst_template := "PreComposeList( cat, Source( alpha ), [ alpha, mor, beta ], Target( beta ) )",
 #    )
 #);
@@ -261,12 +248,13 @@ ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "alpha", "beta", "mor" ],
         src_template := """
-			SumOfMorphisms( cat,
-				A,
-				List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j], BasisOfExternalHom( cat, A, B )[j] ) ),
-				B
-			)
-		""",
+            LinearCombinationOfMorphisms( cat,
+                A,
+                List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j] ),
+                BasisOfExternalHom( cat, A, B ),
+                B
+            )
+        """,
         dst_template := "PreComposeList( cat, A, [ alpha, mor, beta ], B )",
     )
 );
@@ -280,13 +268,13 @@ ApplyLogicTemplate(
 #    )
 #);
 # MODIFIED
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", "A", "B", "value", "alpha", "beta", "gamma" ],
-        src_template := "MultiplyWithElementOfCommutativeRingForMorphisms( cat, value, PreComposeList( cat, A, [ alpha, beta, gamma ], B ) )",
-        dst_template := "PreComposeList( cat, A, [ alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, value, beta ), gamma ], B )",
-    )
-);
+#ApplyLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "A", "B", "value", "alpha", "beta", "gamma" ],
+#        src_template := "MultiplyWithElementOfCommutativeRingForMorphisms( cat, value, PreComposeList( cat, A, [ alpha, beta, gamma ], B ) )",
+#        dst_template := "PreComposeList( cat, A, [ alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, value, beta ), gamma ], B )",
+#    )
+#);
 
 # ∑( α ⋅ β ⋅ γ )
 #ApplyLogicTemplate(
@@ -297,34 +285,34 @@ ApplyLogicTemplate(
 #    )
 #);
 # MODIFIED
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", "A", "B", "source", "list", "alpha", "beta", "gamma", "target" ],
-        src_template := "SumOfMorphisms( cat, source, List( list, k -> PreComposeList( cat, A, [ alpha, beta, gamma ], B ) ), target )",
-        dst_template := "PreComposeList( cat, Source( alpha ), [ alpha, SumOfMorphisms( cat, Target( alpha ), List( list, k -> beta ), Source( gamma ) ), gamma ], B )",
-    )
-);
-
-# List( list, func )[index]
 #ApplyLogicTemplate(
 #    rec(
-#        variable_names := [ "last", "func", "index" ],
-#        src_template := "List( [ 1 .. last ], func )[index]",
-#        dst_template := "func( index )",
+#        variable_names := [ "cat", "A", "B", "source", "list", "alpha", "beta", "gamma", "target" ],
+#        src_template := "SumOfMorphisms( cat, source, List( list, k -> PreComposeList( cat, A, [ alpha, beta, gamma ], B ) ), target )",
+#        dst_template := "PreComposeList( cat, A, [ alpha, SumOfMorphisms( cat, Target( alpha ), List( list, k -> beta ), Source( gamma ) ), gamma ], B )",
 #    )
 #);
+
+# composition is linear
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "A", "B", "source", "list", "alpha", "list2", "gamma", "target", "coeffs" ],
+        src_template := "LinearCombinationOfMorphisms( cat, source, coeffs, List( list, k -> PreComposeList( cat, A, [ alpha, list2[k], gamma ], B ) ), target )",
+        dst_template := "PreComposeList( cat, A, [ alpha, LinearCombinationOfMorphisms( cat, Target( alpha ), coeffs, list2, Source( gamma ) ), gamma ], B )",
+    )
+);
 
 # CoefficientsOfMorphism * BasisOfExternalHom
 #ApplyLogicTemplate(
 #    rec(
 #        variable_names := [ "cat", "alpha", "beta", "mor" ],
 #        src_template := """
-#			SumOfMorphisms( cat,
-#				Source( alpha ),
-#				List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ alpha, mor, beta ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
-#				Target( beta )
-#			)
-#		""",
+#            SumOfMorphisms( cat,
+#                Source( alpha ),
+#                List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ alpha, mor, beta ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
+#                Target( beta )
+#            )
+#        """,
 #        dst_template := "PreComposeList( cat, Source( alpha ), [ alpha, mor, beta ], Target( beta ) )",
 #    )
 #);
@@ -334,12 +322,13 @@ ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "alpha", "beta", "mor" ],
         src_template := """
-			SumOfMorphisms( cat,
-				A,
-				List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j], BasisOfExternalHom( cat, A, B )[j] ) ),
-				B
-			)
-		""",
+            LinearCombinationOfMorphisms( cat,
+                A,
+                List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j] ),
+                BasisOfExternalHom( cat, A, B ),
+                B
+            )
+        """,
         dst_template := "PreComposeList( cat, A, [ alpha, mor, beta ], B )",
     )
 );
@@ -376,15 +365,6 @@ ApplyLogicTemplate(
         new_funcs := [ [ "i" ], [ "j" ] ],
     )
 );
-
-# List( list, func )[index]
-#ApplyLogicTemplateNTimes( 2,
-#    rec(
-#        variable_names := [ "list", "func", "index" ],
-#        src_template := "List( list, func )[index]",
-#        dst_template := "func( list[index] )",
-#    )
-#);
 
 # CoefficientsOfMorphism is linear
 ApplyLogicTemplate(
@@ -431,45 +411,32 @@ ApplyLogicTemplate(
     )
 );
 
-# decide equality of CoefficientsOfMorphism by taking the linear combination with the corresponding basis
+# decide equality with CoefficientsOfMorphism by taking the linear combination with the corresponding basis
 ApplyLogicTemplate(
     rec(
         variable_names := [ "list", "cat", "mor" ],
         src_template := "list = CoefficientsOfMorphism( cat, mor )",
         dst_template := """
-			IsCongruentForMorphisms( cat,
-				SumOfMorphisms( cat,
-					Source( mor ),
-					List( [ 1 .. Length( list ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, list[j], BasisOfExternalHom( cat, Source( mor ), Target( mor ) )[j] ) ),
-					Target( mor )
-				),
-				mor
-			)
-		""",
-		new_funcs := [ [ "j" ] ],
+            Length( list ) = Length( BasisOfExternalHom( cat, Source( mor ), Target( mor ) ) ) and
+            IsCongruentForMorphisms( cat,
+                LinearCombinationOfMorphisms( cat, Source( mor ), list, BasisOfExternalHom( cat, Source( mor ), Target( mor ) ), Target( mor ) ),
+                mor
+            )
+        """,
     )
 );
-
-# List( list, func )[index]
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "list", "func", "index" ],
-#        src_template := "List( list, func )[index]",
-#        dst_template := "func( list[index] )",
-#    )
-#);
 
 # CoefficientsOfMorphism * BasisOfExternalHom
 #ApplyLogicTemplate(
 #    rec(
 #        variable_names := [ "cat", "alpha", "alpha2", "beta", "mor" ],
 #        src_template := """
-#			SumOfMorphisms( cat,
-#				Source( alpha ),
-#				List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ AdditionForMorphisms( cat, alpha, alpha2 ), mor, beta ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
-#				Target( beta )
-#			)
-#		""",
+#            SumOfMorphisms( cat,
+#                Source( alpha ),
+#                List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ AdditionForMorphisms( cat, alpha, alpha2 ), mor, beta ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
+#                Target( beta )
+#            )
+#        """,
 #        dst_template := "PreComposeList( cat, Source( alpha ), [ AdditionForMorphisms( cat, alpha, alpha2 ), mor, beta ], Target( beta ) )",
 #    )
 #);
@@ -479,12 +446,13 @@ ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "alpha", "beta", "mor" ],
         src_template := """
-			SumOfMorphisms( cat,
-				A,
-				List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j], BasisOfExternalHom( cat, A, B )[j] ) ),
-				B
-			)
-		""",
+            LinearCombinationOfMorphisms( cat,
+                A,
+                List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j] ),
+                BasisOfExternalHom( cat, A, B ),
+                B
+            )
+        """,
         dst_template := "PreComposeList( cat, A, [ alpha, mor, beta ], B )",
     )
 );
@@ -506,41 +474,6 @@ ApplyLogicTemplate(
         new_funcs := [ [ "i" ], [ "j" ] ],
     )
 );
-
-## List( list, func )[index]
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "list", "func", "index" ],
-#        src_template := "List( list, func )[index]",
-#        dst_template := "func( list[index] )",
-#    )
-#);
-
-## CoefficientsOfMorphism is linear
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "cat", "mor1", "j", "mor2" ],
-#        src_template := "CoefficientsOfMorphism( cat, mor1 )[j] + CoefficientsOfMorphism( cat, mor2 )[j]",
-#        dst_template := "CoefficientsOfMorphism( cat, AdditionForMorphisms( cat, mor1, mor2 ) )[j]",
-#    )
-#);
-
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "list", "cat", "mor1", "mor2", "i", "j" ],
-#        src_template := "List( list, l1 -> CoefficientsOfMorphism( cat, mor1 ) )[i][j] + List( list, l2 -> CoefficientsOfMorphism( cat, mor2 ) )[i][j]",
-#        dst_template := "List( list, l1 -> CoefficientsOfMorphism( cat, mor1 )[j] )[i] + List( list, l2 -> CoefficientsOfMorphism( cat, mor2 )[j] )[i]",
-#    )
-#);
-
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "list", "func1", "func2", "i" ],
-#        src_template := "List( list, func1 )[i] + List( list, func2 )[i]",
-#        dst_template := "List( list, x -> func1( x ) + func2( x ) )[i]",
-#        new_funcs := [ [ "x" ] ],
-#    )
-#);
 
 # CoefficientsOfMorphism is linear
 ApplyLogicTemplate(
@@ -593,39 +526,26 @@ ApplyLogicTemplate(
         variable_names := [ "list", "cat", "mor" ],
         src_template := "list = CoefficientsOfMorphism( cat, mor )",
         dst_template := """
-			IsCongruentForMorphisms( cat,
-				SumOfMorphisms( cat,
-					Source( mor ),
-					List( [ 1 .. Length( list ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, list[j], BasisOfExternalHom( cat, Source( mor ), Target( mor ) )[j] ) ),
-					Target( mor )
-				),
-				mor
-			)
-		""",
-		new_funcs := [ [ "j" ] ],
+            Length( list ) = Length( BasisOfExternalHom( cat, Source( mor ), Target( mor ) ) ) and
+            IsCongruentForMorphisms( cat,
+                LinearCombinationOfMorphisms( cat, Source( mor ), list, BasisOfExternalHom( cat, Source( mor ), Target( mor ) ), Target( mor ) ),
+                mor
+            )
+        """,
     )
 );
-
-# List( list, func )[index]
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "list", "func", "index" ],
-#        src_template := "List( list, func )[index]",
-#        dst_template := "func( list[index] )",
-#    )
-#);
 
 # CoefficientsOfMorphism * BasisOfExternalHom
 #ApplyLogicTemplate(
 #    rec(
 #        variable_names := [ "cat", "alpha", "beta", "beta2", "mor" ],
 #        src_template := """
-#			SumOfMorphisms( cat,
-#				Source( alpha ),
-#				List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ alpha, mor, AdditionForMorphisms( cat, beta, beta2 ) ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
-#				Target( beta )
-#			)
-#		""",
+#            SumOfMorphisms( cat,
+#                Source( alpha ),
+#                List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ alpha, mor, AdditionForMorphisms( cat, beta, beta2 ) ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
+#                Target( beta )
+#            )
+#        """,
 #        dst_template := "PreComposeList( cat, Source( alpha ), [ alpha, mor, AdditionForMorphisms( cat, beta, beta2 ) ], Target (beta ) )",
 #    )
 #);
@@ -635,12 +555,13 @@ ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "alpha", "beta", "mor" ],
         src_template := """
-			SumOfMorphisms( cat,
-				A,
-				List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j], BasisOfExternalHom( cat, A, B )[j] ) ),
-				B
-			)
-		""",
+            LinearCombinationOfMorphisms( cat,
+                A,
+                List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j] ),
+                BasisOfExternalHom( cat, A, B ),
+                B
+            )
+        """,
         dst_template := "PreComposeList( cat, A, [ alpha, mor, beta ], B )",
     )
 );
@@ -696,13 +617,6 @@ ApplyLogicTemplate(
 #ApplyLogicTemplate(
 #    rec(
 #        variable_names := [ "cat", "alpha" ],
-#        src_template := "SumOfMorphisms( cat, Source( alpha ), ListN( CoefficientsOfMorphism( cat, alpha ), BasisOfExternalHom( cat, Source( alpha ), Target( alpha ) ), { c, m } -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, c, m ) ), Target( alpha ) )",
-#        dst_template := "alpha",
-#    )
-#);
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "cat", "alpha" ],
 #        src_template := "LinearCombinationOfMorphisms( cat, Source( alpha ), CoefficientsOfMorphism( cat, alpha ), BasisOfExternalHom( cat, Source( alpha ), Target( alpha ) ), Target( alpha ) )",
 #        dst_template := "alpha",
 #    )
@@ -711,7 +625,7 @@ ApplyLogicTemplate(
 ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "alpha" ],
-        src_template := "LinearCombinationOfMorphisms( cat, A, CoefficientsOfMorphism( cat, alpha ), BasisOfExternalHom( cat, A, B ), B )",
+        src_template := "LinearCombinationOfMorphisms( cat, A, CoefficientsOfMorphism( cat, alpha ), BasisOfExternalHom( cat, A, B ), B )", # FIXME: wrong
         dst_template := "alpha",
     )
 );
@@ -771,34 +685,21 @@ ApplyLogicTemplate(
         variable_names := [ "list", "cat", "mor" ],
         src_template := "CoefficientsOfMorphism( cat, mor ) = list",
         dst_template := """
-			IsCongruentForMorphisms( cat,
-				mor,
-				SumOfMorphisms( cat,
-					Source( mor ),
-					List( [ 1 .. Length( list ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, list[j], BasisOfExternalHom( cat, Source( mor ), Target( mor ) )[j] ) ),
-					Target( mor )
-				)
-			)
-		""",
-		new_funcs := [ [ "j" ] ],
+            Length( BasisOfExternalHom( cat, Source( mor ), Target( mor ) ) ) = Length( list ) and
+            IsCongruentForMorphisms( cat,
+                mor,
+                LinearCombinationOfMorphisms( cat, Source( mor ), list, BasisOfExternalHom( cat, Source( mor ), Target( mor ) ), Target( mor ) )
+            )
+        """,
     )
 );
-
-# List( list, func )[index]
-#ApplyLogicTemplate(
-#    rec(
-#        variable_names := [ "list", "func", "index" ],
-#        src_template := "List( list, func )[index]",
-#        dst_template := "func( list[index] )",
-#    )
-#);
 
 # swap sums
 ApplyLogicTemplate(
     rec(
-        variable_names := [ "cat", "source", "list1", "list2", "value1", "value2", "mor", "target" ],
-        src_template := "SumOfMorphisms( cat, source, List( list1, j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, Sum( list2, k -> value1 * value2 ), mor ) ), target )",
-        dst_template := "SumOfMorphisms( cat, source, List( list2, k -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, value1, SumOfMorphisms( cat, source, List( list1, j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, value2, mor ) ), target ) ) ), target )",
+        variable_names := [ "cat", "source", "list1", "list2", "value1", "value2", "list_of_morphisms", "target" ],
+        src_template := "LinearCombinationOfMorphisms( cat, source, List( list1, j -> Sum( list2, k -> value1 * value2 ) ), list_of_morphisms, target )",
+        dst_template := "LinearCombinationOfMorphisms( cat, source, List( list2, k -> value1 ), List( list2, k -> LinearCombinationOfMorphisms( cat, source, List( list1, j -> value2 ), list_of_morphisms, target ) ), target )",
     )
 );
 
@@ -807,12 +708,12 @@ ApplyLogicTemplate(
 #    rec(
 #        variable_names := [ "cat", "alpha", "beta", "mor" ],
 #        src_template := """
-#			SumOfMorphisms( cat,
-#				Source( alpha ),
-#				List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ alpha, mor, beta ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
-#				Target( beta )
-#			)
-#		""",
+#            SumOfMorphisms( cat,
+#                Source( alpha ),
+#                List( [ 1 .. Length( BasisOfExternalHom( cat, Source( alpha ), Target( beta ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, Source( alpha ), [ alpha, mor, beta ], Target( beta ) ) )[j], BasisOfExternalHom( cat, Source( alpha ), Target( beta ) )[j] ) ),
+#                Target( beta )
+#            )
+#        """,
 #        dst_template := "PreComposeList( cat, Source( alpha ), [ alpha, mor, beta ], Target( beta ) )",
 #    )
 #);
@@ -822,12 +723,13 @@ ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "alpha", "beta", "mor" ],
         src_template := """
-			SumOfMorphisms( cat,
-				A,
-				List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j], BasisOfExternalHom( cat, A, B )[j] ) ),
-				B
-			)
-		""",
+            LinearCombinationOfMorphisms( cat,
+                A,
+                List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> CoefficientsOfMorphism( cat, PreComposeList( cat, A, [ alpha, mor, beta ], B ) )[j] ),
+                BasisOfExternalHom( cat, A, B ),
+                B
+            )
+        """,
         dst_template := "PreComposeList( cat, A, [ alpha, mor, beta ], B )",
     )
 );
@@ -840,13 +742,14 @@ ApplyLogicTemplate(
 #        dst_template := "PreComposeList( cat, Source( alpha ), [ alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, value, beta ), gamma ], Target( gamma ) )",
 #    )
 #);
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", "A", "B", "value", "alpha", "beta", "gamma" ],
-        src_template := "MultiplyWithElementOfCommutativeRingForMorphisms( cat, value, PreComposeList( cat, A, [ alpha, beta, gamma ], B ) )",
-        dst_template := "PreComposeList( cat, A, [ alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, value, beta ), gamma ], B )",
-    )
-);
+# MODIFIED
+#ApplyLogicTemplate(
+#    rec(
+#        variable_names := [ "cat", "A", "B", "value", "alpha", "beta", "gamma" ],
+#        src_template := "MultiplyWithElementOfCommutativeRingForMorphisms( cat, value, PreComposeList( cat, A, [ alpha, beta, gamma ], B ) )",
+#        dst_template := "PreComposeList( cat, A, [ alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, value, beta ), gamma ], B )",
+#    )
+#);
 
 # ∑( α ⋅ β ⋅ γ )
 #ApplyLogicTemplate(
@@ -857,34 +760,34 @@ ApplyLogicTemplate(
 #    )
 #);
 # MODIFIED
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", "A", "B", "source", "list", "alpha", "beta", "gamma", "target" ],
-        src_template := "SumOfMorphisms( cat, source, List( list, k -> PreComposeList( cat, A, [ alpha, beta, gamma ], B ) ), target )",
-        dst_template := "PreComposeList( cat, A, [ alpha, SumOfMorphisms( cat, Target( alpha ), List( list, k -> beta ), Source( gamma ) ), gamma ], B )",
-    )
-);
-
-# List( list, func )[index]
 #ApplyLogicTemplate(
 #    rec(
-#        variable_names := [ "last", "func", "index" ],
-#        src_template := "List( [ 1 .. last ], func )[index]",
-#        dst_template := "func( index )",
+#        variable_names := [ "cat", "A", "B", "source", "list", "alpha", "beta", "gamma", "target" ],
+#        src_template := "SumOfMorphisms( cat, source, List( list, k -> PreComposeList( cat, A, [ alpha, beta, gamma ], B ) ), target )",
+#        dst_template := "PreComposeList( cat, A, [ alpha, SumOfMorphisms( cat, Target( alpha ), List( list, k -> beta ), Source( gamma ) ), gamma ], B )",
 #    )
 #);
+
+# composition is linear
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "A", "B", "source", "list", "alpha", "list2", "gamma", "target", "coeffs" ],
+        src_template := "LinearCombinationOfMorphisms( cat, source, coeffs, List( list, k -> PreComposeList( cat, A, [ alpha, list2[k], gamma ], B ) ), target )",
+        dst_template := "PreComposeList( cat, A, [ alpha, LinearCombinationOfMorphisms( cat, Target( alpha ), coeffs, list2, Source( gamma ) ), gamma ], B )",
+    )
+);
 
 # CoefficientsOfMorphism * BasisOfExternalHom
 #ApplyLogicTemplate(
 #    rec(
 #        variable_names := [ "cat", "mor" ],
 #        src_template := """
-#			SumOfMorphisms( cat,
-#				Source( mor ),
-#				List( [ 1 .. Length( BasisOfExternalHom( cat, Source( mor ), Target( mor ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, mor )[j], BasisOfExternalHom( cat, Source( mor ), Target( mor ) )[j] ) ),
-#				Target( mor )
-#			)
-#		""",
+#            SumOfMorphisms( cat,
+#                Source( mor ),
+#                List( [ 1 .. Length( BasisOfExternalHom( cat, Source( mor ), Target( mor ) ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, mor )[j], BasisOfExternalHom( cat, Source( mor ), Target( mor ) )[j] ) ),
+#                Target( mor )
+#            )
+#        """,
 #        dst_template := "mor",
 #    )
 #);
@@ -893,12 +796,13 @@ ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "mor" ],
         src_template := """
-			SumOfMorphisms( cat,
-				A,
-				List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> MultiplyWithElementOfCommutativeRingForMorphisms( cat, CoefficientsOfMorphism( cat, mor )[j], BasisOfExternalHom( cat, A, B )[j] ) ),
-				B
-			)
-		""",
+            LinearCombinationOfMorphisms( cat,
+                A,
+                List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> CoefficientsOfMorphism( cat, mor )[j] ), # FIXME
+                BasisOfExternalHom( cat, A, B ),
+                B
+            )
+        """,
         dst_template := "mor",
     )
 );
