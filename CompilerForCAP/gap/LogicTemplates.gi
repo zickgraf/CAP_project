@@ -13,8 +13,12 @@ InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
     
 end );
 
-CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_filters, connecting_symbol, args... )
+CapJitLaTeXStringOfLogicTemplate := function ( template, cat, input_filters, connecting_symbol, args... )
   local suffix, src_template, dst_template, src_func, dst_func, src_string, latex_string, dst_string, pos, specifier, name;
+    
+    if connecting_symbol <> "=" then
+        Error("unexpected connecting_symbol");
+    fi;
     
     if IsEmpty( args ) then
         
@@ -26,11 +30,9 @@ CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_fi
         
     else
         
-        Error( "CapJitAddLogicTemplateAndReturnLaTeXString must be called with at most two arguments" );
+        Error( "CapJiLaTeXStringOfLogicTemplate called with two many arguments" );
         
     fi;
-    
-    CapJitAddLogicTemplate( template );
     
     src_template := template.src_template;
     dst_template := template.dst_template;

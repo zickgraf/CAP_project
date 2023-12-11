@@ -2919,18 +2919,35 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
         
     fi;
     
-    if ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> t.number_of_applications <> infinity and t.number_of_applications <> 0 ) then
+    if ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> IsBound( t.is_fully_enhanced ) and t.is_fully_enhanced = true and t.number_of_applications <> infinity ) then
         
         Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
         
-        Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if t.number_of_applications <> infinity and t.number_of_applications <> 0 then Display( t.number_of_applications ); fi; end );
+        Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if t.number_of_applications <> infinity then Display( t.number_of_applications ); fi; end );
         
-        Error( "there are logic templates with a non-zero number of remaining applications, you can 'return;' to continue" );
+        Error( "there are logic templates with a non-zero number of remaining applications, you can 'return;' to remove the logic template and continue" );
         
-    fi;
-    
-    if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
+        MakeReadWriteGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
         
+        CAP_JIT_LOGIC_TEMPLATES := Filtered( CAP_JIT_LOGIC_TEMPLATES, function ( t )
+            
+            if not (IsBound( t.is_fully_enhanced ) and t.is_fully_enhanced = true) then
+                
+                return true;
+                
+            else
+                
+                return t.number_of_applications = infinity;
+                
+            fi;
+            
+        end );
+        
+        MakeReadOnlyGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
+        
+    elif CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
+        
+        # TODO
         Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
         
         Error( "applying the logic template did not change the tree, you can 'return;' to continue" );
@@ -2958,50 +2975,11 @@ BindGlobal( "ApplyLogicTemplateNTimes", function ( n, args... )
 end );
 
 BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template, args... )
-  local tree, cat, input_filters, latex_string, old_tree, new_tree;
+  local latex_string;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    ApplyLogicTemplate( logic_template );
     
-    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
-    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
-    
-    logic_template := ShallowCopy( logic_template );
-    
-    if not IsBound( logic_template.number_of_applications ) then
-        
-        logic_template.number_of_applications := 1;
-        
-    fi;
-    
-    latex_string := CallFuncList( CapJitAddLogicTemplateAndReturnLaTeXString, Concatenation( [ logic_template ], args ) );
-    
-    old_tree := StructuralCopy( tree );
-    
-    new_tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
-    
-    if ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> t.number_of_applications <> infinity and t.number_of_applications <> 0 ) then
-        
-        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
-        
-        Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if t.number_of_applications <> infinity and t.number_of_applications <> 0 then Display( t.number_of_applications ); fi; end );
-        
-        Error( "there are logic templates with a non-zero number of remaining applications, you can 'return;' to continue" );
-        
-    fi;
-    
-    if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
-        
-        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
-        
-        Error( "applying the logic template did not change the tree, you can 'return;' to continue" );
-        
-    fi;
-    
-    # data types might not be set in post-processing
-    new_tree := CapJitInferredDataTypes( new_tree );
-    
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := new_tree;
+    latex_string := CallFuncList( CapJitLaTeXStringOfLogicTemplate, Concatenation( [ logic_template ], args ) );
     
     return latex_string;
     
@@ -3399,23 +3377,23 @@ specifications := rec(
         ],
     ),
     DirectSum := rec( ),
-    KernelObject := rec( ),
-    KernelEmbedding := rec(
-        postconditions := [
-            rec(
-                input_types := [ "category", "morphism" ],
-                func := { cat, alpha } -> IsZeroForMorphisms( cat, PreCompose( cat, KernelEmbedding( cat, alpha ), alpha ) ),
-            ),
-        ],
-    ),
-    KernelLift := rec(
-        preconditions := """
-            CapJitAddLocalReplacement( Range( tau ), Source( alpha ) );
-            CapJitAddLocalReplacement( IsZeroForMorphisms( PreCompose( tau, alpha ) ), true );
-        """,
-        postconditions := [
-        ],
-    ),
+    #KernelObject := rec( ),
+    #KernelEmbedding := rec(
+    #    postconditions := [
+    #        rec(
+    #            input_types := [ "category", "morphism" ],
+    #            func := { cat, alpha } -> IsZeroForMorphisms( cat, PreCompose( cat, KernelEmbedding( cat, alpha ), alpha ) ),
+    #        ),
+    #    ],
+    #),
+    #KernelLift := rec(
+    #    preconditions := """
+    #        CapJitAddLocalReplacement( Range( tau ), Source( alpha ) );
+    #        CapJitAddLocalReplacement( IsZeroForMorphisms( PreCompose( tau, alpha ) ), true );
+    #    """,
+    #    postconditions := [
+    #    ],
+    #),
     DistinguishedObjectOfHomomorphismStructure := rec( ),
     HomomorphismStructureOnObjects := rec( ),
     HomomorphismStructureOnMorphisms := rec(
@@ -3579,10 +3557,10 @@ propositions := rec(
         description := "has direct sums",
         operations := [ "DirectSum" ],
     ),
-    has_kernels := rec(
-        description := "has kernels",
-        operations := [ "KernelObject", "KernelEmbedding", "KernelLift" ],
-    ),
+    #has_kernels := rec(
+    #    description := "has kernels",
+    #    operations := [ "KernelObject", "KernelEmbedding", "KernelLift" ],
+    #),
     is_equipped_with_hom_structure := rec(
         description := "is equipped with a homomorphism structure",
         operations := [ "DistinguishedObjectOfHomomorphismStructure", "HomomorphismStructureOnObjects", "HomomorphismStructureOnMorphisms", "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure", "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" ],
