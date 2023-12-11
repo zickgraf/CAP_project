@@ -66,7 +66,7 @@ CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_fi
         
     fi;
     
-    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
     
     if pos = fail then
         
@@ -74,7 +74,7 @@ CapJitAddLogicTemplateAndReturnLaTeXString := function ( template, cat, input_fi
         
     else
         
-        specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "$" );
+        specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "$" );
         
     fi;
     
