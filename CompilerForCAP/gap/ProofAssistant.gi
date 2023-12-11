@@ -2394,11 +2394,11 @@ InstallMethod( AssertProposition,
     
 end );
 
-CAP_JIT_PROOF_ASSISTANT_MODE_CATEGORY_DESCRIPTION := fail;
+CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY := fail;
 
-BindGlobal( "SetCurrentCategory", function ( category, description, symbols... )
+BindGlobal( "SetActiveCategory", function ( category, description, symbols... )
     
-    CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY := rec( category := category, description := description );
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY := rec( category := category, description := description );
     
     Assert( 0, Length( symbols ) <= 1 );
     
@@ -2412,9 +2412,11 @@ BindGlobal( "SetCurrentCategory", function ( category, description, symbols... )
         
     fi;
     
-    CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS := symbols;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS := symbols;
     
 end );
+
+InstallDeprecatedAlias( "SetCurrentCategory", "SetActiveCategory", "2023" );
 
 BindGlobal( "PhraseEnumeration", function ( parts )
     
@@ -2483,13 +2485,13 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         
     elif Length( args ) = 1 then
         
-        if CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY = fail then
+        if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
             
-            Error( "The category can only be omitted if `SetCurrentCategory` has been called before." );
+            Error( "The category can only be omitted if `SetActiveCategory` has been called before." );
             
         fi;
         
-        cat := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category;
+        cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
         input_filters := args[1];
         
     elif Length( args ) = 2 then
@@ -2520,13 +2522,13 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         tree := ENHANCED_SYNTAX_TREE( func );
         local_replacements := ShallowCopy( tree.local_replacements );
         
-        if CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY = fail then
+        if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
             
             text := "";
             
         else
             
-            text := Concatenation( "In ", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.description, " the following statement holds true: " );
+            text := Concatenation( "In ", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description, " the following statement holds true: " );
             
         fi;
         
@@ -2848,6 +2850,9 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     # twice to resolve operations added by local replacements
     tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( func, "with_post_processing", cat, input_filters, "bool" );
     tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
+    # data types might not be set in post-processing
+    tree := CapJitInferredDataTypes( tree );
+    
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := tree;
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
@@ -2920,7 +2925,7 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
         
         Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if t.number_of_applications <> infinity and t.number_of_applications <> 0 then Display( t.number_of_applications ); fi; end );
         
-        Error( "there are logic templates with a non-zero number of remaining applications" );
+        Error( "there are logic templates with a non-zero number of remaining applications, you can 'return;' to continue" );
         
     fi;
     
@@ -2928,9 +2933,12 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
         
         Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
         
-        Error( "applying the logic template did not change the tree" );
+        Error( "applying the logic template did not change the tree, you can 'return;' to continue" );
         
     fi;
+    
+    # data types might not be set in post-processing
+    new_tree := CapJitInferredDataTypes( new_tree );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := new_tree;
     
@@ -2978,7 +2986,7 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
         
         Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if t.number_of_applications <> infinity and t.number_of_applications <> 0 then Display( t.number_of_applications ); fi; end );
         
-        Error( "there are logic templates with a non-zero number of remaining applications" );
+        Error( "there are logic templates with a non-zero number of remaining applications, you can 'return;' to continue" );
         
     fi;
     
@@ -2986,9 +2994,12 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
         
         Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
         
-        Error( "applying the logic template did not change the tree" );
+        Error( "applying the logic template did not change the tree, you can 'return;' to continue" );
         
     fi;
+    
+    # data types might not be set in post-processing
+    new_tree := CapJitInferredDataTypes( new_tree );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := new_tree;
     
@@ -3751,10 +3762,10 @@ enhance_propositions( propositions );
 
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
 
-StateProposition := function ( proposition_id, variable_name_translator )
-  local cat_description;
+StateProposition := function ( proposition_id, args... )
+  local variable_name_translator, cat_description;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY <> fail );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY <> fail );
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail );
     
     if not IsBound( propositions.(proposition_id) ) then
@@ -3763,12 +3774,26 @@ StateProposition := function ( proposition_id, variable_name_translator )
         
     fi;
     
+    if Length( args ) = 0 then
+        
+        variable_name_translator := IdFunc;
+        
+    elif Length( args ) = 1 then
+        
+        variable_name_translator := args[1];
+        
+    else
+        
+        Error( "StateProposition accepts one or two arguments" );
+        
+    fi;
+    
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := rec( );
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition := propositions.(proposition_id);
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index := 0;
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
     
-    cat_description := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.description;
+    cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
     
     if LATEX_OUTPUT then
         
@@ -3847,7 +3872,7 @@ AssertProposition := function ( )
         return;
     fi;
     
-    cat_description := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.description;
+    cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
     proposition_description := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description;
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
@@ -3871,8 +3896,8 @@ ResetProposition := function ( )
     
 end;
 
-AssumeValidInputs := function ( )
-  local tree, cat, input_filters, pre_func;
+AttestValidInputs := function ( )
+  local tree, cat, input_filters, pre_func, old_tree;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     
@@ -3884,7 +3909,7 @@ AssumeValidInputs := function ( )
     Assert( 0, IsBound( tree.bindings.BINDING_RETURN_VALUE.data_type ) );
     
     pre_func := function ( tree, additional_arguments )
-      local category, source, morphism, range, args, type, funcref, right;
+      local category, source, morphism, range, attribute, ring;
         
         # properties like IsZeroForMorphisms can be applied to applied to two arguments, a category and a morphism
         if CapJitIsCallToGlobalFunction( tree, x -> IsFilter( ValueGlobal( x ) ) ) and tree.args.length = 1 then
@@ -3967,16 +3992,58 @@ AssumeValidInputs := function ( )
             
         fi;
         
+        # `in` for rings corresponds to `IsWellDefined` for categories
+        if tree.type = "EXPR_IN" and IsSpecializationOfFilter( IsRingElement, tree.left.data_type.filter ) and IsSpecializationOfFilter( IsRing, tree.right.data_type.filter ) then
+            
+            # In the future, the ring should be part of the data type.
+            # For now, we can only consider attributes of categories.
+            if CapJitIsCallToGlobalFunction( tree.right, gvar -> true ) and tree.right.args.length = 1 and IsSpecializationOfFilter( "category", tree.right.args.1.data_type.filter ) then
+                
+                category := tree.right.args.1.data_type.category;
+                
+                attribute := ValueGlobal( tree.right.funcref.gvar );
+                
+                ring := attribute( category );
+                
+                Assert( 0, IsRing( ring ) );
+                
+                if HasRingElementFilter( ring ) and IsSpecializationOfFilter( RingElementFilter( ring ), tree.left.data_type.filter ) then
+                    
+                    return rec( type := "EXPR_TRUE" );
+                    
+                fi;
+                
+                # we are conservative and do not return `false` for now if the filter does not match
+                
+            fi;
+            
+        fi;
+        
         return tree;
         
     end;
     
+    old_tree := StructuralCopy( tree );
+    
     tree := CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
     
+    if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, tree ) then
+        
+        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+        
+        Error( "attesting valid inputs did not change the tree, you can 'return;' to continue" );
+        
+    fi;
+    
     tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
+    
+    # data types might not be set in post-processing
+    tree := CapJitInferredDataTypes( tree );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := tree;
     
     return "We let CompilerForCAP assume that all inputs are valid.";
     
 end;
+
+InstallDeprecatedAlias( "AssumeValidInputs", "AttestValidInputs", "2023" );

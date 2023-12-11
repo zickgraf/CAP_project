@@ -1588,14 +1588,14 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
                 
                 # TODO
-                if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                     
                     name := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator( name );
                     
                 fi;
                 
                 # TODO
-                if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                     
                     name := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator( name );
                     
@@ -1605,13 +1605,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             if IsBound( tree.data_type.category ) then
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.data_type.category, s.category ) );
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.data_type.category, s.category ) );
                 
                 if pos <> fail then
                     
-                    if IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(name) ) then
+                    if IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(name) ) then
                         
-                        name := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(name);
+                        name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(name);
                         
                     fi;
                     
@@ -1621,13 +1621,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) then
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.data_type.element_type.category, s.category ) );
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.data_type.element_type.category, s.category ) );
                 
                 if pos <> fail then
                     
-                    if IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(name) ) then
+                    if IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(name) ) then
                         
-                        name := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(name);
+                        name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(name);
                         
                     fi;
                     
@@ -1665,7 +1665,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif type = "object" then
                 
-                if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                     
                     name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
                     
@@ -1686,7 +1686,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     source := LaTeXName( parts[2] );
                     range := LaTeXName( parts[3] );
                     
-                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                         
                         name := Concatenation( "\\bboxed{", name, "}" );
                         source := Concatenation( "\\bboxed{", source, "}" );
@@ -1698,7 +1698,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     name := LaTeXName( name );
                     
-                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY.category ) then
+                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                         
                         name := Concatenation( "\\bboxed{", name, "}" );
                         
@@ -1933,13 +1933,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 # TODO
                 if IsBound( tree.args.1.data_type.element_type.category ) then
                     
-                    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.1.data_type.element_type.category, s.category ) );
+                    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.1.data_type.element_type.category, s.category ) );
                     
                     if pos <> fail then
                         
-                        if IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol) ) then
+                        if IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol) ) then
                             
-                            index_symbol := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol);
+                            index_symbol := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol);
                             
                         fi;
                         
@@ -2418,13 +2418,13 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 # TODO
                 if IsBound( tree.args.2.args.1.data_type.element_type.category ) then
                     
-                    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.2.args.1.data_type.element_type.category, s.category ) );
+                    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.2.args.1.data_type.element_type.category, s.category ) );
                     
                     if pos <> fail then
                         
-                        if IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol) ) then
+                        if IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol) ) then
                             
-                            index_symbol := CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol);
+                            index_symbol := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(index_symbol);
                             
                         fi;
                         
@@ -2514,7 +2514,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
             elif tree.funcref.gvar = "ZeroObject" then
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.1.data_type.category, s.category ) );
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.1.data_type.category, s.category ) );
                 
                 if pos = fail then
                     
@@ -2527,7 +2527,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                     math_record := rec(
                         type := "morphism",
-                        string := Concatenation( "0_{", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "}" ),
+                        string := Concatenation( "0_{", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "}" ),
                     );
                     
                 fi;
@@ -2783,7 +2783,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 Assert( 0, IsCapCategory( cat ) );
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
                 
                 if pos = fail then
                     
@@ -2791,7 +2791,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 else
                     
-                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "$" );
+                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "$" );
                     
                 fi;
                 
@@ -2806,7 +2806,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 Assert( 0, IsCapCategory( cat ) );
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
                 
                 if pos = fail then
                     
@@ -2814,7 +2814,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 else
                     
-                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "$" );
+                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "$" );
                     
                 fi;
                 
@@ -2829,7 +2829,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                 
                 Assert( 0, IsCapCategory( cat ) );
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
                 
                 if pos = fail then
                     
@@ -2837,7 +2837,7 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
                     
                 else
                     
-                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_CURRENT_CATEGORY_SYMBOLS[pos].symbol, "$" );
+                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "$" );
                     
                 fi;
                 
