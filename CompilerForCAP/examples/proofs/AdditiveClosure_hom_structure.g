@@ -1,7 +1,4 @@
-LoadPackage( "FreydCategoriesForCAP" : OnlyNeeded );
-LoadPackage( "CompilerForCAP" : OnlyNeeded );
-
-CapJitEnableProofAssistantMode( );
+LoadPackage( "FreydCategoriesForCAP", false : OnlyNeeded );
 
 dummy_range := DummyCategory( rec(
     list_of_operations_to_install := [
@@ -31,8 +28,6 @@ dummy_range := DummyCategory( rec(
 AddMorphismBetweenDirectSums( dummy_range, { cat, source_diagram, matrix, target_diagram } -> fail );
 Finalize( dummy_range );
 
-StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy_range );
-
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
         "IsWellDefinedForObjects",
@@ -58,11 +53,7 @@ AddInterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( du
 AddInterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( dummy, { cat, source, target, alpha } -> fail );
 Finalize( dummy );
 
-StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
-
 cat := AdditiveClosure( dummy );
-
-SetCurrentCategory( cat, "the additive closure of a pre-additive category" );
 
 Assert( 0, HasRangeCategoryOfHomomorphismStructure( cat ) and RangeCategoryOfHomomorphismStructure( cat ) = dummy_range );
 Assert( 0, CanCompute( cat, "HomomorphismStructureOnObjects" ) );
@@ -71,6 +62,15 @@ Assert( 0, CanCompute( cat, "DistinguishedObjectOfHomomorphismStructure" ) );
 Assert( 0, CanCompute( cat, "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure" ) );
 Assert( 0, CanCompute( cat, "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" ) );
 
+LoadPackage( "CompilerForCAP", false : OnlyNeeded );
+
+CapJitEnableProofAssistantMode( );
+
+StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy_range );
+
+StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
+
+SetCurrentCategory( cat, "the additive closure of a pre-additive category" );
 
 StateProposition( "is_equipped_with_hom_structure", function ( name )
     
@@ -136,6 +136,7 @@ AssertLemma( );
 # HomomorphismStructureOnMorphisms preserves identities
 StateNextLemma( );
 
+# check congruence with identity on direct sum componentwise
 ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "morphism", "list" ],
