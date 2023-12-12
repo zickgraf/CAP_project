@@ -2469,7 +2469,7 @@ CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool )
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
 BindGlobal( "STATE_THEOREM", function ( type, func, args... )
-  local cat, input_filters, tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, i, j, condition;
+  local cat, input_filters, tree, local_replacements, tmp_tree, src_template_tree, dst_template_tree, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, i, j, condition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2510,7 +2510,6 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         claim := func,
         cat := cat,
         input_filters := input_filters,
-        ever_compiled := false,
     );
     
     if Length( input_filters ) = 0 then
@@ -2519,8 +2518,70 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         
     else
         
-        tree := ENHANCED_SYNTAX_TREE( func );
+        tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
+        
+        if ValueOption( "preconditions" ) <> fail then
+            
+            local_replacements := [ ];
+            
+            for replacement in ValueOption( "preconditions" ) do
+                
+                # src
+                Assert( 0, input_filters[1] = "category" );
+                
+                tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.src_template ) ) : given_arguments := [ cat ] );
+                
+                tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
+                
+                Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
+                
+                src_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
+                
+                # dst
+                Assert( 0, input_filters[1] = "category" );
+                
+                tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.dst_template ) ) : given_arguments := [ cat ] );
+                
+                tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
+                
+                Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
+                
+                dst_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
+                
+                #Add( local_replacements, rec(
+                #    variable_names := [ ],
+                #    variable_filters := [ ],
+                #    src_template := "local template", # TODO
+                #    src_template_tree := src_template_tree,
+                #    dst_template := "local template",
+                #    dst_template_tree := dst_template_tree,
+                #    new_funcs := [ ],
+                #    number_of_applications := infinity,
+                #    is_fully_enhanced := true,
+                #) );
+                
+                Add( local_replacements, rec(
+                    src := src_template_tree,
+                    dst := dst_template_tree,
+                ) );
+                
+            od;
+            
+            if not IsEmpty( tree.local_replacements ) then
+                
+                Assert( 0, tree.local_replacements = local_replacements );
+                
+            else
+                
+                tree.local_replacements := local_replacements;
+                
+            fi;
+            
+        fi;
+        
         local_replacements := ShallowCopy( tree.local_replacements );
+        
+        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacements := ShallowCopy( local_replacements );
         
         if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
             
@@ -2655,6 +2716,20 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                     fi;
                     
                     name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
+                    
+                    if source = fail and range <> fail then
+                        
+                        Display( "WARNING: LaTeX missing source" );
+                        source := "\\text{missing source}";
+                        
+                    fi;
+                    
+                    if source <> fail and range = fail then
+                        
+                        Display( "WARNING: LaTeX missing range" );
+                        range := "\\text{missing target}";
+                        
+                    fi;
                     
                     if source <> fail and range <> fail then
                         
@@ -2848,12 +2923,13 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     );
     
     # twice to resolve operations added by local replacements
-    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( func, "with_post_processing", cat, input_filters, "bool" );
+    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing", cat, input_filters, "bool" );
     tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
     # data types might not be set in post-processing
     tree := CapJitInferredDataTypes( tree );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := tree;
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func_id := tree.id;
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
@@ -2888,13 +2964,12 @@ BindGlobal( "StateLemma", function ( args... )
 end );
 
 BindGlobal( "ApplyLogicTemplate", function ( logic_template )
-  local tree, cat, input_filters, old_tree, new_tree, function_string;
+  local tree, cat, old_tree, new_tree, function_string;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     
     tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
-    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
     
     logic_template := ShallowCopy( logic_template );
     
@@ -2995,6 +3070,8 @@ BindGlobal( "ASSERT_THEOREM", function ( type )
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
     input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
     
+    Assert( 0, tree.id = CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func_id );
+    
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
         CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
@@ -3016,23 +3093,6 @@ end );
 BindGlobal( "AssertLemma", function ( )
     
     return ASSERT_THEOREM( "lemma" );
-    
-end );
-
-BindGlobal( "RESET_THEOREM", function ( type )
-    
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
-    
-    Print( "WARNING: Resetting ", type, ".\n" );
-    
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
-    
-end );
-
-BindGlobal( "ResetLemma", function ( )
-    
-    RESET_THEOREM( "lemma" );
     
 end );
 
@@ -3072,25 +3132,27 @@ end );
 
 specifications := rec(
     PreCompose := rec(
-        preconditions := """
-            CapJitAddLocalReplacement( Source( beta ), Range( alpha ) );
-        """,
+        input_arguments_names := [ "cat", "alpha", "beta" ],
+        preconditions := [
+            rec( src_template := "Source( beta )", dst_template := "Range( alpha )" ),
+        ],
         postconditions := [
             rec(
                 # composition is associative
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha, beta, gamma )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    CapJitAddLocalReplacement( Source( beta ), B );
-                    CapJitAddLocalReplacement( Range( beta ), C );
-                    CapJitAddLocalReplacement( Source( gamma ), C );
-                    CapJitAddLocalReplacement( Range( gamma ), D );
-                    
                     return IsCongruentForMorphisms( cat, PreCompose( cat, PreCompose( cat, alpha, beta ), gamma ), PreCompose( cat, alpha, PreCompose( cat, beta, gamma ) ) );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "B" ),
+                    rec( src_template := "Range( beta )", dst_template := "C" ),
+                    rec( src_template := "Source( gamma )", dst_template := "C" ),
+                    rec( src_template := "Range( gamma )", dst_template := "D" ),
+                ],
             ),
         ],
     ),
@@ -3101,58 +3163,57 @@ specifications := rec(
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
                     return IsCongruentForMorphisms( cat, PreCompose( cat, IdentityMorphism( cat, A ), alpha ), alpha );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
             rec(
                 # identity is right-neutral
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
                     return IsCongruentForMorphisms( cat, PreCompose( cat, alpha, IdentityMorphism( cat, B ) ), alpha );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
         ],
     ),
     AdditionForMorphisms := rec(
-        preconditions := """
-            CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
-            CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
-        """,
+        input_arguments_names := [ "cat", "alpha", "beta" ],
+        preconditions := [
+            rec( src_template := "Source( beta )", dst_template := "Source( alpha )" ),
+            rec( src_template := "Range( beta )", dst_template := "Range( alpha )" ),
+        ],
         postconditions := [
             # addition is associative
             rec(
                 input_types := [ "category", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, alpha, beta, gamma )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    CapJitAddLocalReplacement( Source( beta ), A );
-                    CapJitAddLocalReplacement( Range( beta ), B );
-                    CapJitAddLocalReplacement( Source( gamma ), A );
-                    CapJitAddLocalReplacement( Range( gamma ), B );
-                    
                     return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, AdditionForMorphisms( cat, alpha, beta ), gamma ), AdditionForMorphisms( cat, alpha, AdditionForMorphisms( cat, beta, gamma ) ) );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "A" ),
+                    rec( src_template := "Range( beta )", dst_template := "B" ),
+                    rec( src_template := "Source( gamma )", dst_template := "A" ),
+                    rec( src_template := "Range( gamma )", dst_template := "B" ),
+                ],
             ),
             # addition is commutative
             rec(
                 input_types := [ "category", "object", "object", "morphism", "morphism" ],
                 func := function ( cat, A, B, alpha, beta )
-                    
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    CapJitAddLocalReplacement( Source( beta ), A );
-                    CapJitAddLocalReplacement( Range( beta ), B );
                     
                     return IsCongruentForMorphisms( cat,
                         AdditionForMorphisms( cat, alpha, beta ),
@@ -3160,19 +3221,17 @@ specifications := rec(
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "A" ),
+                    rec( src_template := "Range( beta )", dst_template := "B" ),
+                ],
             ),
             # addition is bilinear from the left
             rec(
                 input_types := [ "category", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, alpha, beta, phi )
-                    
-                    CapJitAddLocalReplacement( Source( phi ), A );
-                    CapJitAddLocalReplacement( Range( phi ), B );
-                    
-                    CapJitAddLocalReplacement( Source( alpha ), B );
-                    CapJitAddLocalReplacement( Range( alpha ), C );
-                    CapJitAddLocalReplacement( Source( beta ), B );
-                    CapJitAddLocalReplacement( Range( beta ), C );
                     
                     return IsCongruentForMorphisms( cat,
                         PreCompose( cat, phi, AdditionForMorphisms( cat, alpha, beta ) ),
@@ -3180,19 +3239,20 @@ specifications := rec(
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( phi )", dst_template := "A" ),
+                    rec( src_template := "Range( phi )", dst_template := "B" ),
+                    
+                    rec( src_template := "Source( alpha )", dst_template := "B" ),
+                    rec( src_template := "Range( alpha )", dst_template := "C" ),
+                    rec( src_template := "Source( beta )", dst_template := "B" ),
+                    rec( src_template := "Range( beta )", dst_template := "C" ),
+                ],
             ),
             # addition is bilinear from the right
             rec(
                 input_types := [ "category", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, alpha, beta, phi )
-                    
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    CapJitAddLocalReplacement( Source( beta ), A );
-                    CapJitAddLocalReplacement( Range( beta ), B );
-                    
-                    CapJitAddLocalReplacement( Source( phi ), B );
-                    CapJitAddLocalReplacement( Range( phi ), C );
                     
                     return IsCongruentForMorphisms( cat,
                         PreCompose( cat, AdditionForMorphisms( cat, alpha, beta ), phi ),
@@ -3200,6 +3260,15 @@ specifications := rec(
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "A" ),
+                    rec( src_template := "Range( beta )", dst_template := "B" ),
+                    
+                    rec( src_template := "Source( phi )", dst_template := "B" ),
+                    rec( src_template := "Range( phi )", dst_template := "C" ),
+                ],
             ),
         ],
     ),
@@ -3210,24 +3279,26 @@ specifications := rec(
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
                     return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, ZeroMorphism( cat, A, B ), alpha ), alpha );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
             rec(
                 # zero is right-neutral
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
                     return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, ZeroMorphism( cat, A, B ) ), alpha );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
         ],
     ),
@@ -3238,24 +3309,26 @@ specifications := rec(
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
                     return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, AdditiveInverseForMorphisms( cat, alpha ), alpha ), ZeroMorphism( cat, A, B ) );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
             rec(
                 # additive inverse is right-inverse
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
                     return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, AdditiveInverseForMorphisms( cat, alpha ) ), ZeroMorphism( cat, A, B ) );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
         ],
     ),
@@ -3266,78 +3339,84 @@ specifications := rec(
                 input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
                 func := function ( cat, A, B, r, s, alpha )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
                     return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, MultiplyWithElementOfCommutativeRingForMorphisms( s, alpha ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r * s, alpha ) );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
             # multiplication is distributive from the right
             rec(
                 input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
                 func := function ( cat, A, B, r, s, alpha )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
                     return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r + s, alpha ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, s, alpha ) ) );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
             # multiplication is distributive from the left
             rec(
                 input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := function ( cat, A, B, r, alpha, beta )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    CapJitAddLocalReplacement( Source( beta ), A );
-                    CapJitAddLocalReplacement( Range( beta ), B );
-                    
                     return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, AdditionForMorphisms( cat, alpha, beta ) ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ) );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "A" ),
+                    rec( src_template := "Range( beta )", dst_template := "B" ),
+                ],
             ),
             # multiplication has a neutral element
             rec(
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
                     return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, One( CommutativeRingOfLinearCategory( cat ) ), alpha ), alpha );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
             # composition is linear with regard to multiplication in the first component
             rec(
                 input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, r, alpha, beta )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    CapJitAddLocalReplacement( Source( beta ), B );
-                    CapJitAddLocalReplacement( Range( beta ), C );
-                    
                     return IsCongruentForMorphisms( cat, PreCompose( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), beta ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "B" ),
+                    rec( src_template := "Range( beta )", dst_template := "C" ),
+                ],
             ),
             # composition is linear with regard to multiplication in the second component
             rec(
                 input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, r, alpha, beta )
                     
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    CapJitAddLocalReplacement( Source( beta ), B );
-                    CapJitAddLocalReplacement( Range( beta ), C );
-                    
                     return IsCongruentForMorphisms( cat, PreCompose( cat, alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "B" ),
+                    rec( src_template := "Range( beta )", dst_template := "C" ),
+                ],
             ),
         ],
     ),
@@ -3345,34 +3424,38 @@ specifications := rec(
     UniversalMorphismIntoZeroObject := rec(
         postconditions := [
             rec(
-                input_types := [ "category", "morphism" ],
-                func := function ( cat, u )
-                    
-                    CapJitAddLocalReplacement( Range( u ), ZeroObject( cat ) );
+                input_types := [ "category", "object", "morphism" ],
+                func := function ( cat, A, u )
                     
                     return IsCongruentForMorphisms( cat,
-                        UniversalMorphismIntoZeroObject( cat, Source( u ) ),
+                        UniversalMorphismIntoZeroObject( cat, A ),
                         u
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( u )", dst_template := "A" ),
+                    rec( src_template := "Range( u )", dst_template := "ZeroObject( cat )" ),
+                ],
             ),
         ],
     ),
     UniversalMorphismFromZeroObject := rec(
         postconditions := [
             rec(
-                input_types := [ "category", "morphism" ],
-                func := function ( cat, u )
-                    
-                    CapJitAddLocalReplacement( Source( u ), ZeroObject( cat ) );
+                input_types := [ "category", "object", "morphism" ],
+                func := function ( cat, B, u )
                     
                     return IsCongruentForMorphisms( cat,
-                        UniversalMorphismFromZeroObject( cat, Range( u ) ),
+                        UniversalMorphismFromZeroObject( cat, B ),
                         u
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( u )", dst_template := "ZeroObject( cat )" ),
+                    rec( src_template := "Range( u )", dst_template := "B" ),
+                ],
             ),
         ],
     ),
@@ -3415,35 +3498,28 @@ specifications := rec(
                 input_types := [ "category", "object", "object", "object", "object", "object", "object", "morphism", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, E, F, alpha_1, alpha_2, beta_1, beta_2 )
                     
-                    CapJitAddLocalReplacement( Source( alpha_2 ), A );
-                    CapJitAddLocalReplacement( Range( alpha_2 ), B );
-                    CapJitAddLocalReplacement( Source( alpha_1 ), B );
-                    CapJitAddLocalReplacement( Range( alpha_1 ), C );
-                    
-                    CapJitAddLocalReplacement( Source( beta_1 ), D );
-                    CapJitAddLocalReplacement( Range( beta_1 ), E );
-                    CapJitAddLocalReplacement( Source( beta_2 ), E );
-                    CapJitAddLocalReplacement( Range( beta_2 ), F );
-                    
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
                         PreCompose( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta_2 ) ),
                         HomomorphismStructureOnMorphisms( cat, PreCompose( cat, alpha_2, alpha_1 ), PreCompose( cat, beta_1, beta_2 ) )
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha_2 )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha_2 )", dst_template := "B" ),
+                    rec( src_template := "Source( alpha_1 )", dst_template := "B" ),
+                    rec( src_template := "Range( alpha_1 )", dst_template := "C" ),
+                    
+                    rec( src_template := "Source( beta_1 )", dst_template := "D" ),
+                    rec( src_template := "Range( beta_1 )", dst_template := "E" ),
+                    rec( src_template := "Source( beta_2 )", dst_template := "E" ),
+                    rec( src_template := "Range( beta_2 )", dst_template := "F" ),
+                ],
             ),
             # H( α₁, β ) + H( α₂, β ) = H( α₁ + α₂, β ), TODO
             rec(
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha_1, alpha_2, beta )
-                    
-                    CapJitAddLocalReplacement( Source( alpha_1 ), A );
-                    CapJitAddLocalReplacement( Range( alpha_1 ), B );
-                    CapJitAddLocalReplacement( Source( alpha_2 ), A );
-                    CapJitAddLocalReplacement( Range( alpha_2 ), B );
-                    
-                    CapJitAddLocalReplacement( Source( beta ), C );
-                    CapJitAddLocalReplacement( Range( beta ), D );
                     
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
                         AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta ) ),
@@ -3451,19 +3527,20 @@ specifications := rec(
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha_1 )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha_1 )", dst_template := "B" ),
+                    rec( src_template := "Source( alpha_2 )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha_2 )", dst_template := "B" ),
+                    
+                    rec( src_template := "Source( beta )", dst_template := "C" ),
+                    rec( src_template := "Range( beta )", dst_template := "D" ),
+                ],
             ),
             # H( α, β₁ ) + H( α, β₂ ) = H( α, β₁ + β₂ ), TODO
             rec(
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha, beta_1, beta_2 )
-                    
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    
-                    CapJitAddLocalReplacement( Source( beta_1 ), C );
-                    CapJitAddLocalReplacement( Range( beta_1 ), D );
-                    CapJitAddLocalReplacement( Source( beta_2 ), C );
-                    CapJitAddLocalReplacement( Range( beta_2 ), D );
                     
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
                         AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha, beta_2 ) ),
@@ -3471,6 +3548,15 @@ specifications := rec(
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    
+                    rec( src_template := "Source( beta_1 )", dst_template := "C" ),
+                    rec( src_template := "Range( beta_1 )", dst_template := "D" ),
+                    rec( src_template := "Source( beta_2 )", dst_template := "C" ),
+                    rec( src_template := "Range( beta_2 )", dst_template := "D" ),
+                ],
             ),
         ],
     ),
@@ -3478,18 +3564,16 @@ specifications := rec(
         postconditions := [ ], # see InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism
     ),
     InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism := rec(
-        preconditions := """
-            CapJitAddLocalReplacement( Source( alpha ), DistinguishedObjectOfHomomorphismStructure( cat ) );
-            CapJitAddLocalReplacement( Target( alpha ), HomomorphismStructureOnObjects( cat, source, range ) );
-        """,
+        input_arguments_names := [ "cat", "source", "range", "alpha" ],
+        preconditions := [
+            rec( src_template := "Source( alpha )", dst_template := "DistinguishedObjectOfHomomorphismStructure( cat )" ),
+            rec( src_template := "Range( alpha )", dst_template := "HomomorphismStructureOnObjects( cat, source, range )" ),
+        ],
         postconditions := [
             rec(
                 # ν⁻¹(ν(α)) = α
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
-                    
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
                     
                     return IsCongruentForMorphisms( cat,
                         InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, A, B, InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, alpha ) ),
@@ -3497,14 +3581,15 @@ specifications := rec(
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
             ),
             rec(
                 # ν(ν⁻¹(α)) = α
                 input_types := [ "category", "object", "object", "morphism_in_range_category_of_homomorphism_structure" ],
                 func := function ( cat, S, T, alpha )
-                    
-                    CapJitAddLocalReplacement( Source( alpha ), DistinguishedObjectOfHomomorphismStructure( cat ) );
-                    CapJitAddLocalReplacement( Range( alpha ), HomomorphismStructureOnObjects( cat, S, T ) );
                     
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
                         InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, S, T, alpha ) ),
@@ -3512,18 +3597,15 @@ specifications := rec(
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "DistinguishedObjectOfHomomorphismStructure( cat )" ),
+                    rec( src_template := "Range( alpha )", dst_template := "HomomorphismStructureOnObjects( cat, S, T )" ),
+                ],
             ),
             rec(
                 # naturality of ν: ν(α ⋅ ξ ⋅ β) = ν(ξ) ⋅ H(α, β)
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha, xi, beta )
-                    
-                    CapJitAddLocalReplacement( Source( alpha ), A );
-                    CapJitAddLocalReplacement( Range( alpha ), B );
-                    CapJitAddLocalReplacement( Source( xi ), B );
-                    CapJitAddLocalReplacement( Range( xi ), C );
-                    CapJitAddLocalReplacement( Source( beta ), C );
-                    CapJitAddLocalReplacement( Range( beta ), D );
                     
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
                         InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, PreComposeList( cat, A, [ alpha, xi, beta ], D ) ),
@@ -3531,6 +3613,14 @@ specifications := rec(
                     );
                     
                 end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( xi )", dst_template := "B" ),
+                    rec( src_template := "Range( xi )", dst_template := "C" ),
+                    rec( src_template := "Source( beta )", dst_template := "C" ),
+                    rec( src_template := "Range( beta )", dst_template := "D" ),
+                ],
             ),
         ],
     ),
@@ -3568,7 +3658,7 @@ propositions := rec(
 );
 
 enhance_propositions := function ( propositions )
-  local prop, info, specification, preconditions, enhanced_arguments, is_well_defined, is_well_defined_category, source_string, range_string, id, operation;
+  local prop, info, specification, preconditions, enhanced_arguments, is_well_defined, is_well_defined_category, source_string, range_string, lemma, id, operation_name;
     
     for id in RecNames( propositions ) do
         
@@ -3578,16 +3668,27 @@ enhance_propositions := function ( propositions )
         
         prop.lemmata := [ ];
         
-        for operation in prop.operations do
+        for operation_name in prop.operations do
             
-            Assert( 0, IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(operation) ) );
-            Assert( 0, IsBound( specifications.(operation) ) );
+            Assert( 0, IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(operation_name) ) );
+            Assert( 0, IsBound( specifications.(operation_name) ) );
             
-            info := CAP_INTERNAL_METHOD_NAME_RECORD.(operation);
+            info := CAP_INTERNAL_METHOD_NAME_RECORD.(operation_name);
             
-            specification := specifications.(operation);
+            specification := specifications.(operation_name);
             
-            if IsBound( specification.preconditions ) then
+            if not IsBound( specification.input_arguments_names ) then
+                
+                Assert( 0, not IsBound( specification.preconditions ) );
+                
+                specification.input_arguments_names := info.input_arguments_names;
+                
+            fi;
+            
+            Assert( 0, Length( specification.input_arguments_names ) = Length( info.input_arguments_names ) );
+            Assert( 0, specification.input_arguments_names[1] = "cat" );
+            
+            if IsBound( specification.preconditions ) and IsString( specification.preconditions ) then
                 
                 preconditions := specification.preconditions;
                 
@@ -3597,7 +3698,7 @@ enhance_propositions := function ( propositions )
                 
             fi;
             
-            enhanced_arguments := ListN( info.filter_list, info.input_arguments_names, function ( filter_string, name )
+            enhanced_arguments := ListN( info.filter_list, specification.input_arguments_names, function ( filter_string, name )
                 
                 #if filter_string = "list_of_objects" then
                 #    
@@ -3647,7 +3748,7 @@ enhance_propositions := function ( propositions )
                 
             fi;
             
-            Add( prop.lemmata, rec(
+            lemma := rec(
                 input_types := info.filter_list,
                 func := EvalString( ReplacedStringViaRecord(
                     """function ( input_arguments... )
@@ -3660,15 +3761,23 @@ enhance_propositions := function ( propositions )
                     rec(
                         is_well_defined := is_well_defined,
                         category := is_well_defined_category,
-                        operation := operation,
-                        input_arguments := info.input_arguments_names,
+                        operation := operation_name,
+                        input_arguments := specification.input_arguments_names,
                         enhanced_arguments := enhanced_arguments,
                         preconditions := preconditions,
                         source := source_string,
                         range := range_string,
                     )
                 ) )
-            ) );
+            );
+            
+            if IsBound( specification.preconditions ) and not IsString( specification.preconditions ) then
+                
+                lemma.preconditions := specification.preconditions;
+                
+            fi;
+            
+            Add( prop.lemmata, lemma );
             
             ## check source and range (if required)
             
@@ -3689,7 +3798,7 @@ enhance_propositions := function ( propositions )
             #                
             #            end""",
             #            rec(
-            #                operation := operation,
+            #                operation := operation_name,
             #                output_source_getter := info.output_source_getter_string,
             #                input_arguments := info.input_arguments_names,
             #                enhanced_arguments := enhanced_arguments,
@@ -3709,7 +3818,7 @@ enhance_propositions := function ( propositions )
             #                
             #            end""",
             #            rec(
-            #                operation := operation,
+            #                operation := operation_name,
             #                output_range_getter := info.output_range_getter_string,
             #                input_arguments := info.input_arguments_names,
             #                enhanced_arguments := enhanced_arguments,
@@ -3731,6 +3840,8 @@ enhance_propositions := function ( propositions )
             fi;
             
         od;
+        
+        Assert( 0, ForAll( prop.lemmata, l -> Length( l.input_types ) = NumberArgumentsFunction( l.func ) and l.input_types[1] = "category" ) );
         
     od;
     
@@ -3790,7 +3901,7 @@ StateProposition := function ( proposition_id, args... )
 end;
 
 StateNextLemma := function ( )
-  local active_lemma_index, lemmata;
+  local lemmata, active_lemma_index, active_lemma, preconditions;
     
     if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail then
         
@@ -3819,14 +3930,26 @@ StateNextLemma := function ( )
     
     active_lemma_index := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index;
     
+    active_lemma := lemmata[active_lemma_index];
+    
+    if IsBound( lemmata[active_lemma_index].preconditions ) then
+        
+        preconditions := lemmata[active_lemma_index].preconditions;
+        
+    else
+        
+        preconditions := fail;
+        
+    fi;
+    
     if LATEX_OUTPUT then
         
-        return StateLemma( lemmata[active_lemma_index].func, lemmata[active_lemma_index].input_types );
+        return StateLemma( active_lemma.func, active_lemma.input_types : preconditions := preconditions );
         
     else
         
         Print( "Next lemma:\n" );
-        StateLemma( lemmata[active_lemma_index].func, lemmata[active_lemma_index].input_types );
+        StateLemma( active_lemma.func, active_lemma.input_types : preconditions := preconditions );
         
     fi;
     
@@ -3862,26 +3985,13 @@ AssertProposition := function ( )
     
 end;
 
-ResetProposition := function ( )
-    
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail );
-    
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM = fail );
-    
-    Print( "WARNING: Resetting proposition.\n" );
-    
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
-    
-end;
-
 AttestValidInputs := function ( )
-  local tree, cat, input_filters, pre_func, old_tree;
+  local tree, cat, pre_func, old_tree;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     
     tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
-    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
     
     # assert that the tree is well-typed
     Assert( 0, IsBound( tree.bindings.BINDING_RETURN_VALUE.data_type ) );
