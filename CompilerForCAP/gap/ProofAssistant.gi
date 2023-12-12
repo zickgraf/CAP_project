@@ -2547,34 +2547,12 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                 
                 dst_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
                 
-                #Add( local_replacements, rec(
-                #    variable_names := [ ],
-                #    variable_filters := [ ],
-                #    src_template := "local template", # TODO
-                #    src_template_tree := src_template_tree,
-                #    dst_template := "local template",
-                #    dst_template_tree := dst_template_tree,
-                #    new_funcs := [ ],
-                #    number_of_applications := infinity,
-                #    is_fully_enhanced := true,
-                #) );
-                
                 Add( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacements, rec(
                     src := src_template_tree,
                     dst := dst_template_tree,
                 ) );
                 
             od;
-            
-            if not IsEmpty( tree.local_replacements ) then
-                
-                Assert( 0, tree.local_replacements = CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacement );
-                
-            else
-                
-                #tree.local_replacements := local_replacements;
-                
-            fi;
             
         fi;
         
@@ -2821,7 +2799,6 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         if not IsEmpty( local_replacements ) then
             
             condition_func := StructuralCopy( tree );
-            condition_func.local_replacements := [ ];
             
             # TODO: make sure that CapJitAddLocalReplacement comes before any assignments
             #Assert( 0, Length( condition_func.bindings.names ) = 1 );
