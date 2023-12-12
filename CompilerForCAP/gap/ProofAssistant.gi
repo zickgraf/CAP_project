@@ -2510,6 +2510,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         claim := func,
         cat := cat,
         input_filters := input_filters,
+        local_replacements := [ ],
     );
     
     if Length( input_filters ) = 0 then
@@ -2521,8 +2522,6 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
         
         if ValueOption( "preconditions" ) <> fail then
-            
-            local_replacements := [ ];
             
             for replacement in ValueOption( "preconditions" ) do
                 
@@ -2560,7 +2559,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                 #    is_fully_enhanced := true,
                 #) );
                 
-                Add( local_replacements, rec(
+                Add( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacements, rec(
                     src := src_template_tree,
                     dst := dst_template_tree,
                 ) );
@@ -2569,19 +2568,21 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             
             if not IsEmpty( tree.local_replacements ) then
                 
-                Assert( 0, tree.local_replacements = local_replacements );
+                Assert( 0, tree.local_replacements = CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacement );
                 
             else
                 
-                tree.local_replacements := local_replacements;
+                #tree.local_replacements := local_replacements;
                 
             fi;
             
         fi;
         
-        local_replacements := ShallowCopy( tree.local_replacements );
+        local_replacements := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacements;
         
-        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacements := ShallowCopy( local_replacements );
+        #local_replacements := ShallowCopy( tree.local_replacements );
+        
+        #CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacements := ShallowCopy( local_replacements );
         
         if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
             
@@ -2922,6 +2923,8 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         "\\end{", type, "}"
     );
     
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func_id := tree.id;
+    
     # twice to resolve operations added by local replacements
     tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing", cat, input_filters, "bool" );
     tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
@@ -2929,7 +2932,6 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     tree := CapJitInferredDataTypes( tree );
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := tree;
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func_id := tree.id;
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
