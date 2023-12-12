@@ -70,7 +70,7 @@ StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy_range );
 
 StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
 
-SetCurrentCategory( cat, "the additive closure of a pre-additive category" );
+SetActiveCategory( cat, "the additive closure of a pre-additive category" );
 
 StateProposition( "is_equipped_with_hom_structure", function ( name )
     
@@ -113,14 +113,14 @@ end );
 # DistinguishedObjectOfHomomorphismStructure is well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 
 # HomomorphismStructureOnObjects is well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 
@@ -129,7 +129,7 @@ StateNextLemma( );
 
 PrintLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 
@@ -459,14 +459,14 @@ AssertLemma( );
 # InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 
 # InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 
