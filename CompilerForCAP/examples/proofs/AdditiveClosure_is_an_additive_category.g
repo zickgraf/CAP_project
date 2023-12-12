@@ -1,7 +1,51 @@
-LoadPackage( "FreydCategoriesForCAP" : OnlyNeeded );
-LoadPackage( "CompilerForCAP" : OnlyNeeded );
+LoadPackage( "FreydCategoriesForCAP", false : OnlyNeeded );
+
+dummy := DummyCategory( rec(
+    list_of_operations_to_install := [
+        "IsWellDefinedForObjects",
+        "IsWellDefinedForMorphismsWithGivenSourceAndRange",
+        "IsEqualForObjects",
+        "IsCongruentForMorphisms",
+        "PreCompose",
+        "IdentityMorphism",
+        "SumOfMorphisms",
+        "ZeroMorphism",
+        "AdditionForMorphisms",
+        "AdditiveInverseForMorphisms",
+    ],
+    properties := [
+        "IsAbCategory",
+    ],
+) );
+
+cat := AdditiveClosure( dummy );
+
+LoadPackage( "CompilerForCAP", false : OnlyNeeded );
 
 CapJitEnableProofAssistantMode( );
+
+StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
+
+SetActiveCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive category $\\Ccat$", [
+    rec(
+        category := cat,
+        symbol := "\\Ccat^\\oplus",
+        variable_name_matches := rec(
+            alpha := "alpha__A__B",
+            beta := "beta__C__D",
+            gamma := "gamma__E__F",
+            objects := "D__n",
+            diagram := "D__n",
+        ),
+    ),
+    rec(
+        category := dummy,
+        symbol := "\\Ccat",
+        variable_name_matches := rec(
+            obj := "A",
+        ),
+    ),
+] );
 
 # FIXME
 CapJitAddLogicTemplate(
@@ -38,49 +82,6 @@ CapJitAddLogicTemplate(
         dst_template := "list",
     )
 );
-
-dummy := DummyCategory( rec(
-    list_of_operations_to_install := [
-        "IsWellDefinedForObjects",
-        "IsWellDefinedForMorphismsWithGivenSourceAndRange",
-        "IsEqualForObjects",
-        "IsCongruentForMorphisms",
-        "PreCompose",
-        "IdentityMorphism",
-        "SumOfMorphisms",
-        "ZeroMorphism",
-        "AdditionForMorphisms",
-        "AdditiveInverseForMorphisms",
-    ],
-    properties := [
-        "IsAbCategory",
-    ],
-) );
-
-StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
-
-cat := AdditiveClosure( dummy );
-
-SetCurrentCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive category $\\Ccat$", [
-    rec(
-        category := cat,
-        symbol := "\\Ccat^\\oplus",
-        variable_name_matches := rec(
-            alpha := "alpha__A__B",
-            beta := "beta__C__D",
-            gamma := "gamma__E__F",
-            objects := "D__n",
-            diagram := "D__n",
-        ),
-    ),
-    rec(
-        category := dummy,
-        symbol := "\\Ccat",
-        variable_name_matches := rec(
-            obj := "A",
-        ),
-    ),
-] );
 
 StateProposition( "has_direct_sums_via_components_of_morphisms", function ( name )
     
@@ -127,7 +128,7 @@ end );
 # DirectSum well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 

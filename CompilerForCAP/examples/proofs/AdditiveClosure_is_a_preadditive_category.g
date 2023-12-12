@@ -41,9 +41,9 @@ cat := AdditiveClosure( dummy );
 
 LoadPackage( "CompilerForCAP", false : OnlyNeeded );
 
-StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
-
 CapJitEnableProofAssistantMode( );
+
+StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
 
 SetActiveCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive category $\\Ccat$", [
     rec(
@@ -209,7 +209,6 @@ ApplyLogicTemplate(
     #dummy, [ "category", "morphism", "morphism" ], "=", "."
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # Zero well-defined
@@ -217,7 +216,6 @@ StateNextLemma( );
 
 AttestValidInputs( );
 
-PrintLemma( );
 AssertLemma( );
 
 # Zero left neutral
@@ -233,7 +231,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "object", "object" ], "=", "."
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # Zero right neutral
@@ -249,7 +246,6 @@ ApplyLogicTemplateAndReturnLaTeXString(
     dummy, [ "category", "morphism", "object", "object" ], "=", "."
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditiveInverse well-defined
@@ -274,7 +270,6 @@ ApplyLogicTemplate(
     )
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditiveInverse left inverse
@@ -307,7 +302,6 @@ ApplyLogicTemplate(
     )
 );
 
-PrintLemma( );
 AssertLemma( );
 
 # AdditiveInverse right inverse
@@ -340,7 +334,6 @@ ApplyLogicTemplate(
     )
 );
 
-PrintLemma( );
 AssertLemma( );
 
 AssertProposition( );

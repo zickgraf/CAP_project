@@ -1,7 +1,4 @@
-LoadPackage( "FreydCategoriesForCAP" : OnlyNeeded );
-LoadPackage( "CompilerForCAP" : OnlyNeeded );
-
-CapJitEnableProofAssistantMode( );
+LoadPackage( "FreydCategoriesForCAP", false : OnlyNeeded );
 
 dummy := DummyCategory( rec(
     list_of_operations_to_install := [
@@ -16,11 +13,15 @@ dummy := DummyCategory( rec(
     ],
 ) );
 
-StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
-
 cat := AdditiveClosure( dummy );
 
-SetCurrentCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive category $\\Ccat$", [
+LoadPackage( "CompilerForCAP", false : OnlyNeeded );
+
+CapJitEnableProofAssistantMode( );
+
+StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
+
+SetActiveCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive category $\\Ccat$", [
     rec(
         category := cat,
         symbol := "\\Ccat^\\oplus",
@@ -68,14 +69,14 @@ end );
 # ZeroObject well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 
 # UniversalMorphismIntoZeroObject well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 
@@ -85,7 +86,7 @@ StateNextLemma( );
 # UniversalMorphismFromZeroObject well-defined
 StateNextLemma( );
 
-AssumeValidInputs( );
+AttestValidInputs( );
 
 AssertLemma( );
 
