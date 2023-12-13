@@ -3265,36 +3265,6 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
     
 end;
 
-BindGlobal( "CapJitCompiledFunctionAsMathString", function ( func, cat, input_filters, return_type )
-  local compiled_func;
-    
-    compiled_func := CapJitCompiledFunction( func, cat, input_filters, return_type );
-    
-    return FunctionAsMathString( compiled_func, cat, input_filters );
-    
-end );
-
-BindGlobal( "CapJitCompiledFunctionAsMathStringAssert", function ( func, cat, input_filters )
-  local tree, string;
-    
-    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( func, "with_post_processing", cat, input_filters, "bool" );
-    
-    if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
-        
-        return "\\qedhere";
-        
-    else
-        
-        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
-        
-        Error( "function is not true" );
-        
-        return FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( tree ), cat, input_filters );
-        
-    fi;
-    
-end );
-
 CapJitMadeVariableNamesUnique := function ( tree )
   local variable_names, pre_func, additional_arguments_func, outer_func_id;
     

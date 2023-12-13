@@ -2469,7 +2469,7 @@ CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool )
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
 
 BindGlobal( "STATE_THEOREM", function ( type, func, args... )
-  local cat, input_filters, tree, local_replacements, tmp_tree, src_template_tree, dst_template_tree, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, i, j, condition;
+  local cat, input_filters, tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, i, j, condition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2512,6 +2512,8 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         input_filters := input_filters,
         local_replacements := [ ],
     );
+    
+    Add( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK, func );
     
     if Length( input_filters ) = 0 then
         
@@ -2902,9 +2904,22 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func_id := tree.id;
     
+    Assert( 0, input_filters[1] = "category" );
+    Assert( 0, Length( input_filters ) = tree.narg );
+    
+    arguments_data_types := CAP_INTERNAL_GET_DATA_TYPES_FROM_STRINGS( input_filters, cat );
+    
+    Assert( 0, not fail in arguments_data_types );
+    
+    type_signature := Pair( arguments_data_types, rec( filter := IsBool ) );
+    tree.data_type := rec(
+        filter := IsFunction,
+        signature := type_signature,
+    );
+    
     # twice to resolve operations added by local replacements
-    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing", cat, input_filters, "bool" );
-    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
+    tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
+    tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
     # data types might not be set in post-processing
     tree := CapJitInferredDataTypes( tree );
     
@@ -2920,6 +2935,8 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
         );
         
         CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
+        
+        Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
     fi;
     
@@ -2962,7 +2979,7 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     
     old_tree := StructuralCopy( tree );
     
-    new_tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
+    new_tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
     
     function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
     
@@ -3054,6 +3071,8 @@ BindGlobal( "ASSERT_THEOREM", function ( type )
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
         CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
+        
+        Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
         return "With this, the claim follows and we let CompilerForCAP end the proof.\\qedhere";
         
@@ -4102,7 +4121,7 @@ AttestValidInputs := function ( )
         
     fi;
     
-    tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
+    tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
     
     # data types might not be set in post-processing
     tree := CapJitInferredDataTypes( tree );
