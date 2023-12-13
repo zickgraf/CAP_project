@@ -349,7 +349,7 @@ ApplyLogicTemplate(
     )
 );
 
-result := AssertLemma( );
+AssertLemma( );
 
 # HomomorphismStructureOnMorphisms additive in first component
 StateNextLemma( );
@@ -564,7 +564,7 @@ ApplyLogicTemplate(
     )
 );
 
-result := AssertLemma( );
+AssertLemma( );
 
 # InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure well-defined
 StateNextLemma( );
@@ -628,7 +628,7 @@ ApplyLogicTemplate(
     )
 );
 
-result := AssertLemma( );
+AssertLemma( );
 
 
 # InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure surjective
@@ -652,7 +652,7 @@ ApplyLogicTemplate(
     )
 );
 
-result := AssertLemma( );
+AssertLemma( );
 
 
 # naturality of InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure
@@ -805,7 +805,7 @@ ApplyLogicTemplate(
     )
 );
 
-result := AssertLemma( );
+AssertLemma( );
 
 
 
