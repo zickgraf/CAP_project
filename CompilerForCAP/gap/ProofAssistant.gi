@@ -2883,7 +2883,7 @@ BindGlobal( "StateLemma", function ( args... )
 end );
 
 BindGlobal( "ApplyLogicTemplate", function ( logic_template )
-  local tree, cat, input_filters, old_tree, new_tree;
+  local tree, cat, input_filters, old_tree, new_tree, function_string;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
     
@@ -2904,6 +2904,15 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     old_tree := StructuralCopy( tree );
     
     new_tree := CapJitCompiledFunctionAsEnhancedSyntaxTree( tree, "with_post_processing" );
+    
+    function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
+    
+    if PositionSublist( function_string, "CAP_JIT_INTERNAL_GLOBAL_VARIABLE_" ) <> fail then
+        
+        # COVERAGE_IGNORE_NEXT_LINE
+        Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
+        
+    fi;
     
     if ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> t.number_of_applications <> infinity and t.number_of_applications <> 0 ) then
         
@@ -3080,11 +3089,15 @@ specifications := rec(
         postconditions := [
             rec(
                 # composition is associative
-                input_types := [ "category", "morphism", "morphism", "morphism" ],
-                func := function( cat, alpha, beta, gamma )
+                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, D, alpha, beta, gamma )
                     
-                    CapJitAddLocalReplacement( Source( beta ), Range( alpha ) );
-                    CapJitAddLocalReplacement( Range( beta ), Source( gamma ) );
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    CapJitAddLocalReplacement( Source( beta ), B );
+                    CapJitAddLocalReplacement( Range( beta ), C );
+                    CapJitAddLocalReplacement( Source( gamma ), C );
+                    CapJitAddLocalReplacement( Range( gamma ), D );
                     
                     return IsCongruentForMorphisms( cat, PreCompose( cat, PreCompose( cat, alpha, beta ), gamma ), PreCompose( cat, alpha, PreCompose( cat, beta, gamma ) ) );
                     
@@ -3096,13 +3109,27 @@ specifications := rec(
         postconditions := [
             rec(
                 # identity is left-neutral
-                input_types := [ "category", "morphism" ],
-                func := { cat, alpha } -> IsCongruentForMorphisms( cat, PreCompose( cat, IdentityMorphism( cat, Source( alpha ) ), alpha ), alpha ),
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    return IsCongruentForMorphisms( cat, PreCompose( cat, IdentityMorphism( cat, A ), alpha ), alpha );
+                    
+                end,
             ),
             rec(
                 # identity is right-neutral
-                input_types := [ "category", "morphism" ],
-                func := { cat, alpha } -> IsCongruentForMorphisms( cat, PreCompose( cat, alpha, IdentityMorphism( cat, Range( alpha ) ) ), alpha ),
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    return IsCongruentForMorphisms( cat, PreCompose( cat, alpha, IdentityMorphism( cat, B ) ), alpha );
+                    
+                end,
             ),
         ],
     ),
@@ -3112,28 +3139,31 @@ specifications := rec(
             CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
         """,
         postconditions := [
+            # addition is associative
             rec(
-                # addition is associative
-                input_types := [ "category", "morphism", "morphism", "morphism" ],
-                func := function( cat, alpha, beta, gamma )
+                input_types := [ "category", "object", "object", "morphism", "morphism", "morphism" ],
+                func := function ( cat, A, B, alpha, beta, gamma )
                     
-                    CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
-                    CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
-                    CapJitAddLocalReplacement( Source( gamma ), Source( alpha ) );
-                    CapJitAddLocalReplacement( Range( gamma ), Range( alpha ) );
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    CapJitAddLocalReplacement( Source( beta ), A );
+                    CapJitAddLocalReplacement( Range( beta ), B );
+                    CapJitAddLocalReplacement( Source( gamma ), A );
+                    CapJitAddLocalReplacement( Range( gamma ), B );
                     
                     return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, AdditionForMorphisms( cat, alpha, beta ), gamma ), AdditionForMorphisms( cat, alpha, AdditionForMorphisms( cat, beta, gamma ) ) );
                     
                 end,
             ),
+            # addition is commutative
             rec(
-                # addition is commutative
-                input_types := [ "category", "morphism", "morphism" ],
-                func := function ( cat, alpha, beta )
+                input_types := [ "category", "object", "object", "morphism", "morphism" ],
+                func := function ( cat, A, B, alpha, beta )
                     
-                    # alpha and beta are parallel
-                    CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
-                    CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    CapJitAddLocalReplacement( Source( beta ), A );
+                    CapJitAddLocalReplacement( Range( beta ), B );
                     
                     return IsCongruentForMorphisms( cat,
                         AdditionForMorphisms( cat, alpha, beta ),
@@ -3142,16 +3172,18 @@ specifications := rec(
                     
                 end,
             ),
+            # addition is bilinear from the left
             rec(
-                # addition is bilinear from the left
-                input_types := [ "category", "morphism", "morphism", "morphism" ],
-                func := function ( cat, alpha, beta, phi )
+                input_types := [ "category", "object", "object", "object", "morphism", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, alpha, beta, phi )
                     
-                    # alpha and beta are parallel
-                    CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
-                    CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
+                    CapJitAddLocalReplacement( Source( phi ), A );
+                    CapJitAddLocalReplacement( Range( phi ), B );
                     
-                    CapJitAddLocalReplacement( Source( alpha ), Range( phi ) );
+                    CapJitAddLocalReplacement( Source( alpha ), B );
+                    CapJitAddLocalReplacement( Range( alpha ), C );
+                    CapJitAddLocalReplacement( Source( beta ), B );
+                    CapJitAddLocalReplacement( Range( beta ), C );
                     
                     return IsCongruentForMorphisms( cat,
                         PreCompose( cat, phi, AdditionForMorphisms( cat, alpha, beta ) ),
@@ -3160,16 +3192,18 @@ specifications := rec(
                     
                 end,
             ),
+            # addition is bilinear from the right
             rec(
-                # addition is bilinear from the right
-                input_types := [ "category", "morphism", "morphism", "morphism" ],
-                func := function ( cat, alpha, beta, phi )
+                input_types := [ "category", "object", "object", "object", "morphism", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, alpha, beta, phi )
                     
-                    # alpha and beta are parallel
-                    CapJitAddLocalReplacement( Source( beta ), Source( alpha ) );
-                    CapJitAddLocalReplacement( Range( beta ), Range( alpha ) );
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    CapJitAddLocalReplacement( Source( beta ), A );
+                    CapJitAddLocalReplacement( Range( beta ), B );
                     
-                    CapJitAddLocalReplacement( Source( phi ), Range( alpha ) );
+                    CapJitAddLocalReplacement( Source( phi ), B );
+                    CapJitAddLocalReplacement( Range( phi ), C );
                     
                     return IsCongruentForMorphisms( cat,
                         PreCompose( cat, AdditionForMorphisms( cat, alpha, beta ), phi ),
@@ -3180,51 +3214,31 @@ specifications := rec(
             ),
         ],
     ),
-    MultiplyWithElementOfCommutativeRingForMorphisms := rec(
-        postconditions := [
-            rec(
-                # multiplication is associative
-                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
-                func := { cat, r, s, alpha } -> IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, MultiplyWithElementOfCommutativeRingForMorphisms( s, alpha ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r * s, alpha ) ),
-            ),
-            rec(
-                # multiplication is distributive from the right
-                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
-                func := { cat, r, s, alpha } -> IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r + s, alpha ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, s, alpha ) ) ),
-            ),
-            rec(
-                # multiplication is distributive from the left
-                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
-                func := { cat, r, alpha, beta } -> IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, AdditionForMorphisms( cat, alpha, beta ) ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ) ),
-            ),
-            rec(
-                # multiplication has a neutral element
-                input_types := [ "category", "morphism" ],
-                func := { cat, alpha } -> IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, One( CommutativeRingOfLinearCategory( cat ) ), alpha ), alpha ),
-            ),
-            rec(
-                # composition is linear with regard to multiplication in the first component
-                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
-                func := { cat, r, alpha, beta } -> IsCongruentForMorphisms( cat, PreCompose( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), beta ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) ),
-            ),
-            rec(
-                # composition is linear with regard to multiplication in the second component
-                input_types := [ "category", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
-                func := { cat, r, alpha, beta } -> IsCongruentForMorphisms( cat, PreCompose( cat, alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) ),
-            ),
-        ],
-    ),
     ZeroMorphism := rec(
         postconditions := [
             rec(
                 # zero is left-neutral
-                input_types := [ "category", "morphism" ],
-                func := { cat, alpha } -> IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, ZeroMorphism( cat, Source( alpha ), Range( alpha ) ), alpha ), alpha ),
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, ZeroMorphism( cat, A, B ), alpha ), alpha );
+                    
+                end,
             ),
             rec(
                 # zero is right-neutral
-                input_types := [ "category", "morphism" ],
-                func := { cat, alpha } -> IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, ZeroMorphism( cat, Source( alpha ), Range( alpha ) ) ), alpha ),
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, ZeroMorphism( cat, A, B ) ), alpha );
+                    
+                end,
             ),
         ],
     ),
@@ -3232,13 +3246,109 @@ specifications := rec(
         postconditions := [
             rec(
                 # additive inverse is left-inverse
-                input_types := [ "category", "morphism" ],
-                func := { cat, alpha } -> IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, AdditiveInverseForMorphisms( cat, alpha ), alpha ), ZeroMorphism( cat, Source( alpha ), Range( alpha ) ) ),
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, AdditiveInverseForMorphisms( cat, alpha ), alpha ), ZeroMorphism( cat, A, B ) );
+                    
+                end,
             ),
             rec(
                 # additive inverse is right-inverse
-                input_types := [ "category", "morphism" ],
-                func := { cat, alpha } -> IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, AdditiveInverseForMorphisms( cat, alpha ) ), ZeroMorphism( cat, Source( alpha ), Range( alpha ) ) ),
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, AdditiveInverseForMorphisms( cat, alpha ) ), ZeroMorphism( cat, A, B ) );
+                    
+                end,
+            ),
+        ],
+    ),
+    MultiplyWithElementOfCommutativeRingForMorphisms := rec(
+        postconditions := [
+            # multiplication is associative
+            rec(
+                input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
+                func := function ( cat, A, B, r, s, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, MultiplyWithElementOfCommutativeRingForMorphisms( s, alpha ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r * s, alpha ) );
+                    
+                end,
+            ),
+            # multiplication is distributive from the right
+            rec(
+                input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
+                func := function ( cat, A, B, r, s, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r + s, alpha ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, s, alpha ) ) );
+                    
+                end,
+            ),
+            # multiplication is distributive from the left
+            rec(
+                input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
+                func := function ( cat, A, B, r, alpha, beta )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    CapJitAddLocalReplacement( Source( beta ), A );
+                    CapJitAddLocalReplacement( Range( beta ), B );
+                    
+                    return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, AdditionForMorphisms( cat, alpha, beta ) ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ) );
+                    
+                end,
+            ),
+            # multiplication has a neutral element
+            rec(
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, One( CommutativeRingOfLinearCategory( cat ) ), alpha ), alpha );
+                    
+                end,
+            ),
+            # composition is linear with regard to multiplication in the first component
+            rec(
+                input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, r, alpha, beta )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    CapJitAddLocalReplacement( Source( beta ), B );
+                    CapJitAddLocalReplacement( Range( beta ), C );
+                    
+                    return IsCongruentForMorphisms( cat, PreCompose( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), beta ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) );
+                    
+                end,
+            ),
+            # composition is linear with regard to multiplication in the second component
+            rec(
+                input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, r, alpha, beta )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    CapJitAddLocalReplacement( Source( beta ), B );
+                    CapJitAddLocalReplacement( Range( beta ), C );
+                    
+                    return IsCongruentForMorphisms( cat, PreCompose( cat, alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) );
+                    
+                end,
             ),
         ],
     ),
@@ -3313,11 +3423,18 @@ specifications := rec(
             ),
             # H( α₁, β₁ ) ⋅ H( α₂, β₂ ) = H( α₂ ⋅ α₁, β₁ ⋅ β₂ )
             rec(
-                input_types := [ "category", "morphism", "morphism", "morphism", "morphism" ],
-                func := function ( cat, alpha_1, alpha_2, beta_1, beta_2 )
+                input_types := [ "category", "object", "object", "object", "object", "object", "object", "morphism", "morphism", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, D, E, F, alpha_1, alpha_2, beta_1, beta_2 )
                     
-                    CapJitAddLocalReplacement( Target( alpha_2 ), Source( alpha_1 ) );
-                    CapJitAddLocalReplacement( Source( beta_2 ), Target( beta_1 ) );
+                    CapJitAddLocalReplacement( Source( alpha_2 ), A );
+                    CapJitAddLocalReplacement( Range( alpha_2 ), B );
+                    CapJitAddLocalReplacement( Source( alpha_1 ), B );
+                    CapJitAddLocalReplacement( Range( alpha_1 ), C );
+                    
+                    CapJitAddLocalReplacement( Source( beta_1 ), D );
+                    CapJitAddLocalReplacement( Range( beta_1 ), E );
+                    CapJitAddLocalReplacement( Source( beta_2 ), E );
+                    CapJitAddLocalReplacement( Range( beta_2 ), F );
                     
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
                         PreCompose( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta_2 ) ),
@@ -3328,11 +3445,16 @@ specifications := rec(
             ),
             # H( α₁, β ) + H( α₂, β ) = H( α₁ + α₂, β ), TODO
             rec(
-                input_types := [ "category", "morphism", "morphism", "morphism" ],
-                func := function ( cat, alpha_1, alpha_2, beta )
+                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, D, alpha_1, alpha_2, beta )
                     
-                    CapJitAddLocalReplacement( Source( alpha_2 ), Source( alpha_1 ) );
-                    CapJitAddLocalReplacement( Target( alpha_2 ), Target( alpha_1 ) );
+                    CapJitAddLocalReplacement( Source( alpha_1 ), A );
+                    CapJitAddLocalReplacement( Range( alpha_1 ), B );
+                    CapJitAddLocalReplacement( Source( alpha_2 ), A );
+                    CapJitAddLocalReplacement( Range( alpha_2 ), B );
+                    
+                    CapJitAddLocalReplacement( Source( beta ), C );
+                    CapJitAddLocalReplacement( Range( beta ), D );
                     
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
                         AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta ) ),
@@ -3343,11 +3465,16 @@ specifications := rec(
             ),
             # H( α, β₁ ) + H( α, β₂ ) = H( α, β₁ + β₂ ), TODO
             rec(
-                input_types := [ "category", "morphism", "morphism", "morphism" ],
-                func := function ( cat, alpha, beta_1, beta_2 )
+                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, D, alpha, beta_1, beta_2 )
                     
-                    CapJitAddLocalReplacement( Source( beta_2 ), Source( beta_1 ) );
-                    CapJitAddLocalReplacement( Target( beta_2 ), Target( beta_1 ) );
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    
+                    CapJitAddLocalReplacement( Source( beta_1 ), C );
+                    CapJitAddLocalReplacement( Range( beta_1 ), D );
+                    CapJitAddLocalReplacement( Source( beta_2 ), C );
+                    CapJitAddLocalReplacement( Range( beta_2 ), D );
                     
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
                         AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha, beta_2 ) ),
@@ -3369,11 +3496,14 @@ specifications := rec(
         postconditions := [
             rec(
                 # ν⁻¹(ν(α)) = α
-                input_types := [ "category", "morphism" ],
-                func := function ( cat, alpha )
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
                     
                     return IsCongruentForMorphisms( cat,
-                        InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, Source( alpha ), Target( alpha ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, alpha ) ),
+                        InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, A, B, InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, alpha ) ),
                         alpha
                     );
                     
@@ -3385,7 +3515,7 @@ specifications := rec(
                 func := function ( cat, S, T, alpha )
                     
                     CapJitAddLocalReplacement( Source( alpha ), DistinguishedObjectOfHomomorphismStructure( cat ) );
-                    CapJitAddLocalReplacement( Target( alpha ), HomomorphismStructureOnObjects( cat, S, T ) );
+                    CapJitAddLocalReplacement( Range( alpha ), HomomorphismStructureOnObjects( cat, S, T ) );
                     
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
                         InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, S, T, alpha ) ),
@@ -3395,16 +3525,20 @@ specifications := rec(
                 end,
             ),
             rec(
-                # naturality of ν: ν(α ⋅ X ⋅ β) = ν(X) ⋅ H(α, β)
-                input_types := [ "category", "morphism", "morphism", "morphism" ],
-                func := function ( cat, alpha, X, beta )
+                # naturality of ν: ν(α ⋅ ξ ⋅ β) = ν(ξ) ⋅ H(α, β)
+                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, D, alpha, xi, beta )
                     
-                    CapJitAddLocalReplacement( Target( alpha ), Source( X ) );
-                    CapJitAddLocalReplacement( Source( beta ), Target( X ) );
+                    CapJitAddLocalReplacement( Source( alpha ), A );
+                    CapJitAddLocalReplacement( Range( alpha ), B );
+                    CapJitAddLocalReplacement( Source( xi ), B );
+                    CapJitAddLocalReplacement( Range( xi ), C );
+                    CapJitAddLocalReplacement( Source( beta ), C );
+                    CapJitAddLocalReplacement( Range( beta ), D );
                     
                     return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-                        InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, PreComposeList( cat, Source( alpha ), [ alpha, X, beta ], Target( beta ) ) ),
-                        PreCompose( RangeCategoryOfHomomorphismStructure( cat ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, X ), HomomorphismStructureOnMorphisms( cat, alpha, beta ) )
+                        InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, PreComposeList( cat, A, [ alpha, xi, beta ], D ) ),
+                        PreCompose( RangeCategoryOfHomomorphismStructure( cat ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, xi ), HomomorphismStructureOnMorphisms( cat, alpha, beta ) )
                     );
                     
                 end,
