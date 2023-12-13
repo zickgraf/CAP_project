@@ -3514,7 +3514,7 @@ specifications := rec(
                     rec( src_template := "Range( beta_2 )", dst_template := "F" ),
                 ],
             ),
-            # H( α₁, β ) + H( α₂, β ) = H( α₁ + α₂, β ), TODO
+            # H( α₁, β ) + H( α₂, β ) = H( α₁ + α₂, β )
             rec(
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha_1, alpha_2, beta )
@@ -3534,8 +3534,9 @@ specifications := rec(
                     rec( src_template := "Source( beta )", dst_template := "C" ),
                     rec( src_template := "Range( beta )", dst_template := "D" ),
                 ],
+                category_filter := IsAbCategory,
             ),
-            # H( α, β₁ ) + H( α, β₂ ) = H( α, β₁ + β₂ ), TODO
+            # H( α, β₁ ) + H( α, β₂ ) = H( α, β₁ + β₂ )
             rec(
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha, beta_1, beta_2 )
@@ -3555,6 +3556,7 @@ specifications := rec(
                     rec( src_template := "Source( beta_2 )", dst_template := "C" ),
                     rec( src_template := "Range( beta_2 )", dst_template := "D" ),
                 ],
+                category_filter := IsAbCategory,
             ),
         ],
     ),
@@ -3850,7 +3852,7 @@ enhance_propositions( propositions );
 CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
 
 StateProposition := function ( proposition_id, args... )
-  local variable_name_translator, cat_description;
+  local variable_name_translator, cat, cat_description, proposition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY <> fail );
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail );
@@ -3875,24 +3877,29 @@ StateProposition := function ( proposition_id, args... )
         
     fi;
     
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
+    cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
+    
+    proposition := propositions.(proposition_id);
+    
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := rec( );
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition := propositions.(proposition_id);
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.description := proposition.description;
+    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.lemmata := Filtered( proposition.lemmata, l -> not IsBound( l.category_filter ) or Tester( l.category_filter )( cat ) and l.category_filter( cat ) );
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index := 0;
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
     
-    cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
     
     if LATEX_OUTPUT then
         
         return Concatenation(
             "\\begin{proposition}\n",
-            UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n",
+            UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, ".\n",
             "\\end{proposition}"
         );
         
     else
         
-        Print( "Proposition: ", UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description, ".\n\n" );
+        Print( "Proposition: ", UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, ".\n\n" );
         
     fi;
     
@@ -3915,7 +3922,7 @@ StateNextLemma := function ( )
         
     fi;
     
-    lemmata := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata;
+    lemmata := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.lemmata;
     
     if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( lemmata ) then
         
@@ -3966,13 +3973,13 @@ AssertProposition := function ( )
         return;
     fi;
     
-    if not CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.lemmata ) then
+    if not CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.lemmata ) then
         Error( "not all lemmata proven" );
         return;
     fi;
     
     cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
-    proposition_description := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.proposition.description;
+    proposition_description := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.description;
     
     CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
     
