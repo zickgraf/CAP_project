@@ -2466,47 +2466,20 @@ end );
 
 CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool );
 
-CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
+CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
 
-BindGlobal( "STATE_THEOREM", function ( type, func, args... )
-  local cat, input_filters, tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, i, j, condition;
+BindGlobal( "StateLemma", function ( func, cat, input_filters )
+  local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, i, j, condition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
-    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail then
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
         
-        Error( "WARNING: overwriting existing active theorem" );
-        
-    fi;
-    
-    if Length( args ) = 0 then
-        
-        Error( "STATE_THEOREM must be called with at least three arguments" );
-        
-    elif Length( args ) = 1 then
-        
-        if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
-            
-            Error( "The category can only be omitted if `SetActiveCategory` has been called before." );
-            
-        fi;
-        
-        cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
-        input_filters := args[1];
-        
-    elif Length( args ) = 2 then
-        
-        cat := args[1];
-        input_filters := args[2];
-        
-    else
-        
-        Error( "STATE_THEOREM must be called with at most 4 arguments" );
+        Error( "there already is an active lemma, you can 'return;' to overwrite it" );
         
     fi;
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := rec(
-        type := type,
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := rec(
         claim := func,
         cat := cat,
         input_filters := input_filters,
@@ -2549,7 +2522,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
                 
                 dst_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
                 
-                Add( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacements, rec(
+                Add( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements, rec(
                     src := src_template_tree,
                     dst := dst_template_tree,
                 ) );
@@ -2558,11 +2531,11 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             
         fi;
         
-        local_replacements := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacements;
+        local_replacements := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements;
         
         #local_replacements := ShallowCopy( tree.local_replacements );
         
-        #CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.local_replacements := ShallowCopy( local_replacements );
+        #CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements := ShallowCopy( local_replacements );
         
         if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
             
@@ -2896,13 +2869,13 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     result := FunctionAsMathString( func, cat, input_filters, "." );
     
     latex_string := Concatenation(
-        "\\begin{", type, "}\n",
+        "\\begin{lemma}\n",
         text, "\n",
         result, "\n",
-        "\\end{", type, "}"
+        "\\end{lemma}"
     );
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func_id := tree.id;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id := tree.id;
     
     Assert( 0, input_filters[1] = "category" );
     Assert( 0, Length( input_filters ) = tree.narg );
@@ -2923,7 +2896,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     # data types might not be set in post-processing
     tree := CapJitInferredDataTypes( tree );
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := tree;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := tree;
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
@@ -2934,7 +2907,7 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
             "\\end{proof}\n"
         );
         
-        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
+        CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
         
         Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
@@ -2953,19 +2926,13 @@ BindGlobal( "STATE_THEOREM", function ( type, func, args... )
     
 end );
 
-BindGlobal( "StateLemma", function ( args... )
-    
-    return CallFuncList( STATE_THEOREM, Concatenation( [ "lemma" ], args ) );
-    
-end );
-
 BindGlobal( "ApplyLogicTemplate", function ( logic_template )
   local tree, cat, old_tree, new_tree, function_string;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
     
-    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
+    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
     
     logic_template := ShallowCopy( logic_template );
     
@@ -3028,7 +2995,7 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     # data types might not be set in post-processing
     new_tree := CapJitInferredDataTypes( new_tree );
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := new_tree;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := new_tree;
     
 end );
 
@@ -3056,21 +3023,20 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
     
 end );
 
-BindGlobal( "ASSERT_THEOREM", function ( type )
+BindGlobal( "AssertLemma", function ( )
   local cat, input_filters, tree;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
     
-    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
-    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
+    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
+    input_filters := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.input_filters;
     
-    Assert( 0, tree.id = CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.func_id );
+    Assert( 0, tree.id = CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id );
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
-        CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM := fail;
+        CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
         
         Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
@@ -3088,21 +3054,14 @@ BindGlobal( "ASSERT_THEOREM", function ( type )
     
 end );
 
-BindGlobal( "AssertLemma", function ( )
-    
-    return ASSERT_THEOREM( "lemma" );
-    
-end );
-
-BindGlobal( "PRINT_THEOREM", function ( type, args... )
+BindGlobal( "PrintLemma", function ( args... )
   local tree, cat, input_filters, latex_string;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.type = type );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
     
-    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
-    input_filters := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.input_filters;
+    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
+    input_filters := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.input_filters;
     
     # TODO
     latex_string := CallFuncList( FunctionAsMathString, Concatenation( [ tree, cat, input_filters ], args ) : raw := false );
@@ -3119,12 +3078,6 @@ BindGlobal( "PRINT_THEOREM", function ( type, args... )
         return "";
         
     fi;
-    
-end );
-
-BindGlobal( "PrintLemma", function ( args... )
-    
-    return CallFuncList( PRINT_THEOREM, Concatenation( [ "lemma" ], args ) );
     
 end );
 
@@ -3880,7 +3833,7 @@ StateProposition := function ( proposition_id, args... )
 end;
 
 StateNextLemma := function ( )
-  local lemmata, active_lemma_index, active_lemma, preconditions;
+  local lemmata, active_lemma_index, active_lemma, preconditions, cat;
     
     if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail then
         
@@ -3889,7 +3842,7 @@ StateNextLemma := function ( )
         
     fi;
     
-    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail then
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
         
         Display( "There already is an active lemma." );
         return;
@@ -3921,14 +3874,16 @@ StateNextLemma := function ( )
         
     fi;
     
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
+    
     if LATEX_OUTPUT then
         
-        return StateLemma( active_lemma.func, active_lemma.input_types : preconditions := preconditions );
+        return StateLemma( active_lemma.func, cat, active_lemma.input_types : preconditions := preconditions );
         
     else
         
         Print( "Next lemma:\n" );
-        StateLemma( active_lemma.func, active_lemma.input_types : preconditions := preconditions );
+        StateLemma( active_lemma.func, cat, active_lemma.input_types : preconditions := preconditions );
         
     fi;
     
@@ -3942,7 +3897,7 @@ AssertProposition := function ( )
         return;
     fi;
     
-    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail then
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
         Error( "there is an active unproven lemma" );
         return;
     fi;
@@ -3967,10 +3922,10 @@ end;
 AttestValidInputs := function ( )
   local tree, cat, pre_func, old_tree;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM <> fail );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
     
-    tree := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.cat;
+    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
     
     # assert that the tree is well-typed
     Assert( 0, IsBound( tree.bindings.BINDING_RETURN_VALUE.data_type ) );
@@ -4107,7 +4062,7 @@ AttestValidInputs := function ( )
     # data types might not be set in post-processing
     tree := CapJitInferredDataTypes( tree );
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_THEOREM.tree := tree;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := tree;
     
     return "We let CompilerForCAP assume that all inputs are valid.";
     
