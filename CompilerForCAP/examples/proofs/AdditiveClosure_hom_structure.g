@@ -40,6 +40,7 @@ dummy := DummyCategory( rec(
         "IsEqualForObjects",
         "IsCongruentForMorphisms",
         "PreCompose",
+        "PreComposeList",
         "IdentityMorphism",
         "AdditionForMorphisms",
         "SumOfMorphisms",
@@ -262,7 +263,7 @@ ApplyLogicTemplate(
         variable_names := [ "cat", "A", "B", "mor" ],
         variable_filters := [ IsDummyCategory, IsDummyCategoryObject, IsDummyCategoryObject, IsDummyCategoryMorphism ],
         src_template := "HomomorphismStructureOnMorphisms( cat, ZeroMorphism( cat, A, B ), mor )",
-        dst_template := "ZeroMorphism( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnObjects( cat, B, Source( mor ) ), HomomorphismStructureOnObjects( cat, A, Target( mor ) ) )",
+        dst_template := "ZeroMorphism( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnObjects( cat, B, Source( mor ) ), HomomorphismStructureOnObjects( A, Target( mor ) ) )",
     )
 );
 
@@ -621,15 +622,168 @@ ApplyLogicTemplate(
     )
 );
 
+ApplyLogicTemplateAndReturnLaTeXString(
+    rec(
+        variable_names := [ "cat", "alpha", "P", "beta_1", "beta_2" ],
+        src_template := "PreCompose( cat, CAP_JIT_INTERNAL_EXPR_CASE( P, beta_1, true, beta_2 ), alpha )",
+        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( P, PreCompose( cat, beta_1, alpha ), true, PreCompose( cat, beta_2, alpha ) )",
+    ),
+    dummy, [ "category", "morphism", "bool", "morphism", "morphism" ], "="
+);
+
+ApplyLogicTemplateAndReturnLaTeXString(
+    rec(
+        variable_names := [ "cat", "alpha", "B" ],
+        variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryObject ],
+        src_template := "PreCompose( cat, IdentityMorphism( cat, B ), alpha )",
+        dst_template := "alpha",
+    ),
+    dummy, [ "category", "morphism", "object" ], "="
+);
+
+ApplyLogicTemplateAndReturnLaTeXString(
+    rec(
+        variable_names := [ "cat", "alpha", "B_1", "B_2" ],
+        variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryObject, IsDummyCategoryObject ],
+        src_template := "PreCompose( cat, ZeroMorphism( cat, B_1, B_2 ), alpha )",
+        dst_template := "ZeroMorphism( cat, B_1, Target( alpha ) )",
+    ),
+    dummy, [ "category", "morphism", "object", "object" ], "=", "."
+);
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "alpha", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Target( MorphismMatrix( alpha )[i][j] )",
+        dst_template := "ObjectList( Target( alpha ) )[j]",
+    )
+);
+
+ApplyLogicTemplateAndReturnLaTeXString(
+    rec(
+        variable_names := [ "cat", "l", "i", "alpha", "B_1", "B_2" ],
+        variable_filters := [ IsDummyCategory, IsInt, IsInt, IsDummyCategoryMorphism, IsDummyCategoryObject, IsDummyCategoryObject ],
+        src_template := "SumOfMorphisms( cat, B_1, List( [ 1 .. l ], k -> CAP_JIT_INTERNAL_EXPR_CASE( i = k, alpha, true, ZeroMorphism( cat, B_1, B_2 ) ) ), B_2 )",
+        #dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( i in [ 1 .. l ], (k -> alpha)(i), true, ZeroMorphism( cat, B_1, B_2 ) )",
+        dst_template := "(k -> alpha)(i)", # TODO: wrong
+    ),
+    dummy, [ "category", "integer", "integer", "morphism", "object", "object" ], "="
+);
+
+# PreCompose( alpha, KroneckerDelta( ... ) )
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "alpha", "index1", "index2", "value_if_equal", "value_if_not_equal" ],
+        #src_template := "PreCompose( cat, KroneckerDelta( index1, index2, value_if_equal, value_if_not_equal ), alpha )",
+        #dst_template := "KroneckerDelta( index1, index2, PreCompose( cat, value_if_equal, alpha ), PreCompose( cat, value_if_not_equal, alpha ) )",
+        src_template := "PreCompose( cat, alpha, CAP_JIT_INTERNAL_EXPR_CASE( index1 = index2, value_if_equal, true, value_if_not_equal ) )",
+        dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( index1 = index2, PreCompose( cat, alpha, value_if_equal ), true, PreCompose( cat, alpha, value_if_not_equal ) )",
+    )
+);
+
+# PreCompose( alpha, IdentityMorphism( ... ) )
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "alpha", "object" ],
+        variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryObject ],
+        src_template := "PreCompose( cat, alpha, IdentityMorphism( cat, object ) )",
+        dst_template := "alpha",
+    )
+);
+
+# PreCompose( alpha, ZeroMorphism( ... ) )
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "alpha", "object1", "object2" ],
+        variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryObject, IsDummyCategoryObject ],
+        src_template := "PreCompose( cat, alpha, ZeroMorphism( cat, object1, object2 ) )",
+        dst_template := "ZeroMorphism( cat, Source( alpha ), object2 )",
+    )
+);
+
+ApplyLogicTemplateAndReturnLaTeXString(
+    rec(
+        variable_names := [ "cat", "l", "i", "alpha", "B_1", "B_2" ],
+        variable_filters := [ IsDummyCategory, IsInt, IsInt, IsDummyCategoryMorphism, IsDummyCategoryObject, IsDummyCategoryObject ],
+        src_template := "SumOfMorphisms( cat, B_1, List( [ 1 .. l ], k -> CAP_JIT_INTERNAL_EXPR_CASE( k = i, alpha, true, ZeroMorphism( cat, B_1, B_2 ) ) ), B_2 )",
+        #dst_template := "CAP_JIT_INTERNAL_EXPR_CASE( i in [ 1 .. l ], (k -> alpha)(i), true, ZeroMorphism( cat, B_1, B_2 ) )",
+        dst_template := "(k -> alpha)(i)", # TODO: wrong
+    ),
+    dummy, [ "category", "integer", "integer", "morphism", "object", "object" ], "="
+);
+
 ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "source", "list", "target" ],
         variable_filters := [ IsDummyCategory, IsDummyCategoryObject, IsList, IsDummyCategoryObject ],
         src_template := "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, SumOfMorphisms( cat, source, list, target ) )",
-        dst_template := "SumOfMorphisms( RangeCategoryOfHomomorphismStructure( cat ), DistinguishedObjectOfHomomorphismStructure( cat ), List( [ 1 .. Length( list ) ], x -> InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, list[x] ) ), HomomorphismStructureOnObjects( source, target ) )",
+        dst_template := "SumOfMorphisms( RangeCategoryOfHomomorphismStructure( cat ), DistinguishedObjectOfHomomorphismStructure( cat ), List( [ 1 .. Length( list ) ], x -> InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, list[x] ) ), HomomorphismStructureOnObjects( cat, source, target ) )",
         new_funcs := [ [ "x" ] ],
     )
 );
 
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "source", "list", "target", "mor" ],
+        variable_filters := [ IsDummyCategory, IsDummyCategoryObject, IsList, IsDummyCategoryObject, IsDummyCategoryMorphism ],
+        src_template := "PreCompose( cat, SumOfMorphisms( cat, source, list, target ), mor )",
+        dst_template := "SumOfMorphisms( cat, source, List( [ 1 .. Length( list ) ], x -> PreCompose( cat, list[x], mor ) ), Target( mor ) )",
+        new_funcs := [ [ "x" ] ],
+    )#,
+    #dummy, [ "category", "morphism", "morphism" ], " = ", "."
+);
 
-#AssertProposition( ); # TODO
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "source", "list", "target" ],
+        variable_filters := [ IsDummyCategory, IsDummyCategoryObject, IsList, IsDummyCategoryObject ],
+        src_template := "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, SumOfMorphisms( cat, source, list, target ) )",
+        dst_template := "SumOfMorphisms( RangeCategoryOfHomomorphismStructure( cat ), DistinguishedObjectOfHomomorphismStructure( cat ), List( [ 1 .. Length( list ) ], x -> InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, list[x] ) ), HomomorphismStructureOnObjects( cat, source, target ) )",
+        new_funcs := [ [ "x" ] ],
+    )
+);
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "alpha", "X", "beta" ],
+        variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryMorphism, IsDummyCategoryMorphism ],
+        src_template := "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, PreCompose( cat, PreCompose( cat, alpha, X ), beta ) )",
+        dst_template := "PreCompose( RangeCategoryOfHomomorphismStructure( cat ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, X ), HomomorphismStructureOnMorphisms( cat, alpha, beta ) )",
+    )
+);
+
+# TODO
+ApplyLogicTemplateNTimes( 3,
+    rec(
+        variable_names := [ "cat", ],
+        variable_filters := [ IsAdditiveClosureCategory ],
+        src_template := "RangeCategoryOfHomomorphismStructure( UnderlyingCategory( cat ) )",
+        dst_template := "RangeCategoryOfHomomorphismStructure( cat )",
+    )
+);
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "alpha", "i", "j" ],
+        variable_filters := [ IsAdditiveClosureMorphism, IsInt, IsInt ],
+        src_template := "Target( MorphismMatrix( alpha )[i][j] )",
+        dst_template := "ObjectList( Target( alpha ) )[j]",
+    )
+);
+
+ApplyLogicTemplateAndReturnLaTeXString(
+    rec(
+        variable_names := [ "cat", "m", "n", "alpha", "A", "B" ],
+        src_template := "SumOfMorphisms( cat, A, List( [ 1 .. m ], i -> SumOfMorphisms( cat, A, List( [ 1 .. n ], j -> alpha ), B ) ), B )",
+        dst_template := "SumOfMorphisms( cat, A, List( [ 1 .. n ], j -> SumOfMorphisms( cat, A, List( [ 1 .. m ], i -> alpha ), B ) ), B )",
+    ),
+    dummy, [ "category", "integer", "integer", "morphism", "object", "object" ], "="
+);
+
+AssertLemma( );
+
+
+
+#
+AssertProposition( );
