@@ -3457,24 +3457,6 @@ specifications := rec(
             ),
         ],
     ),
-    DirectSum := rec( ),
-    #KernelObject := rec( ),
-    #KernelEmbedding := rec(
-    #    postconditions := [
-    #        rec(
-    #            input_types := [ "category", "morphism" ],
-    #            func := { cat, alpha } -> IsZeroForMorphisms( cat, PreCompose( cat, KernelEmbedding( cat, alpha ), alpha ) ),
-    #        ),
-    #    ],
-    #),
-    #KernelLift := rec(
-    #    preconditions := """
-    #        CapJitAddLocalReplacement( Range( tau ), Source( alpha ) );
-    #        CapJitAddLocalReplacement( IsZeroForMorphisms( PreCompose( tau, alpha ) ), true );
-    #    """,
-    #    postconditions := [
-    #    ],
-    #),
     DistinguishedObjectOfHomomorphismStructure := rec( ),
     HomomorphismStructureOnObjects := rec( ),
     HomomorphismStructureOnMorphisms := rec(
@@ -3643,14 +3625,6 @@ propositions := rec(
         description := "has a zero object",
         operations := [ "ZeroObject", "UniversalMorphismIntoZeroObject", "UniversalMorphismFromZeroObject" ],
     ),
-    has_direct_sums_via_components_of_morphisms := rec(
-        description := "has direct sums",
-        operations := [ "DirectSum" ],
-    ),
-    #has_kernels := rec(
-    #    description := "has kernels",
-    #    operations := [ "KernelObject", "KernelEmbedding", "KernelLift" ],
-    #),
     is_equipped_with_hom_structure := rec(
         description := "is equipped with a homomorphism structure",
         operations := [ "DistinguishedObjectOfHomomorphismStructure", "HomomorphismStructureOnObjects", "HomomorphismStructureOnMorphisms", "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure", "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" ],
