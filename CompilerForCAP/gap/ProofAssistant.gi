@@ -2394,30 +2394,6 @@ InstallMethod( AssertProposition,
     
 end );
 
-CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY := fail;
-
-BindGlobal( "SetActiveCategory", function ( category, description, symbols... )
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY := rec( category := category, description := description );
-    
-    Assert( 0, Length( symbols ) <= 1 );
-    
-    if Length( symbols ) = 1 then
-        
-        symbols := symbols[1];
-        
-    else
-        
-        symbols := [ ];
-        
-    fi;
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS := symbols;
-    
-end );
-
-InstallDeprecatedAlias( "SetCurrentCategory", "SetActiveCategory", "2023" );
-
 BindGlobal( "PhraseEnumeration", function ( parts )
     
     Assert( 0, Length( parts ) > 0 );
@@ -2469,7 +2445,7 @@ CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool )
 CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
 
 BindGlobal( "StateLemma", function ( func, cat, input_filters )
-  local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, i, j, condition;
+  local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, function_string, i, j, condition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
@@ -2893,6 +2869,16 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters )
     # twice to resolve operations added by local replacements
     tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
     tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
+    
+    function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
+    if PositionSublist( function_string, "CAP_JIT_INTERNAL_GLOBAL_VARIABLE_" ) <> fail then
+        
+        # COVERAGE_IGNORE_NEXT_LINE
+        Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
+        
+    fi;
+    
     # data types might not be set in post-processing
     tree := CapJitInferredDataTypes( tree );
     
@@ -2929,7 +2915,14 @@ end );
 BindGlobal( "ApplyLogicTemplate", function ( logic_template )
   local tree, cat, old_tree, new_tree, function_string;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "no active lemma, you can 'return;' to continue" );
+        return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
+    fi;
     
     tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
@@ -2939,6 +2932,12 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     if not IsBound( logic_template.number_of_applications ) then
         
         logic_template.number_of_applications := 1;
+        
+    fi;
+    
+    if logic_template.number_of_applications = infinity then
+        
+        Error( "Calling ApplyLogicTemplate with a logic template with an infinite number of applications is not supported. Please use CapJitAddLogicTemplate instead." );
         
     fi;
     
@@ -2957,13 +2956,23 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
         
     fi;
     
-    if ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> IsBound( t.is_fully_enhanced ) and t.is_fully_enhanced = true and t.number_of_applications <> infinity ) then
+    # TODO
+    if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
         
+        # COVERAGE_IGNORE_BLOCK_START
         Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
         
-        Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if t.number_of_applications <> infinity then Display( t.number_of_applications ); fi; end );
+        Error( "applying the logic template did not change the tree; you can 'return;' to continue" );
+        # COVERAGE_IGNORE_BLOCK_END
         
-        Error( "there are logic templates with a non-zero number of remaining applications, you can 'return;' to remove the logic template and continue" );
+    elif ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> IsBound( t.is_fully_enhanced ) and t.is_fully_enhanced = true and t.number_of_applications <> infinity ) then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
+        
+        Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if IsBound( t.is_fully_enhanced ) and t.is_fully_enhanced = true and t.number_of_applications <> infinity then Display( t.number_of_applications ); fi; end );
+        
+        Error( "there are logic templates with the non-zero number of remaining applications displayed above; you can 'return;' to remove the logic templates and continue" );
         
         MakeReadWriteGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
         
@@ -2982,13 +2991,7 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
         end );
         
         MakeReadOnlyGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
-        
-    elif CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
-        
-        # TODO
-        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
-        
-        Error( "applying the logic template did not change the tree, you can 'return;' to continue" );
+        # COVERAGE_IGNORE_BLOCK_END
         
     fi;
     
@@ -2999,34 +3002,90 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     
 end );
 
-BindGlobal( "ApplyLogicTemplateNTimes", function ( n, args... )
+BindGlobal( "ApplyLogicTemplateNTimes", function ( n, logic_template )
   local i;
     
     Assert( 0, IsPosInt( n ) );
     
     for i in [ 1 .. n ] do
         
-        CallFuncList( ApplyLogicTemplate, args );
+        ApplyLogicTemplate( logic_template );
         
     od;
     
 end );
 
-BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template, args... )
-  local latex_string;
+BindGlobal( "AssertLemma", function ( )
+  local tree;
     
-    ApplyLogicTemplate( logic_template );
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "no active lemma, you can 'return;' to continue" );
+        return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
+    fi;
     
-    latex_string := CallFuncList( CapJitLaTeXStringOfLogicTemplate, Concatenation( [ logic_template ], args ) );
+    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
     
-    return latex_string;
+    Assert( 0, tree.id = CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id );
+    
+    if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
+        
+        CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
+        
+        Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
+        
+        Display( "With this, the claim follows." );
+        
+    else
+        
+        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+        
+        Error( "function is not true, not resetting lemma; you can 'return;' to continue" );
+        
+    fi;
     
 end );
 
-BindGlobal( "AssertLemma", function ( )
+BindGlobal( "PrintLemma", function ( )
+  local tree, func;
+    
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "no active lemma, you can 'return;' to continue" );
+        return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
+    fi;
+    
+    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
+    
+    func := ENHANCED_SYNTAX_TREE_CODE( tree );
+    
+    Display( func );
+    
+end );
+
+
+
+
+#####
+
+
+BindGlobal( "AssertLemmaAndReturnLaTeXString", function ( )
   local cat, input_filters, tree;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "no active lemma, you can 'return;' to continue" );
+        return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
+    fi;
     
     tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
@@ -3054,10 +3113,17 @@ BindGlobal( "AssertLemma", function ( )
     
 end );
 
-BindGlobal( "PrintLemma", function ( args... )
+BindGlobal( "PrintLemmaAsLaTeXString", function ( args... )
   local tree, cat, input_filters, latex_string;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "no active lemma, you can 'return;' to continue" );
+        return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
+    fi;
     
     tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
@@ -3080,6 +3146,43 @@ BindGlobal( "PrintLemma", function ( args... )
     fi;
     
 end );
+
+
+BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template, args... )
+  local latex_string;
+    
+    ApplyLogicTemplate( logic_template );
+    
+    latex_string := CallFuncList( CapJitLaTeXStringOfLogicTemplate, Concatenation( [ logic_template ], args ) );
+    
+    return latex_string;
+    
+end );
+
+
+CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY := fail;
+
+BindGlobal( "SetActiveCategory", function ( category, description, symbols... )
+    
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY := rec( category := category, description := description );
+    
+    Assert( 0, Length( symbols ) <= 1 );
+    
+    if Length( symbols ) = 1 then
+        
+        symbols := symbols[1];
+        
+    else
+        
+        symbols := [ ];
+        
+    fi;
+    
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS := symbols;
+    
+end );
+
+InstallDeprecatedAlias( "SetCurrentCategory", "SetActiveCategory", "2023" );
 
 specifications := rec(
     PreCompose := rec(
@@ -3920,7 +4023,7 @@ AssertProposition := function ( )
 end;
 
 AttestValidInputs := function ( )
-  local tree, cat, pre_func, old_tree;
+  local tree, cat, pre_func, old_tree, function_string;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
     
@@ -4058,6 +4161,15 @@ AttestValidInputs := function ( )
     fi;
     
     tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
+    
+    function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
+    if PositionSublist( function_string, "CAP_JIT_INTERNAL_GLOBAL_VARIABLE_" ) <> fail then
+        
+        # COVERAGE_IGNORE_NEXT_LINE
+        Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
+        
+    fi;
     
     # data types might not be set in post-processing
     tree := CapJitInferredDataTypes( tree );
