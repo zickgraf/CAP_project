@@ -4,8 +4,6 @@
 # Implementations
 #
 
-LATEX_OUTPUT := true;
-
 CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED := false;
 
 InstallGlobalFunction( CapJitEnableProofAssistantMode, function ( )
@@ -2445,7 +2443,7 @@ CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool )
 CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
 
 BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
-  local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, function_string, i, j, condition;
+  local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, function_string, i, j, condition;
     
     if not CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED then
         
@@ -2465,10 +2463,10 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
         
     fi;
     
-    if IsEmpty( input_filters ) or input_filters[1] <> "category" then
+    if IsEmpty( input_filters ) or input_filters[1] <> "category" or Length( input_filters ) <> NumberArgumentsFunction( func ) then
         
         # COVERAGE_IGNORE_BLOCK_START
-        Error( "input filters must not be empty and the first filter must be \"category\"" );
+        Error( "input filters must not be empty, the first filter must be \"category\", and the number of filters must match the number of function arguments" );
         return;
         # COVERAGE_IGNORE_BLOCK_END
         
@@ -2484,6 +2482,20 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
     Add( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK, func );
     
     tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
+    
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id := tree.id;
+    
+    arguments_data_types := CAP_INTERNAL_GET_DATA_TYPES_FROM_STRINGS( input_filters, cat );
+    
+    Assert( 0, not fail in arguments_data_types );
+    
+    tree.data_type := rec(
+        filter := IsFunction,
+        signature := Pair(
+            arguments_data_types,
+            rec( filter := IsBool )
+        ),
+    );
     
     for replacement in preconditions do
         
@@ -2509,6 +2521,7 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
         
         dst_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
         
+        #
         Add( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements, rec(
             src_template := replacement.src_template,
             src_template_tree := src_template_tree,
@@ -2520,19 +2533,14 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
     
     local_replacements := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements;
     
-    #local_replacements := ShallowCopy( tree.local_replacements );
+    text := Concatenation( "In ", Name( cat ), " the following statement holds true:\n" );
     
-    #CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements := ShallowCopy( local_replacements );
     
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
-        
-        text := "";
-        
-    else
-        
-        text := Concatenation( "In ", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description, " the following statement holds true: " );
-        
-    fi;
+    
+    
+    
+    #######
+    
     
     text := Concatenation( text, "For" );
     
@@ -2861,24 +2869,10 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
     );
     
     
+    #########
     
-    
-    
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id := tree.id;
-    
-    Assert( 0, input_filters[1] = "category" );
-    Assert( 0, Length( input_filters ) = tree.narg );
-    
-    arguments_data_types := CAP_INTERNAL_GET_DATA_TYPES_FROM_STRINGS( input_filters, cat );
-    
-    Assert( 0, not fail in arguments_data_types );
-    
-    type_signature := Pair( arguments_data_types, rec( filter := IsBool ) );
-    tree.data_type := rec(
-        filter := IsFunction,
-        signature := type_signature,
-    );
+    Display( text );
+    Display( func );
     
     tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
     
@@ -2891,34 +2885,15 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
         
     fi;
     
-    # data types might not be set in post-processing
-    tree := CapJitInferredDataTypes( tree );
-    
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := tree;
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
-        latex_string := Concatenation(
-            latex_string, "\n\n",
-            "\\begin{proof}\n",
-            "This is immediate from the construction.\n",
-            "\\end{proof}\n"
-        );
+        Display( "This is immediate from the construction.\n" );
         
         CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
         
         Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
-        
-    fi;
-    
-    if LATEX_OUTPUT then
-        
-        return latex_string;
-        
-    else
-        
-        Display( func );
-        return "";
         
     fi;
     
@@ -3027,9 +3002,6 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
         
     fi;
     
-    # data types might not be set in post-processing
-    new_tree := CapJitInferredDataTypes( new_tree );
-    
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := new_tree;
     
 end );
@@ -3069,7 +3041,7 @@ BindGlobal( "AssertLemma", function ( )
         
         Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
-        Display( "With this, the claim follows." );
+        Display( "With this, the claim follows.\n" );
         
     else
         
@@ -3085,6 +3057,10 @@ end );
 
 
 #####
+
+
+LATEX_OUTPUT := false;
+
 
 BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditions )
   local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, function_string, i, j, condition;
@@ -3532,9 +3508,6 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
         Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
         
     fi;
-    
-    # data types might not be set in post-processing
-    tree := CapJitInferredDataTypes( tree );
     
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := tree;
     
@@ -4473,7 +4446,7 @@ StateNextLemma := function ( )
     
     if LATEX_OUTPUT then
         
-        return StateLemma( active_lemma.func, cat, active_lemma.input_types, preconditions );
+        return StateLemmaAsLaTeX( active_lemma.func, cat, active_lemma.input_types, preconditions );
         
     else
         
@@ -4662,9 +4635,6 @@ AttestValidInputs := function ( )
         Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
         
     fi;
-    
-    # data types might not be set in post-processing
-    tree := CapJitInferredDataTypes( tree );
     
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := tree;
     
