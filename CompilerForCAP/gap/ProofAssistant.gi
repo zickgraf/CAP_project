@@ -2444,403 +2444,412 @@ CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool )
 
 CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
 
-BindGlobal( "StateLemma", function ( func, cat, input_filters )
+BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
   local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, function_string, i, j, condition;
+    
+    if not CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "please enable proof assistant mode with `CapJitEnableProofAssistantMode` before using `StateLemma`; if you 'return;', proof assistant mode will be now be enabled automatically" );
+        CapJitEnableProofAssistantMode( );
+        # COVERAGE_IGNORE_BLOCK_END
+        
+    fi;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
     
     if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
         
-        Error( "there already is an active lemma, you can 'return;' to overwrite it" );
+        # COVERAGE_IGNORE_NEXT_LINE
+        Error( "there already is an active lemma; if you 'return;' it will be overwritten" );
+        
+    fi;
+    
+    if IsEmpty( input_filters ) or input_filters[1] <> "category" then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "input filters must not be empty and the first filter must be \"category\"" );
+        return;
+        # COVERAGE_IGNORE_BLOCK_END
         
     fi;
     
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := rec(
         claim := func,
-        cat := cat,
+        category := cat,
         input_filters := input_filters,
         local_replacements := [ ],
     );
     
     Add( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK, func );
     
-    if Length( input_filters ) = 0 then
+    tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
+    
+    for replacement in preconditions do
         
-        Error( "cannot handle theorems without input" );
+        # src_template
+        Assert( 0, input_filters[1] = "category" );
+        
+        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.src_template ) ) : given_arguments := [ cat ] );
+        
+        tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
+        
+        Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
+        
+        src_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
+        
+        # dst_template
+        Assert( 0, input_filters[1] = "category" );
+        
+        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.dst_template ) ) : given_arguments := [ cat ] );
+        
+        tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
+        
+        Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
+        
+        dst_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
+        
+        Add( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements, rec(
+            src_template := replacement.src_template,
+            src_template_tree := src_template_tree,
+            dst_template := replacement.dst_template,
+            dst_template_tree := dst_template_tree,
+        ) );
+        
+    od;
+    
+    local_replacements := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements;
+    
+    #local_replacements := ShallowCopy( tree.local_replacements );
+    
+    #CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements := ShallowCopy( local_replacements );
+    
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
+        
+        text := "";
         
     else
         
-        tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
+        text := Concatenation( "In ", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description, " the following statement holds true: " );
         
-        if ValueOption( "preconditions" ) <> fail then
+    fi;
+    
+    text := Concatenation( text, "For" );
+    
+    names := NamesLocalVariablesFunction( func );
+    
+    Assert( 0, Length( names ) >= Length( input_filters ) );
+    
+    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
+        
+        # TODO: only names of things in the category
+        names := List( names, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator );
+        
+    fi;
+    
+    handled_input_filters := [ ];
+    
+    parts := [ ];
+    
+    for i in [ 2 .. Length( input_filters ) ] do
+        
+        filter := input_filters[i];
+        
+        if filter in handled_input_filters then
             
-            for replacement in ValueOption( "preconditions" ) do
-                
-                # src
-                Assert( 0, input_filters[1] = "category" );
-                
-                tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.src_template ) ) : given_arguments := [ cat ] );
-                
-                tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
-                
-                Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
-                
-                src_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
-                
-                # dst
-                Assert( 0, input_filters[1] = "category" );
-                
-                tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.dst_template ) ) : given_arguments := [ cat ] );
-                
-                tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
-                
-                Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
-                
-                dst_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
-                
-                Add( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements, rec(
-                    src := src_template_tree,
-                    dst := dst_template_tree,
-                ) );
-                
-            od;
+            continue;
             
         fi;
         
-        local_replacements := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements;
+        positions := Positions( input_filters, filter );
         
-        #local_replacements := ShallowCopy( tree.local_replacements );
+        Assert( 0, i in positions );
         
-        #CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements := ShallowCopy( local_replacements );
-        
-        if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
+        if Length( positions ) = 1 then
             
-            text := "";
+            plural := "";
             
         else
             
-            text := Concatenation( "In ", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description, " the following statement holds true: " );
+            plural := "s";
             
         fi;
         
-        text := Concatenation( text, "For" );
+        numerals := [ "a", "two", "three", "four", "five", "six", "seven", "eight", "nine" ];
         
-        names := NamesLocalVariablesFunction( func );
-        
-        Assert( 0, Length( names ) >= Length( input_filters ) );
-        
-        if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
+        if Length( positions ) <= Length( numerals ) then
             
-            # TODO: only names of things in the category
-            names := List( names, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator );
+            numeral := numerals[Length( positions )];
+            
+        else
+            
+            numeral := String( Length( positions ) );
             
         fi;
         
-        handled_input_filters := [ ];
-        
-        parts := [ ];
-        
-        for i in [ 2 .. Length( input_filters ) ] do
+        # TODO: only box things in the category
+        if filter = "integer" then
             
-            filter := input_filters[i];
+            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" ) ) );
             
-            if filter in handled_input_filters then
-                
-                continue;
-                
-            fi;
+            part := Concatenation( numeral, " integer", plural, " ", current_names );
             
-            positions := Positions( input_filters, filter );
+        elif filter = "object" then
             
-            Assert( 0, i in positions );
+            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\bboxed{", LaTeXName( names[i] ), "}$" ) ) );
             
-            if Length( positions ) = 1 then
-                
-                plural := "";
-                
-            else
-                
-                plural := "s";
-                
-            fi;
+            part := Concatenation( numeral, " object", plural, " ", current_names );
             
-            numerals := [ "a", "two", "three", "four", "five", "six", "seven", "eight", "nine" ];
+        elif filter = "morphism" then
             
-            if Length( positions ) <= Length( numerals ) then
-                
-                numeral := numerals[Length( positions )];
-                
-            else
-                
-                numeral := String( Length( positions ) );
-                
-            fi;
+            current_names := [ ];
             
-            # TODO: only box things in the category
-            if filter = "integer" then
+            for i in positions do
                 
-                current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" ) ) );
+                name := names[i];
                 
-                part := Concatenation( numeral, " integer", plural, " ", current_names );
+                source := fail;
+                range := fail;
                 
-            elif filter = "object" then
+                inner_parts := MySplitString( name, "__" );
                 
-                current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\bboxed{", LaTeXName( names[i] ), "}$" ) ) );
-                
-                part := Concatenation( numeral, " object", plural, " ", current_names );
-                
-            elif filter = "morphism" then
-                
-                current_names := [ ];
-                
-                for i in positions do
+                if Length( inner_parts ) = 3 then
                     
-                    name := names[i];
-                    
-                    source := fail;
-                    range := fail;
-                    
-                    inner_parts := MySplitString( name, "__" );
-                    
-                    if Length( inner_parts ) = 3 then
-                        
-                        #name := Concatenation( "\\bboxed{", LaTeXName( inner_parts[1] ), "}" );
-                        name := inner_parts[1];
-                        source := Concatenation( "\\bboxed{", LaTeXName( inner_parts[2] ), "}" );
-                        range := Concatenation( "\\bboxed{", LaTeXName( inner_parts[3] ), "}" );
-                        
-                    else
-                        
-                        to_remove := [ ];
-                        
-                        for j in [ 1 .. Length( local_replacements ) ] do
-                            
-                            replacement := local_replacements[j];
-                            
-                            if CapJitIsCallToGlobalFunction( replacement.src, "Source" ) and replacement.src.args.length = 1 and
-                               replacement.src.args.1.type = "EXPR_REF_FVAR" and replacement.src.args.1.func_id = tree.id and replacement.src.args.1.name = name and
-                               replacement.dst.type = "EXPR_REF_FVAR" and replacement.dst.func_id = tree.id then
-                                
-                                Assert( 0, source = fail );
-                                
-                                source := Concatenation( "\\bboxed{", LaTeXName( replacement.dst.name ), "}" );
-                                
-                                Add( to_remove, j );
-                                
-                            elif CapJitIsCallToGlobalFunction( replacement.src, gvar -> gvar in [ "Range", "Target" ] ) and replacement.src.args.length = 1 and
-                               replacement.src.args.1.type = "EXPR_REF_FVAR" and replacement.src.args.1.func_id = tree.id and replacement.src.args.1.name = name and
-                               replacement.dst.type = "EXPR_REF_FVAR" and replacement.dst.func_id = tree.id then
-                                
-                                Assert( 0, range = fail );
-                                
-                                range := Concatenation( "\\bboxed{", LaTeXName( replacement.dst.name ), "}" );
-                                
-                                Add( to_remove, j );
-                                
-                            fi;
-                            
-                        od;
-                        
-                        local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
-                        
-                    fi;
-                    
-                    name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
-                    
-                    if source = fail and range <> fail then
-                        
-                        Display( "WARNING: LaTeX missing source" );
-                        source := "\\text{missing source}";
-                        
-                    fi;
-                    
-                    if source <> fail and range = fail then
-                        
-                        Display( "WARNING: LaTeX missing range" );
-                        range := "\\text{missing target}";
-                        
-                    fi;
-                    
-                    if source <> fail and range <> fail then
-                        
-                        Add( current_names, Concatenation( "$", name, " : ", source, " \\to ", range, "$" ) );
-                        
-                    elif source = fail and range = fail then
-                        
-                        Add( current_names, Concatenation( "$", name, "$" ) );
-                        
-                        #source := Concatenation( "s(", name, ")" );
-                        #range := Concatenation( "t(", name, ")" );
-                        
-                    else
-                        
-                        Error( "this case is not supported" );
-                        
-                    fi;
-                    
-                od;
-                
-                current_names := PhraseEnumeration( current_names );
-                
-                part := Concatenation( numeral, " morphism", plural, " ", current_names );
-                
-            #elif filter = "object_in_range_category_of_homomorphism_structure" then
-            #    
-            #    part := Concatenation( numeral, " object", plural, " ", current_names, " in the range category of the homomorphism structure" );
-            #    
-            #elif filter = "morphism_in_range_category_of_homomorphism_structure" then
-            #    
-            #    part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
-            #    
-            elif filter = "list_of_objects" then
-                
-                current_names := [ ];
-                
-                for i in positions do
-                    
-                    name := names[i];
-                    
-                    inner_parts := MySplitString( name, "__" );
-                    
-                    Assert( 0, Length( inner_parts ) > 0 );
-                    
-                    if Length( inner_parts ) = 1 then
-                        
-                        Add( current_names, Concatenation( "$", LaTeXName( name ), "$" ) );
-                        
-                    elif Length( inner_parts ) = 2 then
-                        
-                        name := LaTeXName( inner_parts[1] );
-                        length := LaTeXName( inner_parts[2] );
-                        
-                        Add( current_names, Concatenation( "$\\left(\\bboxed{", name , "^1},\\ldots,\\bboxed{", name, "^", length, "}\\right)$" ) );
-                        
-                    else
-                        
-                        Error( "wrong usage" );
-                        
-                    fi;
-                    
-                od;
-                
-                current_names := PhraseEnumeration( current_names );
-                
-                part := Concatenation( numeral, " tuple", plural, " of objects ", current_names );
-                
-            else
-                
-                part := Concatenation( "TODO: ", ReplacedString( filter, "_", "\\_" ) );
-                
-            fi;
-            
-            part := ReplacedString( part, "a object ", "an object " );
-            
-            Add( parts, part );
-            
-            Add( handled_input_filters, filter );
-            
-        od;
-        
-        if Length( input_filters ) > 1 then
-            
-            text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ) );
-            
-        fi;
-        
-        if not IsEmpty( local_replacements ) then
-            
-            condition_func := StructuralCopy( tree );
-            
-            # TODO: make sure that CapJitAddLocalReplacement comes before any assignments
-            #Assert( 0, Length( condition_func.bindings.names ) = 1 );
-            
-            condition_func.bindings := rec(
-                type := "FVAR_BINDING_SEQ",
-                names := [ ],
-            );
-            
-            conditions := List( local_replacements, function ( replacement )
-                
-                if replacement.dst.type = "EXPR_TRUE" then
-                    
-                    return StructuralCopy( replacement.src );
+                    #name := Concatenation( "\\bboxed{", LaTeXName( inner_parts[1] ), "}" );
+                    name := inner_parts[1];
+                    source := Concatenation( "\\bboxed{", LaTeXName( inner_parts[2] ), "}" );
+                    range := Concatenation( "\\bboxed{", LaTeXName( inner_parts[3] ), "}" );
                     
                 else
                     
-                    return rec(
-                        type := "EXPR_FUNCCALL",
-                        funcref := rec(
-                            type := "EXPR_REF_GVAR",
-                            gvar := "IsJudgementallyEqual",
-                        ),
-                        args := AsSyntaxTreeList( [
-                            StructuralCopy( replacement.src ),
-                            StructuralCopy( replacement.dst ),
-                        ] ),
-                    );
+                    to_remove := [ ];
+                    
+                    for j in [ 1 .. Length( local_replacements ) ] do
+                        
+                        replacement := local_replacements[j];
+                        
+                        if CapJitIsCallToGlobalFunction( replacement.src_template_tree, "Source" ) and replacement.src_template_tree.args.length = 1 and
+                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name and
+                           replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
+                            
+                            Assert( 0, source = fail );
+                            
+                            source := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
+                            
+                            Add( to_remove, j );
+                            
+                        elif CapJitIsCallToGlobalFunction( replacement.src_template_tree, gvar -> gvar in [ "Range", "Target" ] ) and replacement.src_template_tree.args.length = 1 and
+                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name and
+                           replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
+                            
+                            Assert( 0, range = fail );
+                            
+                            range := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
+                            
+                            Add( to_remove, j );
+                            
+                        fi;
+                        
+                    od;
+                    
+                    local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
                     
                 fi;
                 
-            end );
-            
-            CapJitAddBinding( condition_func.bindings, "RETURN_VALUE", Remove( conditions, 1 ) );
-            
-            for condition in conditions do
+                name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
                 
-                condition_func.bindings.BINDING_RETURN_VALUE := rec(
-                    type := "EXPR_AND",
-                    left := condition_func.bindings.BINDING_RETURN_VALUE,
-                    right := condition,
-                );
+                if source = fail and range <> fail then
+                    
+                    Display( "WARNING: LaTeX missing source" );
+                    source := "\\text{missing source}";
+                    
+                fi;
+                
+                if source <> fail and range = fail then
+                    
+                    Display( "WARNING: LaTeX missing range" );
+                    range := "\\text{missing target}";
+                    
+                fi;
+                
+                if source <> fail and range <> fail then
+                    
+                    Add( current_names, Concatenation( "$", name, " : ", source, " \\to ", range, "$" ) );
+                    
+                elif source = fail and range = fail then
+                    
+                    Add( current_names, Concatenation( "$", name, "$" ) );
+                    
+                    #source := Concatenation( "s(", name, ")" );
+                    #range := Concatenation( "t(", name, ")" );
+                    
+                else
+                    
+                    Error( "this case is not supported" );
+                    
+                fi;
                 
             od;
             
-            text := Concatenation( text, " such that\n", FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( condition_func ), cat, input_filters ) );
+            current_names := PhraseEnumeration( current_names );
+            
+            part := Concatenation( numeral, " morphism", plural, " ", current_names );
+            
+        #elif filter = "object_in_range_category_of_homomorphism_structure" then
+        #    
+        #    part := Concatenation( numeral, " object", plural, " ", current_names, " in the range category of the homomorphism structure" );
+        #    
+        #elif filter = "morphism_in_range_category_of_homomorphism_structure" then
+        #    
+        #    part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
+        #    
+        elif filter = "list_of_objects" then
+            
+            current_names := [ ];
+            
+            for i in positions do
+                
+                name := names[i];
+                
+                inner_parts := MySplitString( name, "__" );
+                
+                Assert( 0, Length( inner_parts ) > 0 );
+                
+                if Length( inner_parts ) = 1 then
+                    
+                    Add( current_names, Concatenation( "$", LaTeXName( name ), "$" ) );
+                    
+                elif Length( inner_parts ) = 2 then
+                    
+                    name := LaTeXName( inner_parts[1] );
+                    length := LaTeXName( inner_parts[2] );
+                    
+                    Add( current_names, Concatenation( "$\\left(\\bboxed{", name , "^1},\\ldots,\\bboxed{", name, "^", length, "}\\right)$" ) );
+                    
+                else
+                    
+                    Error( "wrong usage" );
+                    
+                fi;
+                
+            od;
+            
+            current_names := PhraseEnumeration( current_names );
+            
+            part := Concatenation( numeral, " tuple", plural, " of objects ", current_names );
+            
+        else
+            
+            part := Concatenation( "TODO: ", ReplacedString( filter, "_", "\\_" ) );
             
         fi;
         
-        #local_replacements_strings := [ ];
-        #
-        #for replacement in tree.local_replacements do
-        #    
-        #    replacement_func := StructuralCopy( tree );
-        #    replacement_func.local_replacements := [ ];
-        #    
-        #    Assert( 0, Length( replacement_func.bindings.names ) = 1 );
-        #    
-        #    if replacement.dst.type = "EXPR_TRUE" then
-        #        
-        #        replacement_func.bindings.BINDING_RETURN_VALUE := StructuralCopy( replacement.src );
-        #        
-        #    else
-        #        
-        #        replacement_func.bindings.BINDING_RETURN_VALUE := rec(
-        #            type := "EXPR_FUNCCALL",
-        #            funcref := rec(
-        #                type := "EXPR_REF_GVAR",
-        #                gvar := "=",
-        #            ),
-        #            args := AsSyntaxTreeList( [
-        #                StructuralCopy( replacement.src ),
-        #                StructuralCopy( replacement.dst ),
-        #            ] ),
-        #        );
-        #        
-        #    fi;
-        #    
-        #    Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( replacement_func ), cat, input_filters ) );
-        #    
-        #od;
-        #
-        #if not IsEmpty( local_replacements_strings ) then
-        #    
-        #    text := Concatenation( text, " such that ", JoinStringsWithSeparator( local_replacements_strings, "\n" ) );
-        #    
-        #fi;
+        part := ReplacedString( part, "a object ", "an object " );
         
-        text := Concatenation( text, " we have that" );
+        Add( parts, part );
+        
+        Add( handled_input_filters, filter );
+        
+    od;
+    
+    if Length( input_filters ) > 1 then
+        
+        text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ) );
         
     fi;
+    
+    if not IsEmpty( local_replacements ) then
+        
+        condition_func := StructuralCopy( tree );
+        
+        # TODO: make sure that CapJitAddLocalReplacement comes before any assignments
+        #Assert( 0, Length( condition_func.bindings.names ) = 1 );
+        
+        condition_func.bindings := rec(
+            type := "FVAR_BINDING_SEQ",
+            names := [ ],
+        );
+        
+        conditions := List( local_replacements, function ( replacement )
+            
+            if replacement.dst_template_tree.type = "EXPR_TRUE" then
+                
+                return StructuralCopy( replacement.src_template_tree );
+                
+            else
+                
+                return rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := rec(
+                        type := "EXPR_REF_GVAR",
+                        gvar := "IsJudgementallyEqual",
+                    ),
+                    args := AsSyntaxTreeList( [
+                        StructuralCopy( replacement.src_template_tree ),
+                        StructuralCopy( replacement.dst_template_tree ),
+                    ] ),
+                );
+                
+            fi;
+            
+        end );
+        
+        CapJitAddBinding( condition_func.bindings, "RETURN_VALUE", Remove( conditions, 1 ) );
+        
+        for condition in conditions do
+            
+            condition_func.bindings.BINDING_RETURN_VALUE := rec(
+                type := "EXPR_AND",
+                left := condition_func.bindings.BINDING_RETURN_VALUE,
+                right := condition,
+            );
+            
+        od;
+        
+        text := Concatenation( text, " such that\n", FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( condition_func ), cat, input_filters ) );
+        
+    fi;
+    
+    #local_replacements_strings := [ ];
+    #
+    #for replacement in tree.local_replacements do
+    #    
+    #    replacement_func := StructuralCopy( tree );
+    #    replacement_func.local_replacements := [ ];
+    #    
+    #    Assert( 0, Length( replacement_func.bindings.names ) = 1 );
+    #    
+    #    if replacement.dst_template_tree.type = "EXPR_TRUE" then
+    #        
+    #        replacement_func.bindings.BINDING_RETURN_VALUE := StructuralCopy( replacement.src_template_tree );
+    #        
+    #    else
+    #        
+    #        replacement_func.bindings.BINDING_RETURN_VALUE := rec(
+    #            type := "EXPR_FUNCCALL",
+    #            funcref := rec(
+    #                type := "EXPR_REF_GVAR",
+    #                gvar := "=",
+    #            ),
+    #            args := AsSyntaxTreeList( [
+    #                StructuralCopy( replacement.src_template_tree ),
+    #                StructuralCopy( replacement.dst_template_tree ),
+    #            ] ),
+    #        );
+    #        
+    #    fi;
+    #    
+    #    Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( replacement_func ), cat, input_filters ) );
+    #    
+    #od;
+    #
+    #if not IsEmpty( local_replacements_strings ) then
+    #    
+    #    text := Concatenation( text, " such that ", JoinStringsWithSeparator( local_replacements_strings, "\n" ) );
+    #    
+    #fi;
+    
+    text := Concatenation( text, " we have that" );
     
     result := FunctionAsMathString( func, cat, input_filters, "." );
     
@@ -2850,6 +2859,11 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters )
         result, "\n",
         "\\end{lemma}"
     );
+    
+    
+    
+    
+    
     
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id := tree.id;
     
@@ -2866,8 +2880,6 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters )
         signature := type_signature,
     );
     
-    # twice to resolve operations added by local replacements
-    tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
     tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
     
     function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( tree ) );
@@ -2912,6 +2924,26 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters )
     
 end );
 
+BindGlobal( "PrintLemma", function ( )
+  local tree, func;
+    
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "no active lemma, you can 'return;' to continue" );
+        return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
+    fi;
+    
+    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
+    
+    func := ENHANCED_SYNTAX_TREE_CODE( tree );
+    
+    Display( func );
+    
+end );
+
 BindGlobal( "ApplyLogicTemplate", function ( logic_template )
   local tree, cat, old_tree, new_tree, function_string;
     
@@ -2925,7 +2957,7 @@ BindGlobal( "ApplyLogicTemplate", function ( logic_template )
     fi;
     
     tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category;
     
     logic_template := ShallowCopy( logic_template );
     
@@ -3049,30 +3081,490 @@ BindGlobal( "AssertLemma", function ( )
     
 end );
 
-BindGlobal( "PrintLemma", function ( )
-  local tree, func;
+
+
+
+#####
+
+BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditions )
+  local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, function_string, i, j, condition;
     
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
+    if not CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED then
         
         # COVERAGE_IGNORE_BLOCK_START
-        Error( "no active lemma, you can 'return;' to continue" );
+        Error( "please enable proof assistant mode with `CapJitEnableProofAssistantMode` before using `StateLemma`; if you 'return;', proof assistant mode will be now be enabled automatically" );
+        CapJitEnableProofAssistantMode( );
+        # COVERAGE_IGNORE_BLOCK_END
+        
+    fi;
+    
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
+    
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
+        
+        # COVERAGE_IGNORE_NEXT_LINE
+        Error( "there already is an active lemma; if you 'return;' it will be overwritten" );
+        
+    fi;
+    
+    if IsEmpty( input_filters ) or input_filters[1] <> "category" then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "input filters must not be empty and the first filter must be \"category\"" );
         return;
         # COVERAGE_IGNORE_BLOCK_END
         
     fi;
     
-    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := rec(
+        claim := func,
+        category := cat,
+        input_filters := input_filters,
+        local_replacements := [ ],
+    );
     
-    func := ENHANCED_SYNTAX_TREE_CODE( tree );
+    Add( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK, func );
     
-    Display( func );
+    tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
+    
+    for replacement in preconditions do
+        
+        # src_template
+        Assert( 0, input_filters[1] = "category" );
+        
+        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.src_template ) ) : given_arguments := [ cat ] );
+        
+        tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
+        
+        Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
+        
+        src_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
+        
+        # dst_template
+        Assert( 0, input_filters[1] = "category" );
+        
+        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.dst_template ) ) : given_arguments := [ cat ] );
+        
+        tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
+        
+        Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
+        
+        dst_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
+        
+        Add( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements, rec(
+            src_template := replacement.src_template,
+            src_template_tree := src_template_tree,
+            dst_template := replacement.dst_template,
+            dst_template_tree := dst_template_tree,
+        ) );
+        
+    od;
+    
+    local_replacements := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements;
+    
+    #local_replacements := ShallowCopy( tree.local_replacements );
+    
+    #CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements := ShallowCopy( local_replacements );
+    
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
+        
+        text := "";
+        
+    else
+        
+        text := Concatenation( "In ", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description, " the following statement holds true: " );
+        
+    fi;
+    
+    text := Concatenation( text, "For" );
+    
+    names := NamesLocalVariablesFunction( func );
+    
+    Assert( 0, Length( names ) >= Length( input_filters ) );
+    
+    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
+        
+        # TODO: only names of things in the category
+        names := List( names, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator );
+        
+    fi;
+    
+    handled_input_filters := [ ];
+    
+    parts := [ ];
+    
+    for i in [ 2 .. Length( input_filters ) ] do
+        
+        filter := input_filters[i];
+        
+        if filter in handled_input_filters then
+            
+            continue;
+            
+        fi;
+        
+        positions := Positions( input_filters, filter );
+        
+        Assert( 0, i in positions );
+        
+        if Length( positions ) = 1 then
+            
+            plural := "";
+            
+        else
+            
+            plural := "s";
+            
+        fi;
+        
+        numerals := [ "a", "two", "three", "four", "five", "six", "seven", "eight", "nine" ];
+        
+        if Length( positions ) <= Length( numerals ) then
+            
+            numeral := numerals[Length( positions )];
+            
+        else
+            
+            numeral := String( Length( positions ) );
+            
+        fi;
+        
+        # TODO: only box things in the category
+        if filter = "integer" then
+            
+            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" ) ) );
+            
+            part := Concatenation( numeral, " integer", plural, " ", current_names );
+            
+        elif filter = "object" then
+            
+            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\bboxed{", LaTeXName( names[i] ), "}$" ) ) );
+            
+            part := Concatenation( numeral, " object", plural, " ", current_names );
+            
+        elif filter = "morphism" then
+            
+            current_names := [ ];
+            
+            for i in positions do
+                
+                name := names[i];
+                
+                source := fail;
+                range := fail;
+                
+                inner_parts := MySplitString( name, "__" );
+                
+                if Length( inner_parts ) = 3 then
+                    
+                    #name := Concatenation( "\\bboxed{", LaTeXName( inner_parts[1] ), "}" );
+                    name := inner_parts[1];
+                    source := Concatenation( "\\bboxed{", LaTeXName( inner_parts[2] ), "}" );
+                    range := Concatenation( "\\bboxed{", LaTeXName( inner_parts[3] ), "}" );
+                    
+                else
+                    
+                    to_remove := [ ];
+                    
+                    for j in [ 1 .. Length( local_replacements ) ] do
+                        
+                        replacement := local_replacements[j];
+                        
+                        if CapJitIsCallToGlobalFunction( replacement.src_template_tree, "Source" ) and replacement.src_template_tree.args.length = 1 and
+                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name and
+                           replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
+                            
+                            Assert( 0, source = fail );
+                            
+                            source := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
+                            
+                            Add( to_remove, j );
+                            
+                        elif CapJitIsCallToGlobalFunction( replacement.src_template_tree, gvar -> gvar in [ "Range", "Target" ] ) and replacement.src_template_tree.args.length = 1 and
+                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name and
+                           replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
+                            
+                            Assert( 0, range = fail );
+                            
+                            range := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
+                            
+                            Add( to_remove, j );
+                            
+                        fi;
+                        
+                    od;
+                    
+                    local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
+                    
+                fi;
+                
+                name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
+                
+                if source = fail and range <> fail then
+                    
+                    Display( "WARNING: LaTeX missing source" );
+                    source := "\\text{missing source}";
+                    
+                fi;
+                
+                if source <> fail and range = fail then
+                    
+                    Display( "WARNING: LaTeX missing range" );
+                    range := "\\text{missing target}";
+                    
+                fi;
+                
+                if source <> fail and range <> fail then
+                    
+                    Add( current_names, Concatenation( "$", name, " : ", source, " \\to ", range, "$" ) );
+                    
+                elif source = fail and range = fail then
+                    
+                    Add( current_names, Concatenation( "$", name, "$" ) );
+                    
+                    #source := Concatenation( "s(", name, ")" );
+                    #range := Concatenation( "t(", name, ")" );
+                    
+                else
+                    
+                    Error( "this case is not supported" );
+                    
+                fi;
+                
+            od;
+            
+            current_names := PhraseEnumeration( current_names );
+            
+            part := Concatenation( numeral, " morphism", plural, " ", current_names );
+            
+        #elif filter = "object_in_range_category_of_homomorphism_structure" then
+        #    
+        #    part := Concatenation( numeral, " object", plural, " ", current_names, " in the range category of the homomorphism structure" );
+        #    
+        #elif filter = "morphism_in_range_category_of_homomorphism_structure" then
+        #    
+        #    part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
+        #    
+        elif filter = "list_of_objects" then
+            
+            current_names := [ ];
+            
+            for i in positions do
+                
+                name := names[i];
+                
+                inner_parts := MySplitString( name, "__" );
+                
+                Assert( 0, Length( inner_parts ) > 0 );
+                
+                if Length( inner_parts ) = 1 then
+                    
+                    Add( current_names, Concatenation( "$", LaTeXName( name ), "$" ) );
+                    
+                elif Length( inner_parts ) = 2 then
+                    
+                    name := LaTeXName( inner_parts[1] );
+                    length := LaTeXName( inner_parts[2] );
+                    
+                    Add( current_names, Concatenation( "$\\left(\\bboxed{", name , "^1},\\ldots,\\bboxed{", name, "^", length, "}\\right)$" ) );
+                    
+                else
+                    
+                    Error( "wrong usage" );
+                    
+                fi;
+                
+            od;
+            
+            current_names := PhraseEnumeration( current_names );
+            
+            part := Concatenation( numeral, " tuple", plural, " of objects ", current_names );
+            
+        else
+            
+            part := Concatenation( "TODO: ", ReplacedString( filter, "_", "\\_" ) );
+            
+        fi;
+        
+        part := ReplacedString( part, "a object ", "an object " );
+        
+        Add( parts, part );
+        
+        Add( handled_input_filters, filter );
+        
+    od;
+    
+    if Length( input_filters ) > 1 then
+        
+        text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ) );
+        
+    fi;
+    
+    if not IsEmpty( local_replacements ) then
+        
+        condition_func := StructuralCopy( tree );
+        
+        # TODO: make sure that CapJitAddLocalReplacement comes before any assignments
+        #Assert( 0, Length( condition_func.bindings.names ) = 1 );
+        
+        condition_func.bindings := rec(
+            type := "FVAR_BINDING_SEQ",
+            names := [ ],
+        );
+        
+        conditions := List( local_replacements, function ( replacement )
+            
+            if replacement.dst_template_tree.type = "EXPR_TRUE" then
+                
+                return StructuralCopy( replacement.src_template_tree );
+                
+            else
+                
+                return rec(
+                    type := "EXPR_FUNCCALL",
+                    funcref := rec(
+                        type := "EXPR_REF_GVAR",
+                        gvar := "IsJudgementallyEqual",
+                    ),
+                    args := AsSyntaxTreeList( [
+                        StructuralCopy( replacement.src_template_tree ),
+                        StructuralCopy( replacement.dst_template_tree ),
+                    ] ),
+                );
+                
+            fi;
+            
+        end );
+        
+        CapJitAddBinding( condition_func.bindings, "RETURN_VALUE", Remove( conditions, 1 ) );
+        
+        for condition in conditions do
+            
+            condition_func.bindings.BINDING_RETURN_VALUE := rec(
+                type := "EXPR_AND",
+                left := condition_func.bindings.BINDING_RETURN_VALUE,
+                right := condition,
+            );
+            
+        od;
+        
+        text := Concatenation( text, " such that\n", FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( condition_func ), cat, input_filters ) );
+        
+    fi;
+    
+    #local_replacements_strings := [ ];
+    #
+    #for replacement in tree.local_replacements do
+    #    
+    #    replacement_func := StructuralCopy( tree );
+    #    replacement_func.local_replacements := [ ];
+    #    
+    #    Assert( 0, Length( replacement_func.bindings.names ) = 1 );
+    #    
+    #    if replacement.dst_template_tree.type = "EXPR_TRUE" then
+    #        
+    #        replacement_func.bindings.BINDING_RETURN_VALUE := StructuralCopy( replacement.src_template_tree );
+    #        
+    #    else
+    #        
+    #        replacement_func.bindings.BINDING_RETURN_VALUE := rec(
+    #            type := "EXPR_FUNCCALL",
+    #            funcref := rec(
+    #                type := "EXPR_REF_GVAR",
+    #                gvar := "=",
+    #            ),
+    #            args := AsSyntaxTreeList( [
+    #                StructuralCopy( replacement.src_template_tree ),
+    #                StructuralCopy( replacement.dst_template_tree ),
+    #            ] ),
+    #        );
+    #        
+    #    fi;
+    #    
+    #    Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( replacement_func ), cat, input_filters ) );
+    #    
+    #od;
+    #
+    #if not IsEmpty( local_replacements_strings ) then
+    #    
+    #    text := Concatenation( text, " such that ", JoinStringsWithSeparator( local_replacements_strings, "\n" ) );
+    #    
+    #fi;
+    
+    text := Concatenation( text, " we have that" );
+    
+    result := FunctionAsMathString( func, cat, input_filters, "." );
+    
+    latex_string := Concatenation(
+        "\\begin{lemma}\n",
+        text, "\n",
+        result, "\n",
+        "\\end{lemma}"
+    );
+    
+    
+    
+    
+    
+    
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id := tree.id;
+    
+    Assert( 0, input_filters[1] = "category" );
+    Assert( 0, Length( input_filters ) = tree.narg );
+    
+    arguments_data_types := CAP_INTERNAL_GET_DATA_TYPES_FROM_STRINGS( input_filters, cat );
+    
+    Assert( 0, not fail in arguments_data_types );
+    
+    type_signature := Pair( arguments_data_types, rec( filter := IsBool ) );
+    tree.data_type := rec(
+        filter := IsFunction,
+        signature := type_signature,
+    );
+    
+    tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
+    
+    function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( tree ) );
+    
+    if PositionSublist( function_string, "CAP_JIT_INTERNAL_GLOBAL_VARIABLE_" ) <> fail then
+        
+        # COVERAGE_IGNORE_NEXT_LINE
+        Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
+        
+    fi;
+    
+    # data types might not be set in post-processing
+    tree := CapJitInferredDataTypes( tree );
+    
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := tree;
+    
+    if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
+        
+        latex_string := Concatenation(
+            latex_string, "\n\n",
+            "\\begin{proof}\n",
+            "This is immediate from the construction.\n",
+            "\\end{proof}\n"
+        );
+        
+        CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
+        
+        Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
+        
+    fi;
+    
+    if LATEX_OUTPUT then
+        
+        return latex_string;
+        
+    else
+        
+        Display( func );
+        return "";
+        
+    fi;
     
 end );
-
-
-
-
-#####
 
 
 BindGlobal( "AssertLemmaAndReturnLaTeXString", function ( )
@@ -3088,7 +3580,7 @@ BindGlobal( "AssertLemmaAndReturnLaTeXString", function ( )
     fi;
     
     tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category;
     input_filters := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.input_filters;
     
     Assert( 0, tree.id = CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id );
@@ -3126,7 +3618,7 @@ BindGlobal( "PrintLemmaAsLaTeXString", function ( args... )
     fi;
     
     tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category;
     input_filters := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.input_filters;
     
     # TODO
@@ -3973,7 +4465,7 @@ StateNextLemma := function ( )
         
     else
         
-        preconditions := fail;
+        preconditions := [ ];
         
     fi;
     
@@ -3981,12 +4473,12 @@ StateNextLemma := function ( )
     
     if LATEX_OUTPUT then
         
-        return StateLemma( active_lemma.func, cat, active_lemma.input_types : preconditions := preconditions );
+        return StateLemma( active_lemma.func, cat, active_lemma.input_types, preconditions );
         
     else
         
         Print( "Next lemma:\n" );
-        StateLemma( active_lemma.func, cat, active_lemma.input_types : preconditions := preconditions );
+        StateLemma( active_lemma.func, cat, active_lemma.input_types, preconditions );
         
     fi;
     
@@ -4028,7 +4520,7 @@ AttestValidInputs := function ( )
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
     
     tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.cat;
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category;
     
     # assert that the tree is well-typed
     Assert( 0, IsBound( tree.bindings.BINDING_RETURN_VALUE.data_type ) );
