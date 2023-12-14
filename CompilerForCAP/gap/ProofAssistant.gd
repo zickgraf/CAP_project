@@ -9,7 +9,6 @@
 #! @Section Proof assistant mode
 
 DeclareGlobalName( "CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED" );
-DeclareGlobalName( "CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA" );
 
 
 DeclareGlobalName( "CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION" );

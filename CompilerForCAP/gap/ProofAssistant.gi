@@ -2392,45 +2392,10 @@ InstallMethod( AssertProposition,
     
 end );
 
-BindGlobal( "PhraseEnumeration", function ( parts )
-    
-    Assert( 0, Length( parts ) > 0 );
-    
-    if Length( parts ) = 1 then
-        
-        return parts[1];
-        
-    elif Length( parts ) = 2 then
-        
-        return Concatenation( parts[1], " and ", parts[2] );
-        
-    else
-        
-        return Concatenation( JoinStringsWithSeparator( parts{[ 1 .. Length( parts ) - 1 ]}, ", " ), " and ", Last( parts ) );
-        
-    fi;
-    
-end );
 
-BindGlobal( "PhraseEnumerationWithOxfordComma", function ( parts )
-    
-    Assert( 0, Length( parts ) > 0 );
-    
-    if Length( parts ) = 1 then
-        
-        return parts[1];
-        
-    elif Length( parts ) = 2 then
-        
-        return Concatenation( parts[1], " and ", parts[2] );
-        
-    else
-        
-        return Concatenation( JoinStringsWithSeparator( parts{[ 1 .. Length( parts ) - 1 ]}, ", " ), ", and ", Last( parts ) );
-        
-    fi;
-    
-end );
+
+
+#####
 
 BindGlobal( "IsJudgementallyEqual", function ( a, b )
     
@@ -2439,447 +2404,6 @@ BindGlobal( "IsJudgementallyEqual", function ( a, b )
 end );
 
 CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool );
-
-CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
-
-BindGlobal( "StateLemma", function ( description, func, cat, input_filters, preconditions )
-  local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, function_string, i, j, condition;
-    
-    if not CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "please enable proof assistant mode with `CapJitEnableProofAssistantMode` before using `StateLemma`; if you 'return;', proof assistant mode will be now be enabled automatically" );
-        CapJitEnableProofAssistantMode( );
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
-    
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
-    
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
-        
-        # COVERAGE_IGNORE_NEXT_LINE
-        Error( "there already is an active lemma; if you 'return;' it will be overwritten" );
-        
-    fi;
-    
-    if IsEmpty( input_filters ) or input_filters[1] <> "category" or Length( input_filters ) <> NumberArgumentsFunction( func ) then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "input filters must not be empty, the first filter must be \"category\", and the number of filters must match the number of function arguments" );
-        return;
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := rec(
-        claim := func,
-        category := cat,
-        input_filters := input_filters,
-        local_replacements := [ ],
-    );
-    
-    Add( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK, func );
-    
-    tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id := tree.id;
-    
-    arguments_data_types := CAP_INTERNAL_GET_DATA_TYPES_FROM_STRINGS( input_filters, cat );
-    
-    Assert( 0, not fail in arguments_data_types );
-    
-    tree.data_type := rec(
-        filter := IsFunction,
-        signature := Pair(
-            arguments_data_types,
-            rec( filter := IsBool )
-        ),
-    );
-    
-    for replacement in preconditions do
-        
-        # src_template
-        Assert( 0, input_filters[1] = "category" );
-        
-        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.src_template ) ) : given_arguments := [ cat ] );
-        
-        tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
-        
-        Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
-        
-        src_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
-        
-        # dst_template
-        Assert( 0, input_filters[1] = "category" );
-        
-        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.dst_template ) ) : given_arguments := [ cat ] );
-        
-        tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
-        
-        Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
-        
-        dst_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
-        
-        #
-        Add( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements, rec(
-            src_template := replacement.src_template,
-            src_template_tree := src_template_tree,
-            dst_template := replacement.dst_template,
-            dst_template_tree := dst_template_tree,
-        ) );
-        
-    od;
-    
-    local_replacements := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements;
-    
-    text := Concatenation( "In ", Name( cat ), ", ", description, ":\n" );
-    
-    names := tree.nams;
-    
-    Assert( 0, Length( names ) >= Length( input_filters ) );
-    
-    handled_input_filters := [ ];
-    
-    parts := [ ];
-    
-    Assert( 0, input_filters[1] = "category" );
-    
-    if Length( input_filters ) = 1 then
-        
-        Assert( 0, IsEmpty( local_replacements ) );
-        
-        text := Concatenation( text, "We have\n" );
-        
-    elif Length( input_filters ) > 1 then
-        
-        text := Concatenation( text, "For" );
-        
-        for i in [ 2 .. Length( input_filters ) ] do
-            
-            filter := input_filters[i];
-            
-            if filter in handled_input_filters then
-                
-                continue;
-                
-            fi;
-            
-            positions := Positions( input_filters, filter );
-            
-            Assert( 0, i in positions );
-            
-            if Length( positions ) = 1 then
-                
-                plural := "";
-                
-            else
-                
-                plural := "s";
-                
-            fi;
-            
-            numerals := [ "a", "two", "three", "four", "five", "six", "seven", "eight", "nine" ];
-            
-            if Length( positions ) <= Length( numerals ) then
-                
-                numeral := numerals[Length( positions )];
-                
-            else
-                
-                numeral := String( Length( positions ) );
-                
-            fi;
-            
-            if filter = "object" then
-                
-                current_names := PhraseEnumeration( names{positions} );
-                
-                part := Concatenation( numeral, " object", plural, " ", current_names );
-                
-            elif filter = "morphism" then
-                
-                current_names := [ ];
-                
-                for i in positions do
-                    
-                    name := names[i];
-                    
-                    source := fail;
-                    range := fail;
-                    
-                    to_remove := [ ];
-                    
-                    for j in [ 1 .. Length( local_replacements ) ] do
-                        
-                        replacement := local_replacements[j];
-                        
-                        if CapJitIsCallToGlobalFunction( replacement.src_template_tree, "Source" ) and replacement.src_template_tree.args.length = 1 and
-                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name then
-                            
-                            Assert( 0, source = fail );
-                            
-                            source := replacement.dst_template;
-                            
-                            Add( to_remove, j );
-                            
-                        elif CapJitIsCallToGlobalFunction( replacement.src_template_tree, gvar -> gvar in [ "Range", "Target" ] ) and replacement.src_template_tree.args.length = 1 and
-                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name then
-                            
-                            Assert( 0, range = fail );
-                            
-                            range := replacement.dst_template;
-                            
-                            Add( to_remove, j );
-                            
-                        fi;
-                        
-                    od;
-                    
-                    if source = fail or range = fail then
-                        
-                        #COVERAGE_IGNORE_BLOCK_START
-                        Error( "could not determine source or range of ", name );
-                        return;
-                        #COVERAGE_IGNORE_BLOCK_END
-                        
-                    fi;
-                    
-                    local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
-                    
-                    Add( current_names, Concatenation( name, " : ", source, " → ", range ) );
-                        
-                od;
-                
-                current_names := PhraseEnumeration( current_names );
-                
-                part := Concatenation( numeral, " morphism", plural, " ", current_names );
-                
-            else
-                
-                # COVERAGE_IGNORE_NEXT_LINE
-                Error( "not yet handled" );
-                
-            fi;
-            
-            part := ReplacedString( part, "a object ", "an object " );
-            
-            Add( parts, part );
-            
-            Add( handled_input_filters, filter );
-            
-        od;
-    
-        text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ), " " );
-        
-        if not IsEmpty( local_replacements ) then
-            
-            text := Concatenation( text, "such that\n" );
-            
-            for replacement in local_replacements do
-                
-                text := Concatenation( text, "• ", replacement.src_template, " = ", replacement.dst_template, ",\n" );
-                
-            od;
-            
-        fi;
-        
-        text := Concatenation( text, "we have" );
-        
-    else
-        
-        # COVERAGE_IGNORE_NEXT_LINE
-        Error( "this should never happen" );
-        
-    fi;
-    
-    Print( text, "\n" );
-    Display( func );
-    
-    tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
-    
-    function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( tree ) );
-    
-    if PositionSublist( function_string, "CAP_JIT_INTERNAL_GLOBAL_VARIABLE_" ) <> fail then
-        
-        # COVERAGE_IGNORE_NEXT_LINE
-        Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
-        
-    fi;
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := tree;
-    
-    if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
-        
-        Print( "This is immediate from the construction.\n" );
-        
-        CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
-        
-        Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
-        
-    fi;
-    
-end );
-
-BindGlobal( "PrintLemma", function ( )
-  local tree, func;
-    
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "no active lemma, you can 'return;' to continue" );
-        return;
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
-    
-    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
-    
-    func := ENHANCED_SYNTAX_TREE_CODE( tree );
-    
-    Print( "We have to show\n" );
-    Display( func );
-    
-end );
-
-BindGlobal( "ApplyLogicTemplate", function ( logic_template )
-  local tree, cat, old_tree, new_tree, function_string;
-    
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "no active lemma, you can 'return;' to continue" );
-        return;
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
-    
-    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category;
-    
-    logic_template := ShallowCopy( logic_template );
-    
-    if not IsBound( logic_template.number_of_applications ) then
-        
-        logic_template.number_of_applications := 1;
-        
-    fi;
-    
-    if logic_template.number_of_applications = infinity then
-        
-        Error( "Calling ApplyLogicTemplate with a logic template with an infinite number of applications is not supported. Please use CapJitAddLogicTemplate instead." );
-        
-    fi;
-    
-    CapJitAddLogicTemplate( logic_template );
-    
-    old_tree := StructuralCopy( tree );
-    
-    new_tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
-    
-    function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
-    
-    if PositionSublist( function_string, "CAP_JIT_INTERNAL_GLOBAL_VARIABLE_" ) <> fail then
-        
-        # COVERAGE_IGNORE_NEXT_LINE
-        Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
-        
-    fi;
-    
-    # TODO
-    if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, new_tree ) then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
-        
-        Error( "applying the logic template did not change the tree; you can 'return;' to continue" );
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    elif ForAny( CAP_JIT_LOGIC_TEMPLATES, t -> IsBound( t.is_fully_enhanced ) and t.is_fully_enhanced = true and t.number_of_applications <> infinity ) then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Display( ENHANCED_SYNTAX_TREE_CODE( new_tree ) );
-        
-        Perform( CAP_JIT_LOGIC_TEMPLATES, function ( t ) if IsBound( t.is_fully_enhanced ) and t.is_fully_enhanced = true and t.number_of_applications <> infinity then Display( t.number_of_applications ); fi; end );
-        
-        Error( "there are logic templates with the non-zero number of remaining applications displayed above; you can 'return;' to remove the logic templates and continue" );
-        
-        MakeReadWriteGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
-        
-        CAP_JIT_LOGIC_TEMPLATES := Filtered( CAP_JIT_LOGIC_TEMPLATES, function ( t )
-            
-            if not (IsBound( t.is_fully_enhanced ) and t.is_fully_enhanced = true) then
-                
-                return true;
-                
-            else
-                
-                return t.number_of_applications = infinity;
-                
-            fi;
-            
-        end );
-        
-        MakeReadOnlyGlobal( "CAP_JIT_LOGIC_TEMPLATES" );
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := new_tree;
-    
-end );
-
-BindGlobal( "ApplyLogicTemplateNTimes", function ( n, logic_template )
-  local i;
-    
-    Assert( 0, IsPosInt( n ) );
-    
-    for i in [ 1 .. n ] do
-        
-        ApplyLogicTemplate( logic_template );
-        
-    od;
-    
-end );
-
-BindGlobal( "AssertLemma", function ( )
-  local tree;
-    
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "no active lemma, you can 'return;' to continue" );
-        return;
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
-    
-    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
-    
-    Assert( 0, tree.id = CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id );
-    
-    if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
-        
-        CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
-        
-        Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
-        
-        Print( "With this, the claim follows.\n" );
-        
-    else
-        
-        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
-        
-        Error( "function is not true, not resetting lemma; you can 'return;' to continue" );
-        
-    fi;
-    
-end );
-
-
-
-
-#####
 
 
 LATEX_OUTPUT := false;
@@ -3031,13 +2555,13 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
         # TODO: only box things in the category
         if filter = "integer" then
             
-            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" ) ) );
+            current_names := ConcatenationOfStringsAsEnumerationWithAnd( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" ) ) );
             
             part := Concatenation( numeral, " integer", plural, " ", current_names );
             
         elif filter = "object" then
             
-            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\bboxed{", LaTeXName( names[i] ), "}$" ) ) );
+            current_names := ConcatenationOfStringsAsEnumerationWithAnd( List( positions, i -> Concatenation( "$\\bboxed{", LaTeXName( names[i] ), "}$" ) ) );
             
             part := Concatenation( numeral, " object", plural, " ", current_names );
             
@@ -3132,7 +2656,7 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
                 
             od;
             
-            current_names := PhraseEnumeration( current_names );
+            current_names := ConcatenationOfStringsAsEnumerationWithAnd( current_names );
             
             part := Concatenation( numeral, " morphism", plural, " ", current_names );
             
@@ -3175,7 +2699,7 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
                 
             od;
             
-            current_names := PhraseEnumeration( current_names );
+            current_names := ConcatenationOfStringsAsEnumerationWithAnd( current_names );
             
             part := Concatenation( numeral, " tuple", plural, " of objects ", current_names );
             
@@ -3195,7 +2719,7 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
     
     if Length( input_filters ) > 1 then
         
-        text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ) );
+        text := Concatenation( text, " ", ConcatenationOfStringsAsEnumerationWithAnd( parts ) );
         
     fi;
     
