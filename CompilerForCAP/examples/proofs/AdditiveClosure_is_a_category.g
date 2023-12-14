@@ -64,7 +64,7 @@ SetActiveCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive
     ),
 ] );
 
-result := StateProposition( "is_category", function ( name )
+StateProposition( "is_category", function ( name )
     
     if name = "a" then
         
