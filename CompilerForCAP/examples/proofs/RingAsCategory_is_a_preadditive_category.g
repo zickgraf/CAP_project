@@ -46,21 +46,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
 
 AssertLemma( );
 
-# AdditionForMorphisms bilinear from the left
-StateNextLemma( );
-
-ApplyLogicTemplateAndReturnLaTeXString(
-    rec(
-        variable_names := [ "r", "a", "b" ],
-        src_template := "r * (a + b)",
-        dst_template := "r * a + r * b",
-    ),
-    cat, [ RingElementFilter( R ), RingElementFilter( R ), RingElementFilter( R ) ], "="
-);
-
-AssertLemma( );
-
-# AdditionForMorphisms bilinear from the right
+# composition is additive in the first component
 StateNextLemma( );
 
 ApplyLogicTemplateAndReturnLaTeXString(
@@ -68,6 +54,20 @@ ApplyLogicTemplateAndReturnLaTeXString(
         variable_names := [ "r", "a", "b" ],
         src_template := "(a + b) * r",
         dst_template := "a * r + b * r",
+    ),
+    cat, [ RingElementFilter( R ), RingElementFilter( R ), RingElementFilter( R ) ], "="
+);
+
+AssertLemma( );
+
+# composition is additive in the second component
+StateNextLemma( );
+
+ApplyLogicTemplateAndReturnLaTeXString(
+    rec(
+        variable_names := [ "r", "a", "b" ],
+        src_template := "r * (a + b)",
+        dst_template := "r * a + r * b",
     ),
     cat, [ RingElementFilter( R ), RingElementFilter( R ), RingElementFilter( R ) ], "="
 );

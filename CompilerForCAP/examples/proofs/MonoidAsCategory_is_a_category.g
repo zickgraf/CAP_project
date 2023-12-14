@@ -46,9 +46,8 @@ statement := function ( cat, A, B, C, D, m, n, l )
     
 end;;
 
-SetActiveCategory( cat, "$\\boldsymbol{\\mathcal{C}}(\\mathbb{Z})$" ); # TODO
-
 StateLemma(
+    "composition is associative",
     statement,
     cat,
     [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
@@ -61,6 +60,8 @@ StateLemma(
         rec( src_template := "Target( l )", dst_template := "D" ),
     ]
 );
+
+PrintLemma( );
 
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(

@@ -159,33 +159,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
 
 AssertLemma( );
 
-# AdditionForMorphisms bilinear from the left
-StateNextLemma( );
-
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", "source", "target", "list", "func1", "func2" ],
-        variable_filters := [ IsDummyCategory, IsDummyCategoryObject, IsDummyCategoryObject, IsList, IsFunction, IsFunction ],
-        src_template := "AdditionForMorphisms( cat, SumOfMorphisms( cat, source, List( list, func1 ), target ), SumOfMorphisms( cat, source, List( list, func2 ), target ) )",
-        dst_template := "SumOfMorphisms( cat, source, List( list, x -> AdditionForMorphisms( cat, func1( x ), func2( x ) ) ), target )",
-        new_funcs := [ [ "x" ] ],
-    )#,
-    #dummy, [ "category", "morphism", "morphism" ], "=", "."
-);
-
-ApplyLogicTemplate(
-    rec(
-        variable_names := [ "cat", "mor", "alpha", "beta" ],
-        variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryMorphism, IsDummyCategoryMorphism ],
-        src_template := "PreCompose( cat, mor, AdditionForMorphisms( cat, alpha, beta ) )",
-        dst_template := "AdditionForMorphisms( cat, PreCompose( cat, mor, alpha ), PreCompose( cat, mor, beta ) )",
-    )#,
-    #dummy, [ "category", "morphism", "morphism" ], "=", "."
-);
-
-AssertLemma( );
-
-# AdditionForMorphisms bilinear from the right
+# composition is additive in the first component
 StateNextLemma( );
 
 ApplyLogicTemplate(
@@ -205,6 +179,32 @@ ApplyLogicTemplate(
         variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryMorphism, IsDummyCategoryMorphism ],
         src_template := "PreCompose( cat, AdditionForMorphisms( cat, alpha, beta ), mor )",
         dst_template := "AdditionForMorphisms( cat, PreCompose( cat, alpha, mor ), PreCompose( cat, beta, mor ) )",
+    )#,
+    #dummy, [ "category", "morphism", "morphism" ], "=", "."
+);
+
+AssertLemma( );
+
+# composition is additive in the second component
+StateNextLemma( );
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "source", "target", "list", "func1", "func2" ],
+        variable_filters := [ IsDummyCategory, IsDummyCategoryObject, IsDummyCategoryObject, IsList, IsFunction, IsFunction ],
+        src_template := "AdditionForMorphisms( cat, SumOfMorphisms( cat, source, List( list, func1 ), target ), SumOfMorphisms( cat, source, List( list, func2 ), target ) )",
+        dst_template := "SumOfMorphisms( cat, source, List( list, x -> AdditionForMorphisms( cat, func1( x ), func2( x ) ) ), target )",
+        new_funcs := [ [ "x" ] ],
+    )#,
+    #dummy, [ "category", "morphism", "morphism" ], "=", "."
+);
+
+ApplyLogicTemplate(
+    rec(
+        variable_names := [ "cat", "mor", "alpha", "beta" ],
+        variable_filters := [ IsDummyCategory, IsDummyCategoryMorphism, IsDummyCategoryMorphism, IsDummyCategoryMorphism ],
+        src_template := "PreCompose( cat, mor, AdditionForMorphisms( cat, alpha, beta ) )",
+        dst_template := "AdditionForMorphisms( cat, PreCompose( cat, mor, alpha ), PreCompose( cat, mor, beta ) )",
     )#,
     #dummy, [ "category", "morphism", "morphism" ], "=", "."
 );
