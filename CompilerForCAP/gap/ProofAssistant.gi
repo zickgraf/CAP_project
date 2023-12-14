@@ -2442,7 +2442,7 @@ CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool )
 
 CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
 
-BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
+BindGlobal( "StateLemma", function ( description, func, cat, input_filters, preconditions )
   local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, function_string, i, j, condition;
     
     if not CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED then
@@ -2533,102 +2533,80 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
     
     local_replacements := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements;
     
-    text := Concatenation( "In ", Name( cat ), " the following statement holds true:\n" );
+    text := Concatenation( "In ", Name( cat ), ", ", description, ":\n" );
     
-    
-    
-    
-    
-    #######
-    
-    
-    text := Concatenation( text, "For" );
-    
-    names := NamesLocalVariablesFunction( func );
+    names := tree.nams;
     
     Assert( 0, Length( names ) >= Length( input_filters ) );
-    
-    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
-        
-        # TODO: only names of things in the category
-        names := List( names, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator );
-        
-    fi;
     
     handled_input_filters := [ ];
     
     parts := [ ];
     
-    for i in [ 2 .. Length( input_filters ) ] do
+    Assert( 0, input_filters[1] = "category" );
+    
+    if Length( input_filters ) = 1 then
         
-        filter := input_filters[i];
+        Assert( 0, IsEmpty( local_replacements ) );
         
-        if filter in handled_input_filters then
-            
-            continue;
-            
-        fi;
+        text := Concatenation( text, "We have\n" );
         
-        positions := Positions( input_filters, filter );
+    elif Length( input_filters ) > 1 then
         
-        Assert( 0, i in positions );
+        text := Concatenation( text, "For" );
         
-        if Length( positions ) = 1 then
+        for i in [ 2 .. Length( input_filters ) ] do
             
-            plural := "";
+            filter := input_filters[i];
             
-        else
-            
-            plural := "s";
-            
-        fi;
-        
-        numerals := [ "a", "two", "three", "four", "five", "six", "seven", "eight", "nine" ];
-        
-        if Length( positions ) <= Length( numerals ) then
-            
-            numeral := numerals[Length( positions )];
-            
-        else
-            
-            numeral := String( Length( positions ) );
-            
-        fi;
-        
-        # TODO: only box things in the category
-        if filter = "integer" then
-            
-            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" ) ) );
-            
-            part := Concatenation( numeral, " integer", plural, " ", current_names );
-            
-        elif filter = "object" then
-            
-            current_names := PhraseEnumeration( List( positions, i -> Concatenation( "$\\bboxed{", LaTeXName( names[i] ), "}$" ) ) );
-            
-            part := Concatenation( numeral, " object", plural, " ", current_names );
-            
-        elif filter = "morphism" then
-            
-            current_names := [ ];
-            
-            for i in positions do
+            if filter in handled_input_filters then
                 
-                name := names[i];
+                continue;
                 
-                source := fail;
-                range := fail;
+            fi;
+            
+            positions := Positions( input_filters, filter );
+            
+            Assert( 0, i in positions );
+            
+            if Length( positions ) = 1 then
                 
-                inner_parts := MySplitString( name, "__" );
+                plural := "";
                 
-                if Length( inner_parts ) = 3 then
+            else
+                
+                plural := "s";
+                
+            fi;
+            
+            numerals := [ "a", "two", "three", "four", "five", "six", "seven", "eight", "nine" ];
+            
+            if Length( positions ) <= Length( numerals ) then
+                
+                numeral := numerals[Length( positions )];
+                
+            else
+                
+                numeral := String( Length( positions ) );
+                
+            fi;
+            
+            if filter = "object" then
+                
+                current_names := PhraseEnumeration( names{positions} );
+                
+                part := Concatenation( numeral, " object", plural, " ", current_names );
+                
+            elif filter = "morphism" then
+                
+                current_names := [ ];
+                
+                for i in positions do
                     
-                    #name := Concatenation( "\\bboxed{", LaTeXName( inner_parts[1] ), "}" );
-                    name := inner_parts[1];
-                    source := Concatenation( "\\bboxed{", LaTeXName( inner_parts[2] ), "}" );
-                    range := Concatenation( "\\bboxed{", LaTeXName( inner_parts[3] ), "}" );
+                    name := names[i];
                     
-                else
+                    source := fail;
+                    range := fail;
                     
                     to_remove := [ ];
                     
@@ -2637,22 +2615,20 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
                         replacement := local_replacements[j];
                         
                         if CapJitIsCallToGlobalFunction( replacement.src_template_tree, "Source" ) and replacement.src_template_tree.args.length = 1 and
-                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name and
-                           replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
+                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name then
                             
                             Assert( 0, source = fail );
                             
-                            source := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
+                            source := replacement.dst_template;
                             
                             Add( to_remove, j );
                             
                         elif CapJitIsCallToGlobalFunction( replacement.src_template_tree, gvar -> gvar in [ "Range", "Target" ] ) and replacement.src_template_tree.args.length = 1 and
-                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name and
-                           replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
+                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name then
                             
                             Assert( 0, range = fail );
                             
-                            range := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
+                            range := replacement.dst_template;
                             
                             Add( to_remove, j );
                             
@@ -2660,218 +2636,64 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
                         
                     od;
                     
+                    if source = fail or range = fail then
+                        
+                        #COVERAGE_IGNORE_BLOCK_START
+                        Error( "could not determine source or range of ", name );
+                        return;
+                        #COVERAGE_IGNORE_BLOCK_END
+                        
+                    fi;
+                    
                     local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
                     
-                fi;
+                    Add( current_names, Concatenation( name, " : ", source, " → ", range ) );
+                        
+                od;
                 
-                name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
+                current_names := PhraseEnumeration( current_names );
                 
-                if source = fail and range <> fail then
-                    
-                    Display( "WARNING: LaTeX missing source" );
-                    source := "\\text{missing source}";
-                    
-                fi;
-                
-                if source <> fail and range = fail then
-                    
-                    Display( "WARNING: LaTeX missing range" );
-                    range := "\\text{missing target}";
-                    
-                fi;
-                
-                if source <> fail and range <> fail then
-                    
-                    Add( current_names, Concatenation( "$", name, " : ", source, " \\to ", range, "$" ) );
-                    
-                elif source = fail and range = fail then
-                    
-                    Add( current_names, Concatenation( "$", name, "$" ) );
-                    
-                    #source := Concatenation( "s(", name, ")" );
-                    #range := Concatenation( "t(", name, ")" );
-                    
-                else
-                    
-                    Error( "this case is not supported" );
-                    
-                fi;
-                
-            od;
-            
-            current_names := PhraseEnumeration( current_names );
-            
-            part := Concatenation( numeral, " morphism", plural, " ", current_names );
-            
-        #elif filter = "object_in_range_category_of_homomorphism_structure" then
-        #    
-        #    part := Concatenation( numeral, " object", plural, " ", current_names, " in the range category of the homomorphism structure" );
-        #    
-        #elif filter = "morphism_in_range_category_of_homomorphism_structure" then
-        #    
-        #    part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
-        #    
-        elif filter = "list_of_objects" then
-            
-            current_names := [ ];
-            
-            for i in positions do
-                
-                name := names[i];
-                
-                inner_parts := MySplitString( name, "__" );
-                
-                Assert( 0, Length( inner_parts ) > 0 );
-                
-                if Length( inner_parts ) = 1 then
-                    
-                    Add( current_names, Concatenation( "$", LaTeXName( name ), "$" ) );
-                    
-                elif Length( inner_parts ) = 2 then
-                    
-                    name := LaTeXName( inner_parts[1] );
-                    length := LaTeXName( inner_parts[2] );
-                    
-                    Add( current_names, Concatenation( "$\\left(\\bboxed{", name , "^1},\\ldots,\\bboxed{", name, "^", length, "}\\right)$" ) );
-                    
-                else
-                    
-                    Error( "wrong usage" );
-                    
-                fi;
-                
-            od;
-            
-            current_names := PhraseEnumeration( current_names );
-            
-            part := Concatenation( numeral, " tuple", plural, " of objects ", current_names );
-            
-        else
-            
-            part := Concatenation( "TODO: ", ReplacedString( filter, "_", "\\_" ) );
-            
-        fi;
-        
-        part := ReplacedString( part, "a object ", "an object " );
-        
-        Add( parts, part );
-        
-        Add( handled_input_filters, filter );
-        
-    od;
-    
-    if Length( input_filters ) > 1 then
-        
-        text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ) );
-        
-    fi;
-    
-    if not IsEmpty( local_replacements ) then
-        
-        condition_func := StructuralCopy( tree );
-        
-        # TODO: make sure that CapJitAddLocalReplacement comes before any assignments
-        #Assert( 0, Length( condition_func.bindings.names ) = 1 );
-        
-        condition_func.bindings := rec(
-            type := "FVAR_BINDING_SEQ",
-            names := [ ],
-        );
-        
-        conditions := List( local_replacements, function ( replacement )
-            
-            if replacement.dst_template_tree.type = "EXPR_TRUE" then
-                
-                return StructuralCopy( replacement.src_template_tree );
+                part := Concatenation( numeral, " morphism", plural, " ", current_names );
                 
             else
                 
-                return rec(
-                    type := "EXPR_FUNCCALL",
-                    funcref := rec(
-                        type := "EXPR_REF_GVAR",
-                        gvar := "IsJudgementallyEqual",
-                    ),
-                    args := AsSyntaxTreeList( [
-                        StructuralCopy( replacement.src_template_tree ),
-                        StructuralCopy( replacement.dst_template_tree ),
-                    ] ),
-                );
+                # COVERAGE_IGNORE_NEXT_LINE
+                Error( "not yet handled" );
                 
             fi;
             
-        end );
-        
-        CapJitAddBinding( condition_func.bindings, "RETURN_VALUE", Remove( conditions, 1 ) );
-        
-        for condition in conditions do
+            part := ReplacedString( part, "a object ", "an object " );
             
-            condition_func.bindings.BINDING_RETURN_VALUE := rec(
-                type := "EXPR_AND",
-                left := condition_func.bindings.BINDING_RETURN_VALUE,
-                right := condition,
-            );
+            Add( parts, part );
+            
+            Add( handled_input_filters, filter );
             
         od;
+    
+        text := Concatenation( text, " ", PhraseEnumerationWithOxfordComma( parts ), " " );
         
-        text := Concatenation( text, " such that\n", FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( condition_func ), cat, input_filters ) );
+        if not IsEmpty( local_replacements ) then
+            
+            text := Concatenation( text, "such that\n" );
+            
+            for replacement in local_replacements do
+                
+                text := Concatenation( text, "• ", replacement.src_template, " = ", replacement.dst_template, ",\n" );
+                
+            od;
+            
+        fi;
+        
+        text := Concatenation( text, "we have" );
+        
+    else
+        
+        # COVERAGE_IGNORE_NEXT_LINE
+        Error( "this should never happen" );
         
     fi;
     
-    #local_replacements_strings := [ ];
-    #
-    #for replacement in tree.local_replacements do
-    #    
-    #    replacement_func := StructuralCopy( tree );
-    #    replacement_func.local_replacements := [ ];
-    #    
-    #    Assert( 0, Length( replacement_func.bindings.names ) = 1 );
-    #    
-    #    if replacement.dst_template_tree.type = "EXPR_TRUE" then
-    #        
-    #        replacement_func.bindings.BINDING_RETURN_VALUE := StructuralCopy( replacement.src_template_tree );
-    #        
-    #    else
-    #        
-    #        replacement_func.bindings.BINDING_RETURN_VALUE := rec(
-    #            type := "EXPR_FUNCCALL",
-    #            funcref := rec(
-    #                type := "EXPR_REF_GVAR",
-    #                gvar := "=",
-    #            ),
-    #            args := AsSyntaxTreeList( [
-    #                StructuralCopy( replacement.src_template_tree ),
-    #                StructuralCopy( replacement.dst_template_tree ),
-    #            ] ),
-    #        );
-    #        
-    #    fi;
-    #    
-    #    Add( local_replacements_strings, FunctionAsMathString( ENHANCED_SYNTAX_TREE_CODE( replacement_func ), cat, input_filters ) );
-    #    
-    #od;
-    #
-    #if not IsEmpty( local_replacements_strings ) then
-    #    
-    #    text := Concatenation( text, " such that ", JoinStringsWithSeparator( local_replacements_strings, "\n" ) );
-    #    
-    #fi;
-    
-    text := Concatenation( text, " we have that" );
-    
-    result := FunctionAsMathString( func, cat, input_filters, "." );
-    
-    latex_string := Concatenation(
-        "\\begin{lemma}\n",
-        text, "\n",
-        result, "\n",
-        "\\end{lemma}"
-    );
-    
-    
-    #########
-    
-    Display( text );
+    Print( text, "\n" );
     Display( func );
     
     tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
@@ -2889,7 +2711,7 @@ BindGlobal( "StateLemma", function ( func, cat, input_filters, preconditions )
     
     if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
-        Display( "This is immediate from the construction.\n" );
+        Print( "This is immediate from the construction.\n" );
         
         CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
         
@@ -2915,6 +2737,7 @@ BindGlobal( "PrintLemma", function ( )
     
     func := ENHANCED_SYNTAX_TREE_CODE( tree );
     
+    Print( "We have to show\n" );
     Display( func );
     
 end );
@@ -3041,7 +2864,7 @@ BindGlobal( "AssertLemma", function ( )
         
         Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
-        Display( "With this, the claim follows.\n" );
+        Print( "With this, the claim follows.\n" );
         
     else
         
@@ -3618,6 +3441,9 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
     
     ApplyLogicTemplate( logic_template );
     
+    # TODO
+    return "";
+    
     latex_string := CallFuncList( CapJitLaTeXStringOfLogicTemplate, Concatenation( [ logic_template ], args ) );
     
     return latex_string;
@@ -3651,13 +3477,24 @@ InstallDeprecatedAlias( "SetCurrentCategory", "SetActiveCategory", "2023" );
 
 specifications := rec(
     PreCompose := rec(
-        input_arguments_names := [ "cat", "alpha", "beta" ],
-        preconditions := [
-            rec( src_template := "Source( beta )", dst_template := "Range( alpha )" ),
-        ],
-        postconditions := [
+        lemmata := [
             rec(
-                # composition is associative
+                description := "the composite of two morphisms defines a morphism",
+                input_types := [ "category", "object", "object", "object", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, alpha, beta )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, PreCompose( cat, alpha, beta ), B );
+                    
+                end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "B" ),
+                    rec( src_template := "Range( beta )", dst_template := "C" ),
+                ],
+            ),
+            rec(
+                description := "composition is associative",
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha, beta, gamma )
                     
@@ -3676,9 +3513,19 @@ specifications := rec(
         ],
     ),
     IdentityMorphism := rec(
-        postconditions := [
+        lemmata := [
             rec(
-                # identity is left-neutral
+                description := "the identity on an object defines a morphism",
+                input_types := [ "category", "object" ],
+                func := function ( cat, A )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, IdentityMorphism( cat, A ), A );
+                    
+                end,
+                preconditions := [ ],
+            ),
+            rec(
+                description := "identity morphisms are left neutral",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3691,7 +3538,7 @@ specifications := rec(
                 ],
             ),
             rec(
-                # identity is right-neutral
+                description := "identity morphisms are right neutral",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3706,14 +3553,24 @@ specifications := rec(
         ],
     ),
     AdditionForMorphisms := rec(
-        input_arguments_names := [ "cat", "alpha", "beta" ],
-        preconditions := [
-            rec( src_template := "Source( beta )", dst_template := "Source( alpha )" ),
-            rec( src_template := "Range( beta )", dst_template := "Range( alpha )" ),
-        ],
-        postconditions := [
-            # addition is associative
+        lemmata := [
             rec(
+                description := "the addition of morphisms defines a morphism",
+                input_types := [ "category", "object", "object", "morphism", "morphism" ],
+                func := function ( cat, A, B, alpha, beta )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, AdditionForMorphisms( cat, alpha, beta ), B );
+                    
+                end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "A" ),
+                    rec( src_template := "Range( beta )", dst_template := "B" ),
+                ],
+            ),
+            rec(
+                description := "addition of morphisms is associative",
                 input_types := [ "category", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, alpha, beta, gamma )
                     
@@ -3729,8 +3586,8 @@ specifications := rec(
                     rec( src_template := "Range( gamma )", dst_template := "B" ),
                 ],
             ),
-            # addition is commutative
             rec(
+                description := "addition of morphisms is commutative",
                 input_types := [ "category", "object", "object", "morphism", "morphism" ],
                 func := function ( cat, A, B, alpha, beta )
                     
@@ -3747,29 +3604,8 @@ specifications := rec(
                     rec( src_template := "Range( beta )", dst_template := "B" ),
                 ],
             ),
-            # addition is bilinear from the left
             rec(
-                input_types := [ "category", "object", "object", "object", "morphism", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, alpha, beta, phi )
-                    
-                    return IsCongruentForMorphisms( cat,
-                        PreCompose( cat, phi, AdditionForMorphisms( cat, alpha, beta ) ),
-                        AdditionForMorphisms( cat, PreCompose( cat, phi, alpha ), PreCompose( cat, phi, beta ) )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( phi )", dst_template := "A" ),
-                    rec( src_template := "Range( phi )", dst_template := "B" ),
-                    
-                    rec( src_template := "Source( alpha )", dst_template := "B" ),
-                    rec( src_template := "Range( alpha )", dst_template := "C" ),
-                    rec( src_template := "Source( beta )", dst_template := "B" ),
-                    rec( src_template := "Range( beta )", dst_template := "C" ),
-                ],
-            ),
-            # addition is bilinear from the right
-            rec(
+                description := "composition is additive in the first component",
                 input_types := [ "category", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, alpha, beta, phi )
                     
@@ -3789,12 +3625,35 @@ specifications := rec(
                     rec( src_template := "Range( phi )", dst_template := "C" ),
                 ],
             ),
+            rec(
+                description := "composition is additive in the second component",
+                input_types := [ "category", "object", "object", "object", "morphism", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, alpha, beta, phi )
+                    
+                    return IsCongruentForMorphisms( cat,
+                        PreCompose( cat, phi, AdditionForMorphisms( cat, alpha, beta ) ),
+                        AdditionForMorphisms( cat, PreCompose( cat, phi, alpha ), PreCompose( cat, phi, beta ) )
+                    );
+                    
+                end,
+                preconditions := [
+                    rec( src_template := "Source( phi )", dst_template := "A" ),
+                    rec( src_template := "Range( phi )", dst_template := "B" ),
+                    
+                    rec( src_template := "Source( alpha )", dst_template := "B" ),
+                    rec( src_template := "Range( alpha )", dst_template := "C" ),
+                    rec( src_template := "Source( beta )", dst_template := "B" ),
+                    rec( src_template := "Range( beta )", dst_template := "C" ),
+                ],
+            ),
         ],
     ),
     ZeroMorphism := rec(
+        description := "",
         postconditions := [
             rec(
                 # zero is left-neutral
+                description := "",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3808,6 +3667,7 @@ specifications := rec(
             ),
             rec(
                 # zero is right-neutral
+                description := "",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3822,9 +3682,11 @@ specifications := rec(
         ],
     ),
     AdditiveInverseForMorphisms := rec(
+        description := "",
         postconditions := [
             rec(
                 # additive inverse is left-inverse
+                description := "",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3838,6 +3700,7 @@ specifications := rec(
             ),
             rec(
                 # additive inverse is right-inverse
+                description := "",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3852,9 +3715,11 @@ specifications := rec(
         ],
     ),
     MultiplyWithElementOfCommutativeRingForMorphisms := rec(
+        description := "",
         postconditions := [
             # multiplication is associative
             rec(
+                description := "",
                 input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
                 func := function ( cat, A, B, r, s, alpha )
                     
@@ -3868,6 +3733,7 @@ specifications := rec(
             ),
             # multiplication is distributive from the right
             rec(
+                description := "",
                 input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
                 func := function ( cat, A, B, r, s, alpha )
                     
@@ -3881,6 +3747,7 @@ specifications := rec(
             ),
             # multiplication is distributive from the left
             rec(
+                description := "",
                 input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := function ( cat, A, B, r, alpha, beta )
                     
@@ -3896,6 +3763,7 @@ specifications := rec(
             ),
             # multiplication has a neutral element
             rec(
+                description := "",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3909,6 +3777,7 @@ specifications := rec(
             ),
             # composition is linear with regard to multiplication in the first component
             rec(
+                description := "",
                 input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, r, alpha, beta )
                     
@@ -3924,6 +3793,7 @@ specifications := rec(
             ),
             # composition is linear with regard to multiplication in the second component
             rec(
+                description := "",
                 input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, r, alpha, beta )
                     
@@ -3939,10 +3809,14 @@ specifications := rec(
             ),
         ],
     ),
-    ZeroObject := rec( ),
+    ZeroObject := rec(
+        description := "",
+    ),
     UniversalMorphismIntoZeroObject := rec(
+        description := "",
         postconditions := [
             rec(
+                description := "",
                 input_types := [ "category", "object", "morphism" ],
                 func := function ( cat, A, u )
                     
@@ -3960,8 +3834,10 @@ specifications := rec(
         ],
     ),
     UniversalMorphismFromZeroObject := rec(
+        description := "",
         postconditions := [
             rec(
+                description := "",
                 input_types := [ "category", "object", "morphism" ],
                 func := function ( cat, B, u )
                     
@@ -3978,12 +3854,18 @@ specifications := rec(
             ),
         ],
     ),
-    DistinguishedObjectOfHomomorphismStructure := rec( ),
-    HomomorphismStructureOnObjects := rec( ),
+    DistinguishedObjectOfHomomorphismStructure := rec(
+        description := "",
+    ),
+    HomomorphismStructureOnObjects := rec(
+        description := "",
+    ),
     HomomorphismStructureOnMorphisms := rec(
+        description := "",
         postconditions := [
             # H( id, id ) = id
             rec(
+                description := "",
                 input_types := [ "category", "object", "object" ],
                 func := function ( cat, A, B )
                     
@@ -3996,6 +3878,7 @@ specifications := rec(
             ),
             # H( α₁, β₁ ) ⋅ H( α₂, β₂ ) = H( α₂ ⋅ α₁, β₁ ⋅ β₂ )
             rec(
+                description := "",
                 input_types := [ "category", "object", "object", "object", "object", "object", "object", "morphism", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, E, F, alpha_1, alpha_2, beta_1, beta_2 )
                     
@@ -4019,6 +3902,7 @@ specifications := rec(
             ),
             # H( α₁, β ) + H( α₂, β ) = H( α₁ + α₂, β )
             rec(
+                description := "",
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha_1, alpha_2, beta )
                     
@@ -4041,6 +3925,7 @@ specifications := rec(
             ),
             # H( α, β₁ ) + H( α, β₂ ) = H( α, β₁ + β₂ )
             rec(
+                description := "",
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha, beta_1, beta_2 )
                     
@@ -4064,9 +3949,11 @@ specifications := rec(
         ],
     ),
     InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure := rec(
+        description := "",
         postconditions := [ ], # see InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism
     ),
     InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism := rec(
+        description := "",
         input_arguments_names := [ "cat", "source", "range", "alpha" ],
         preconditions := [
             rec( src_template := "Source( alpha )", dst_template := "DistinguishedObjectOfHomomorphismStructure( cat )" ),
@@ -4075,6 +3962,7 @@ specifications := rec(
         postconditions := [
             rec(
                 # ν⁻¹(ν(α)) = α
+                description := "",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -4091,6 +3979,7 @@ specifications := rec(
             ),
             rec(
                 # ν(ν⁻¹(α)) = α
+                description := "",
                 input_types := [ "category", "object", "object", "morphism_in_range_category_of_homomorphism_structure" ],
                 func := function ( cat, S, T, alpha )
                     
@@ -4107,6 +3996,7 @@ specifications := rec(
             ),
             rec(
                 # naturality of ν: ν(α ⋅ ξ ⋅ β) = ν(ξ) ⋅ H(α, β)
+                description := "",
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha, xi, beta )
                     
@@ -4153,7 +4043,7 @@ propositions := rec(
 );
 
 enhance_propositions := function ( propositions )
-  local prop, info, specification, preconditions, enhanced_arguments, is_well_defined, is_well_defined_category, source_string, range_string, lemma, id, operation_name;
+  local prop, info, specification, is_well_defined, is_well_defined_category, source_string, range_string, description, lemma, id, operation_name;
     
     for id in RecNames( propositions ) do
         
@@ -4172,40 +4062,46 @@ enhance_propositions := function ( propositions )
             
             specification := specifications.(operation_name);
             
+            if IsBound( specification.lemmata ) then
+                
+                Assert( 0, not IsEmpty( specification.lemmata ) );
+                Assert( 0, PositionSublist( CapJitPrettyPrintFunction( specification.lemmata[1].func ), "IsWellDefined" ) <> fail );
+                
+                prop.lemmata := Concatenation( prop.lemmata, specification.lemmata );
+                continue;
+                
+            fi;
+            
+            #Assert( 0, Length( Set( [ IsBound( specification.input_arguments_names ), IsBound( specification.input_types ), IsBound( specification.operation_arguments_names ), IsBound( specification.preconditions ) ] ) ) = 1 );
+            Assert( 0, Length( Set( [ IsBound( specification.input_arguments_names ), IsBound( specification.preconditions ) ] ) ) = 1 );
+            
             if not IsBound( specification.input_arguments_names ) then
                 
-                Assert( 0, not IsBound( specification.preconditions ) );
-                
                 specification.input_arguments_names := info.input_arguments_names;
+                specification.input_types := info.filter_list;
+                specification.operation_arguments_names := info.input_arguments_names;
+                specification.preconditions := [ ];
                 
             fi;
             
-            Assert( 0, Length( specification.input_arguments_names ) = Length( info.input_arguments_names ) );
+            if not IsBound( specification.input_types ) then
+                
+                specification.input_types := info.filter_list;
+                
+            fi;
+            
+            if not IsBound( specification.operation_arguments_names ) then
+                
+                specification.operation_arguments_names := info.input_arguments_names;
+                
+            fi;
+            
+            Assert( 0, Length( specification.input_arguments_names ) = Length( specification.input_types ) );
             Assert( 0, specification.input_arguments_names[1] = "cat" );
-            
-            if IsBound( specification.preconditions ) and IsString( specification.preconditions ) then
-                
-                preconditions := specification.preconditions;
-                
-            else
-                
-                preconditions := "";
-                
-            fi;
-            
-            enhanced_arguments := ListN( info.filter_list, specification.input_arguments_names, function ( filter_string, name )
-                
-                #if filter_string = "list_of_objects" then
-                #    
-                #    return ReplacedStringViaRecord( "List( [ 1 .. Length( var ) ], i -> var[i] )", rec( var := name ) );
-                #    
-                #else
-                    
-                    return name;
-                    
-                #fi;
-                
-            end );
+            Assert( 0, specification.input_types[1] = "category" );
+            Assert( 0, specification.operation_arguments_names[1] = "cat" );
+            Assert( 0, IsSubset( specification.input_arguments_names, specification.operation_arguments_names ) );
+            Assert( 0, ForAll( [ 1 .. Length( specification.operation_arguments_names ) ], i -> info.filter_list[i] = specification.input_types[SafeUniquePosition( specification.input_arguments_names, specification.operation_arguments_names[i] )] ) );
             
             ## check well-definedness
             
@@ -4215,6 +4111,7 @@ enhance_propositions := function ( propositions )
                 is_well_defined_category := "cat";
                 source_string := "";
                 range_string := "";
+                description := "an object";
                 
             elif info.return_type = "object_in_range_category_of_homomorphism_structure" then
                 
@@ -4222,6 +4119,7 @@ enhance_propositions := function ( propositions )
                 is_well_defined_category := "RangeCategoryOfHomomorphismStructure( cat )";
                 source_string := "";
                 range_string := "";
+                description := "an object in the range category of the homomorphism structure";
                 
             elif info.return_type = "morphism" then
                 
@@ -4229,6 +4127,7 @@ enhance_propositions := function ( propositions )
                 is_well_defined_category := "cat";
                 source_string := Concatenation( ", ", info.output_source_getter_string );
                 range_string := Concatenation( ", ", info.output_range_getter_string );
+                description := "a morphism";
                 
             elif info.return_type = "morphism_in_range_category_of_homomorphism_structure" then
                 
@@ -4236,6 +4135,7 @@ enhance_propositions := function ( propositions )
                 is_well_defined_category := "RangeCategoryOfHomomorphismStructure( cat )";
                 source_string := Concatenation( ", ", info.output_source_getter_string );
                 range_string := Concatenation( ", ", info.output_range_getter_string );
+                description := "a morphism in the range category of the homomorphism structure";
                 
             else
                 
@@ -4244,13 +4144,12 @@ enhance_propositions := function ( propositions )
             fi;
             
             lemma := rec(
+                description := Concatenation( "the ", specification.description, " defines ", description ),
                 input_types := info.filter_list,
                 func := EvalString( ReplacedStringViaRecord(
                     """function ( input_arguments... )
                         
-                        preconditions
-                        
-                        return is_well_defined( category source, operation( enhanced_arguments... ) range );
+                        return is_well_defined( category source, operation( op_arguments... ) range );
                         
                     end""",
                     rec(
@@ -4258,75 +4157,16 @@ enhance_propositions := function ( propositions )
                         category := is_well_defined_category,
                         operation := operation_name,
                         input_arguments := specification.input_arguments_names,
-                        enhanced_arguments := enhanced_arguments,
-                        preconditions := preconditions,
+                        op_arguments := specification.operation_arguments_names,
                         source := source_string,
                         range := range_string,
                     )
                 ) )
             );
             
-            if IsBound( specification.preconditions ) and not IsString( specification.preconditions ) then
-                
-                lemma.preconditions := specification.preconditions;
-                
-            fi;
+            lemma.preconditions := specification.preconditions;
             
             Add( prop.lemmata, lemma );
-            
-            ## check source and range (if required)
-            
-            #if info.return_type = "object" then
-            #    
-            #    # nothing to do
-            #
-            #elif info.return_type = "morphism" then
-            #    
-            #    Add( prop.lemmata, rec(
-            #        input_types := info.filter_list,
-            #        func := EvalString( ReplacedStringViaRecord(
-            #            """function ( input_arguments... )
-            #                
-            #                preconditions
-            #                
-            #                return IsEqualForObjects( cat, Source( operation( enhanced_arguments... ) ), output_source_getter );
-            #                
-            #            end""",
-            #            rec(
-            #                operation := operation_name,
-            #                output_source_getter := info.output_source_getter_string,
-            #                input_arguments := info.input_arguments_names,
-            #                enhanced_arguments := enhanced_arguments,
-            #                preconditions := preconditions,
-            #            )
-            #        ) )
-            #    ) );
-            #    
-            #    Add( prop.lemmata, rec(
-            #        input_types := info.filter_list,
-            #        func := EvalString( ReplacedStringViaRecord(
-            #            """function ( input_arguments... )
-            #                
-            #                preconditions
-            #                
-            #                return IsEqualForObjects( cat, Range( operation( enhanced_arguments... ) ), output_range_getter );
-            #                
-            #            end""",
-            #            rec(
-            #                operation := operation_name,
-            #                output_range_getter := info.output_range_getter_string,
-            #                input_arguments := info.input_arguments_names,
-            #                enhanced_arguments := enhanced_arguments,
-            #                preconditions := preconditions,
-            #            )
-            #        ) )
-            #    ) );
-            #    
-            #else
-            #    
-            #    Error( "return_type ", info.return_type, " is not supported yet when checking source and range" );
-            #    
-            #fi;
             
             if IsBound( specification.postconditions ) then
                 
@@ -4394,7 +4234,7 @@ StateProposition := function ( proposition_id, args... )
         
     else
         
-        Print( "Proposition: ", UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, ".\n\n" );
+        Print( "Proposition:\n", UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, ".\n" );
         
     fi;
     
@@ -4405,14 +4245,14 @@ StateNextLemma := function ( )
     
     if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail then
         
-        Display( "No active proposition." );
+        Print( "No active proposition.\n" );
         return;
         
     fi;
     
     if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
         
-        Display( "There already is an active lemma." );
+        Print( "There already is an active lemma.\n" );
         return;
         
     fi;
@@ -4421,7 +4261,7 @@ StateNextLemma := function ( )
     
     if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( lemmata ) then
         
-        Display( "All lemmata proven." );
+        Print( "All lemmata proven.\n" );
         return;
         
     fi;
@@ -4450,8 +4290,8 @@ StateNextLemma := function ( )
         
     else
         
-        Print( "Next lemma:\n" );
-        StateLemma( active_lemma.func, cat, active_lemma.input_types, preconditions );
+        Print( "\n\nLemma ", active_lemma_index, ":\n" );
+        StateLemma( active_lemma.description, active_lemma.func, cat, active_lemma.input_types, preconditions );
         
     fi;
     
