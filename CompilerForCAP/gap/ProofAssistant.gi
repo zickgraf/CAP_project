@@ -3007,7 +3007,7 @@ specifications := rec(
                 input_types := [ "category", "object", "object", "object", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, alpha, beta )
                     
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, PreCompose( cat, alpha, beta ), B );
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, PreCompose( cat, alpha, beta ), C );
                     
                 end,
                 preconditions := [
@@ -3173,11 +3173,19 @@ specifications := rec(
         ],
     ),
     ZeroMorphism := rec(
-        description := "",
-        postconditions := [
+        lemmata := [
             rec(
-                # zero is left-neutral
-                description := "",
+                description := "the zero morphism between two objects is a morphism",
+                input_types := [ "category", "object", "object" ],
+                func := function ( cat, A, B )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, ZeroMorphism( cat, A, B ), B );
+                    
+                end,
+                preconditions := [ ],
+            ),
+            rec(
+                description := "zero morphisms are left neutral",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3190,8 +3198,7 @@ specifications := rec(
                 ],
             ),
             rec(
-                # zero is right-neutral
-                description := "",
+                description := "zero morphisms are right neutral",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3206,11 +3213,22 @@ specifications := rec(
         ],
     ),
     AdditiveInverseForMorphisms := rec(
-        description := "",
-        postconditions := [
+        lemmata := [
             rec(
-                # additive inverse is left-inverse
-                description := "",
+                description := "the additive inverse of a morphism defines a morphism",
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, AdditiveInverseForMorphisms( cat, alpha ), B );
+                    
+                end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
+            ),
+            rec(
+                description := "additive inverses are left inverse",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3223,8 +3241,7 @@ specifications := rec(
                 ],
             ),
             rec(
-                # additive inverse is right-inverse
-                description := "",
+                description := "additive inverses are right inverse",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3239,11 +3256,22 @@ specifications := rec(
         ],
     ),
     MultiplyWithElementOfCommutativeRingForMorphisms := rec(
-        description := "",
-        postconditions := [
-            # multiplication is associative
+        lemmata := [
             rec(
-                description := "",
+                description := "multiplying a morphism by a ring element defines a morphism",
+                input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism" ],
+                func := function ( cat, A, B, r, alpha )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), B );
+                    
+                end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
+            ),
+            rec(
+                description := "multiplication with ring elements is associative",
                 input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
                 func := function ( cat, A, B, r, s, alpha )
                     
@@ -3255,9 +3283,8 @@ specifications := rec(
                     rec( src_template := "Range( alpha )", dst_template := "B" ),
                 ],
             ),
-            # multiplication is distributive from the right
             rec(
-                description := "",
+                description := "composition distributes over the addition of ring elements",
                 input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
                 func := function ( cat, A, B, r, s, alpha )
                     
@@ -3269,9 +3296,8 @@ specifications := rec(
                     rec( src_template := "Range( alpha )", dst_template := "B" ),
                 ],
             ),
-            # multiplication is distributive from the left
             rec(
-                description := "",
+                description := "ring multiplication distributes over the addition of morphisms",
                 input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := function ( cat, A, B, r, alpha, beta )
                     
@@ -3285,9 +3311,8 @@ specifications := rec(
                     rec( src_template := "Range( beta )", dst_template := "B" ),
                 ],
             ),
-            # multiplication has a neutral element
             rec(
-                description := "",
+                description := "multiplication with ring elements has a neutral element",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3299,9 +3324,8 @@ specifications := rec(
                     rec( src_template := "Range( alpha )", dst_template := "B" ),
                 ],
             ),
-            # composition is linear with regard to multiplication in the first component
             rec(
-                description := "",
+                description := "composition is linear in the first component",
                 input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, r, alpha, beta )
                     
@@ -3315,9 +3339,8 @@ specifications := rec(
                     rec( src_template := "Range( beta )", dst_template := "C" ),
                 ],
             ),
-            # composition is linear with regard to multiplication in the second component
             rec(
-                description := "",
+                description := "composition is linear in the second component",
                 input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, r, alpha, beta )
                     
@@ -3334,13 +3357,33 @@ specifications := rec(
         ],
     ),
     ZeroObject := rec(
-        description := "",
+        lemmata := [
+            rec(
+                description := "the zero object is an object",
+                input_types := [ "category" ],
+                func := function ( cat )
+                    
+                    return IsWellDefinedForObjects( cat, ZeroObject( cat ) );
+                    
+                end,
+                preconditions := [ ],
+            ),
+        ],
     ),
     UniversalMorphismIntoZeroObject := rec(
-        description := "",
-        postconditions := [
+        lemmata := [
             rec(
-                description := "",
+                description := "the universal morphism into the zero objects defines a morphism",
+                input_types := [ "category", "object" ],
+                func := function ( cat, A )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, UniversalMorphismIntoZeroObject( cat, A ), ZeroObject( cat ) );
+                    
+                end,
+                preconditions := [ ],
+            ),
+            rec(
+                description := "the universal morphism into the zero object is unique",
                 input_types := [ "category", "object", "morphism" ],
                 func := function ( cat, A, u )
                     
@@ -3358,10 +3401,19 @@ specifications := rec(
         ],
     ),
     UniversalMorphismFromZeroObject := rec(
-        description := "",
-        postconditions := [
+        lemmata := [
             rec(
-                description := "",
+                description := "the universal morphism from the zero objects defines a morphism",
+                input_types := [ "category", "object" ],
+                func := function ( cat, B )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, ZeroObject( cat ), UniversalMorphismFromZeroObject( cat, B ), B );
+                    
+                end,
+                preconditions := [ ],
+            ),
+            rec(
+                description := "the universal morphism from the zero object is unique",
                 input_types := [ "category", "object", "morphism" ],
                 func := function ( cat, B, u )
                     
@@ -3379,17 +3431,57 @@ specifications := rec(
         ],
     ),
     DistinguishedObjectOfHomomorphismStructure := rec(
-        description := "",
+        lemmata := [
+            rec(
+                description := "the distinguished object is an object in the range category of the homomorphism structure",
+                input_types := [ "category" ],
+                func := function ( cat )
+                    
+                    return IsWellDefinedForObjects( RangeCategoryOfHomomorphismStructure( cat ), DistinguishedObjectOfHomomorphismStructure( cat ) );
+                    
+                end,
+                preconditions := [ ],
+            ),
+        ],
     ),
     HomomorphismStructureOnObjects := rec(
-        description := "",
+        lemmata := [
+            rec(
+                description := "the homomorphism structure on objects defines an object in the range category of the homomorphism structure",
+                input_types := [ "category", "object", "object" ],
+                func := function ( cat, A, B )
+                    
+                    return IsWellDefinedForObjects( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnObjects( cat, A, B ) );
+                    
+                end,
+                preconditions := [ ],
+            ),
+        ],
     ),
     HomomorphismStructureOnMorphisms := rec(
-        description := "",
-        postconditions := [
+        lemmata := [
+            rec(
+                description := "the homomorphism structure on morphisms defines a morphism in the range category of the homomorphism structure",
+                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism" ],
+                func := function ( cat, A, B, C, D, alpha, beta )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( RangeCategoryOfHomomorphismStructure( cat ),
+                        HomomorphismStructureOnObjects( cat, B, C ),
+                        HomomorphismStructureOnMorphisms( cat, alpha, beta ),
+                        HomomorphismStructureOnObjects( cat, A, D )
+                    );
+                    
+                end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                    rec( src_template := "Source( beta )", dst_template := "C" ),
+                    rec( src_template := "Range( beta )", dst_template := "D" ),
+                ],
+            ),
             # H( id, id ) = id
             rec(
-                description := "",
+                description := "the homomorphism structure preserves identities",
                 input_types := [ "category", "object", "object" ],
                 func := function ( cat, A, B )
                     
@@ -3402,7 +3494,7 @@ specifications := rec(
             ),
             # H( α₁, β₁ ) ⋅ H( α₂, β₂ ) = H( α₂ ⋅ α₁, β₁ ⋅ β₂ )
             rec(
-                description := "",
+                description := "the homomorphism structure is compatible with composition",
                 input_types := [ "category", "object", "object", "object", "object", "object", "object", "morphism", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, E, F, alpha_1, alpha_2, beta_1, beta_2 )
                     
@@ -3426,7 +3518,7 @@ specifications := rec(
             ),
             # H( α₁, β ) + H( α₂, β ) = H( α₁ + α₂, β )
             rec(
-                description := "",
+                description := "the homomorphism structue is additive in the first component",
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha_1, alpha_2, beta )
                     
@@ -3449,7 +3541,7 @@ specifications := rec(
             ),
             # H( α, β₁ ) + H( α, β₂ ) = H( α, β₁ + β₂ )
             rec(
-                description := "",
+                description := "the homomorphism structure is additive in the second component",
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha, beta_1, beta_2 )
                     
@@ -3473,20 +3565,49 @@ specifications := rec(
         ],
     ),
     InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure := rec(
-        description := "",
-        postconditions := [ ], # see InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism
+        lemmata := [
+            rec(
+                description := "interpreting a morphism as a morphism from the distinguished object defines a morphism in the range category of the homomorphism structure",
+                input_types := [ "category", "object", "object", "morphism" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( RangeCategoryOfHomomorphismStructure( cat ),
+                        DistinguishedObjectOfHomomorphismStructure( cat ),
+                        InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, alpha ),
+                        HomomorphismStructureOnObjects( cat, A, B )
+                    );
+                    
+                end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "A" ),
+                    rec( src_template := "Range( alpha )", dst_template := "B" ),
+                ],
+            ),
+            # for more, see InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism
+        ],
     ),
     InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism := rec(
-        description := "",
-        input_arguments_names := [ "cat", "source", "range", "alpha" ],
-        preconditions := [
-            rec( src_template := "Source( alpha )", dst_template := "DistinguishedObjectOfHomomorphismStructure( cat )" ),
-            rec( src_template := "Range( alpha )", dst_template := "HomomorphismStructureOnObjects( cat, source, range )" ),
-        ],
-        postconditions := [
+        lemmata := [
+            rec(
+                description := "reinterpreting a morphism from the distinguished morphism as a usual morphism defines a morphism",
+                input_types := [ "category", "object", "object", "morphism_in_range_category_of_homomorphism_structure" ],
+                func := function ( cat, A, B, alpha )
+                    
+                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat,
+                        A,
+                        InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, A, B, alpha ),
+                        B
+                    );
+                    
+                end,
+                preconditions := [
+                    rec( src_template := "Source( alpha )", dst_template := "DistinguishedObjectOfHomomorphismStructure( cat )" ),
+                    rec( src_template := "Range( alpha )", dst_template := "HomomorphismStructureOnObjects( cat, A, B )" ),
+                ],
+            ),
             rec(
                 # ν⁻¹(ν(α)) = α
-                description := "",
+                description := "interpreting morphisms as morphisms from the distinguished object is an injective operation",
                 input_types := [ "category", "object", "object", "morphism" ],
                 func := function ( cat, A, B, alpha )
                     
@@ -3503,7 +3624,7 @@ specifications := rec(
             ),
             rec(
                 # ν(ν⁻¹(α)) = α
-                description := "",
+                description := "interpreting morphisms as morphisms from the distinguished object is a surjective operation",
                 input_types := [ "category", "object", "object", "morphism_in_range_category_of_homomorphism_structure" ],
                 func := function ( cat, S, T, alpha )
                     
@@ -3520,7 +3641,7 @@ specifications := rec(
             ),
             rec(
                 # naturality of ν: ν(α ⋅ ξ ⋅ β) = ν(ξ) ⋅ H(α, β)
-                description := "",
+                description := "interpreting morphisms as morphisms from the distinguished object is a natural transformation",
                 input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, D, alpha, xi, beta )
                     
