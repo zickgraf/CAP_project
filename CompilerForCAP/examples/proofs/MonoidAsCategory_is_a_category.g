@@ -38,13 +38,6 @@ CapJitEnableProofAssistantMode( );
 statement := function ( cat, A, B, C, D, m, n, l )
   local left, right;
     
-    #CapJitAddLocalReplacement( Source( m ), A );
-    #CapJitAddLocalReplacement( Target( m ), B );
-    #CapJitAddLocalReplacement( Source( n ), B );
-    #CapJitAddLocalReplacement( Target( n ), C );
-    #CapJitAddLocalReplacement( Source( l ), C );
-    #CapJitAddLocalReplacement( Target( l ), D );
-    
     left := PreCompose( PreCompose( m, n ), l );
     
     right := PreCompose( m, PreCompose( n, l ) );
@@ -55,7 +48,19 @@ end;;
 
 SetActiveCategory( cat, "$\\boldsymbol{\\mathcal{C}}(\\mathbb{Z})$" ); # TODO
 
-StateLemma( statement, cat, [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ] );
+StateLemma(
+    statement,
+    cat,
+    [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
+    [
+        rec( src_template := "Source( m )", dst_template := "A" ),
+        rec( src_template := "Target( m )", dst_template := "B" ),
+        rec( src_template := "Source( n )", dst_template := "B" ),
+        rec( src_template := "Target( n )", dst_template := "C" ),
+        rec( src_template := "Source( l )", dst_template := "C" ),
+        rec( src_template := "Target( l )", dst_template := "D" ),
+    ]
+);
 
 ApplyLogicTemplateAndReturnLaTeXString(
     rec(
