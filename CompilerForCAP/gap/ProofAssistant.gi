@@ -3002,13 +3002,6 @@ StatePropositionAsLaTeX := function ( proposition_id, args... )
   local variable_name_translator, cat, cat_description, proposition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY <> fail );
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION = fail );
-    
-    if not IsBound( CAP_JIT_INTERNAL_PROOF_ASSISTANT_PROPOSITIONS.(proposition_id) ) then
-        
-        Error( "unknown proposition ", proposition_id );
-        
-    fi;
     
     if Length( args ) = 0 then
         
@@ -3020,35 +3013,24 @@ StatePropositionAsLaTeX := function ( proposition_id, args... )
         
     else
         
-        Error( "StateProposition accepts one or two arguments" );
+        Error( "StatePropositionAsLaTeX accepts one or two arguments" );
         
     fi;
     
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
     cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
     
-    proposition := CAP_JIT_INTERNAL_PROOF_ASSISTANT_PROPOSITIONS.(proposition_id);
+    StateProposition( cat, proposition_id );
     
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION := rec( );
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.description := proposition.description;
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.lemmata := Filtered( proposition.lemmata, l -> not IsBound( l.category_filter ) or Tester( l.category_filter )( cat ) and l.category_filter( cat ) );
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.active_lemma_index := 0;
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
     
+    proposition := CAP_JIT_INTERNAL_PROOF_ASSISTANT_PROPOSITIONS.(proposition_id);
     
-    if LATEX_OUTPUT then
-        
-        return Concatenation(
-            "\\begin{proposition}\n",
-            UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, ".\n",
-            "\\end{proposition}"
-        );
-        
-    else
-        
-        Print( "Proposition:\n", UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, ".\n" );
-        
-    fi;
+    return Concatenation(
+        "\\begin{proposition}\n",
+        UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, ".\n",
+        "\\end{proposition}"
+    );
     
 end;
 
