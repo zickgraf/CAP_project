@@ -2297,6 +2297,7 @@ InstallMethod( StateProposition,
         claim_string := claim_string,
         lemmata := Filtered( proposition.lemmata, l -> not IsBound( l.category_filter ) or (Tester( l.category_filter )( cat ) and l.category_filter( cat )) ),
         active_lemma_index := 0,
+        description := proposition.description,
     );
     
     Print( "Proposition:\n" );
@@ -2405,88 +2406,14 @@ end );
 CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool );
 
 
-LATEX_OUTPUT := false;
-
-
-BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditions )
+BindGlobal( "StateLemmaAsLaTeX", function ( description, func, cat, input_filters, preconditions )
   local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, function_string, i, j, condition;
     
-    if not CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "please enable proof assistant mode with `CapJitEnableProofAssistantMode` before using `StateLemma`; if you 'return;', proof assistant mode will be now be enabled automatically" );
-        CapJitEnableProofAssistantMode( );
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
+    StateLemma( description, func, cat, input_filters, preconditions );
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ENABLED );
+    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
     
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
-        
-        # COVERAGE_IGNORE_NEXT_LINE
-        Error( "there already is an active lemma; if you 'return;' it will be overwritten" );
-        
-    fi;
-    
-    if IsEmpty( input_filters ) or input_filters[1] <> "category" then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "input filters must not be empty and the first filter must be \"category\"" );
-        return;
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := rec(
-        claim := func,
-        category := cat,
-        input_filters := input_filters,
-        local_replacements := [ ],
-    );
-    
-    Add( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK, func );
-    
-    tree := ENHANCED_SYNTAX_TREE( func : given_arguments := [ cat ] );
-    
-    for replacement in preconditions do
-        
-        # src_template
-        Assert( 0, input_filters[1] = "category" );
-        
-        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.src_template ) ) : given_arguments := [ cat ] );
-        
-        tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
-        
-        Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
-        
-        src_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
-        
-        # dst_template
-        Assert( 0, input_filters[1] = "category" );
-        
-        tmp_tree := ENHANCED_SYNTAX_TREE( EvalStringStrict( Concatenation( "{ ", JoinStringsWithSeparator( tree.nams{[ 1 .. tree.narg ]}, ", " ), " } -> ", replacement.dst_template ) ) : given_arguments := [ cat ] );
-        
-        tmp_tree := CAP_JIT_INTERNAL_REPLACED_FVARS_FUNC_ID( tmp_tree, tree.id, tmp_tree.nams );
-        
-        Assert( 0, tmp_tree.bindings.names = [ "RETURN_VALUE" ] );
-        
-        dst_template_tree := CapJitValueOfBinding( tmp_tree.bindings, "RETURN_VALUE" );
-        
-        Add( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements, rec(
-            src_template := replacement.src_template,
-            src_template_tree := src_template_tree,
-            dst_template := replacement.dst_template,
-            dst_template_tree := dst_template_tree,
-        ) );
-        
-    od;
-    
-    local_replacements := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements;
-    
-    #local_replacements := ShallowCopy( tree.local_replacements );
-    
-    #CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements := ShallowCopy( local_replacements );
+    local_replacements := ShallowCopy( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements );
     
     if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
         
@@ -2618,6 +2545,8 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
                     
                     local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
                     
+                    Display( to_remove );
+                    
                 fi;
                 
                 name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
@@ -2722,7 +2651,9 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
         
     fi;
     
-    if not IsEmpty( local_replacements ) then
+    if false and not IsEmpty( local_replacements ) then
+        
+        Error( "currently not supported anymore" );
         
         condition_func := StructuralCopy( tree );
         
@@ -2824,40 +2755,7 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
         "\\end{lemma}"
     );
     
-    
-    
-    
-    
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.func_id := tree.id;
-    
-    Assert( 0, input_filters[1] = "category" );
-    Assert( 0, Length( input_filters ) = tree.narg );
-    
-    arguments_data_types := CAP_INTERNAL_GET_DATA_TYPES_FROM_STRINGS( input_filters, cat );
-    
-    Assert( 0, not fail in arguments_data_types );
-    
-    type_signature := Pair( arguments_data_types, rec( filter := IsBool ) );
-    tree.data_type := rec(
-        filter := IsFunction,
-        signature := type_signature,
-    );
-    
-    tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
-    
-    function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( tree ) );
-    
-    if PositionSublist( function_string, "CAP_JIT_INTERNAL_GLOBAL_VARIABLE_" ) <> fail then
-        
-        # COVERAGE_IGNORE_NEXT_LINE
-        Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
-        
-    fi;
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := tree;
-    
-    if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
         
         latex_string := Concatenation(
             latex_string, "\n\n",
@@ -2866,22 +2764,9 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
             "\\end{proof}\n"
         );
         
-        CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
-        
-        Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
-        
     fi;
     
-    if LATEX_OUTPUT then
-        
-        return latex_string;
-        
-    else
-        
-        Display( func );
-        return "";
-        
-    fi;
+    return latex_string;
     
 end );
 
@@ -2945,16 +2830,7 @@ BindGlobal( "PrintLemmaAsLaTeXString", function ( args... )
     
     #latex_string := Concatenation( "\\text{(claim)}\\quad ", latex_string );
     
-    if LATEX_OUTPUT then
-        
-        return latex_string;
-        
-    else
-        
-        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
-        return "";
-        
-    fi;
+    return latex_string;
     
 end );
 
@@ -2963,9 +2839,6 @@ BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template,
   local latex_string;
     
     ApplyLogicTemplate( logic_template );
-    
-    # TODO
-    return "";
     
     latex_string := CallFuncList( CapJitLaTeXStringOfLogicTemplate, Concatenation( [ logic_template ], args ) );
     
@@ -3072,211 +2945,28 @@ StateNextLemmaAsLaTeX := function ( )
     
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
     
-    if LATEX_OUTPUT then
-        
-        return StateLemmaAsLaTeX( active_lemma.func, cat, active_lemma.input_types, lemmata[active_lemma_index].preconditions );
-        
-    else
-        
-        Print( "\n\nLemma ", active_lemma_index, ":\n" );
-        StateLemma( active_lemma.description, active_lemma.func, cat, active_lemma.input_types, lemmata[active_lemma_index].preconditions );
-        
-    fi;
+    return StateLemmaAsLaTeX( active_lemma.description, active_lemma.func, cat, active_lemma.input_types, active_lemma.preconditions );
     
 end;
 
 AssertPropositionAndReturnLaTeXString := function ( )
-    local cat_description, proposition_description;
-    
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION = fail then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "no active proposition, you can 'return;' to bail out" );
-        return;
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
-    
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "there already is an active unproven lemma, you can 'return;' to bail out" );
-        return;
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
-    
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.lemmata ) then
-        
-        # COVERAGE_IGNORE_BLOCK_START
-        Error( "not all lemmata proven, you can 'return;' to bail out" );
-        return;
-        # COVERAGE_IGNORE_BLOCK_END
-        
-    fi;
+  local cat_description, proposition_description;
     
     cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
     proposition_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.description;
     
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION := fail;
+    AssertProposition( );
     
     return Concatenation(
-        "With this, we have shown:\n",
+        "Summing up, we have shown:\n",
         UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition_description, ".\\qed\n"
     );
     
 end;
 
 AttestValidInputsAndReturnLaTeXString := function ( )
-  local tree, cat, pre_func, old_tree, function_string;
     
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
-    
-    tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
-    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category;
-    
-    # assert that the tree is well-typed
-    Assert( 0, IsBound( tree.bindings.BINDING_RETURN_VALUE.data_type ) );
-    
-    pre_func := function ( tree, additional_arguments )
-      local category, source, morphism, range, attribute, ring;
-        
-        # properties like IsZeroForMorphisms can be applied to applied to two arguments, a category and a morphism
-        if CapJitIsCallToGlobalFunction( tree, x -> IsFilter( ValueGlobal( x ) ) ) and tree.args.length = 1 then
-            
-            if IsSpecializationOfFilter( ValueGlobal( tree.funcref.gvar ), tree.args.1.data_type.filter ) then
-                
-                return rec( type := "EXPR_TRUE" );
-                
-            fi;
-            
-            # We do not want to return `false` in the `else` case, for example because `IsList( Pair( 1, 2 ) )` is `true` but `IsNTuple` does not imply `IsList`.
-            
-        fi;
-        
-        if CapJitIsCallToGlobalFunction( tree, "IsWellDefinedForObjects" ) and tree.args.length = 2 then
-            
-            Assert( 0, IsSpecializationOfFilter( "category", tree.args.1.data_type.filter ) );
-            Assert( 0, IsSpecializationOfFilter( ObjectFilter( tree.args.1.data_type.category ), tree.args.2.data_type.filter ) );
-            
-            return rec( type := "EXPR_TRUE" );
-            
-        fi;
-        
-        if CapJitIsCallToGlobalFunction( tree, "IsWellDefinedForMorphismsWithGivenSourceAndRange" ) and tree.args.length = 4 then
-            
-            Assert( 0, IsSpecializationOfFilter( "category", tree.args.1.data_type.filter ) );
-            Assert( 0, IsSpecializationOfFilter( MorphismFilter( tree.args.1.data_type.category ), tree.args.3.data_type.filter ) );
-            
-            category := tree.args.1;
-            source := tree.args.2;
-            morphism := tree.args.3;
-            range := tree.args.4;
-            
-            # IsEqualForObjects( category, Source( morphism ), source )
-            return rec(
-                type := "EXPR_AND",
-                left := rec(
-                    type := "EXPR_FUNCCALL",
-                    funcref := rec(
-                        type := "EXPR_REF_GVAR",
-                        gvar := "IsEqualForObjects",
-                    ),
-                    args := AsSyntaxTreeList( [
-                        CapJitCopyWithNewFunctionIDs( category ),
-                        rec(
-                            type := "EXPR_FUNCCALL",
-                            funcref := rec(
-                                type := "EXPR_REF_GVAR",
-                                gvar := "Source",
-                            ),
-                            args := AsSyntaxTreeList( [
-                                CapJitCopyWithNewFunctionIDs( morphism ),
-                            ] ),
-                        ),
-                        source,
-                    ] ),
-                ),
-                right := rec(
-                    type := "EXPR_FUNCCALL",
-                    funcref := rec(
-                        type := "EXPR_REF_GVAR",
-                        gvar := "IsEqualForObjects",
-                    ),
-                    args := AsSyntaxTreeList( [
-                        CapJitCopyWithNewFunctionIDs( category ),
-                        rec(
-                            type := "EXPR_FUNCCALL",
-                            funcref := rec(
-                                type := "EXPR_REF_GVAR",
-                                gvar := "Range",
-                            ),
-                            args := AsSyntaxTreeList( [
-                                CapJitCopyWithNewFunctionIDs( morphism ),
-                            ] ),
-                        ),
-                        range,
-                    ] ),
-                ),
-            );
-            
-        fi;
-        
-        # `in` for rings corresponds to `IsWellDefined` for categories
-        if tree.type = "EXPR_IN" and IsSpecializationOfFilter( IsRingElement, tree.left.data_type.filter ) and IsSpecializationOfFilter( IsRing, tree.right.data_type.filter ) then
-            
-            # In the future, the ring should be part of the data type.
-            # For now, we can only consider attributes of categories.
-            if CapJitIsCallToGlobalFunction( tree.right, gvar -> true ) and tree.right.args.length = 1 and IsSpecializationOfFilter( "category", tree.right.args.1.data_type.filter ) then
-                
-                category := tree.right.args.1.data_type.category;
-                
-                attribute := ValueGlobal( tree.right.funcref.gvar );
-                
-                ring := attribute( category );
-                
-                Assert( 0, IsRing( ring ) );
-                
-                if HasRingElementFilter( ring ) and IsSpecializationOfFilter( RingElementFilter( ring ), tree.left.data_type.filter ) then
-                    
-                    return rec( type := "EXPR_TRUE" );
-                    
-                fi;
-                
-                # we are conservative and do not return `false` for now if the filter does not match
-                
-            fi;
-            
-        fi;
-        
-        return tree;
-        
-    end;
-    
-    old_tree := StructuralCopy( tree );
-    
-    tree := CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
-    
-    if CapJitIsEqualForEnhancedSyntaxTrees( old_tree, tree ) then
-        
-        Display( ENHANCED_SYNTAX_TREE_CODE( tree ) );
-        
-        Error( "attesting valid inputs did not change the tree, you can 'return;' to continue" );
-        
-    fi;
-    
-    tree := CAP_JIT_INTERNAL_COMPILED_ENHANCED_SYNTAX_TREE( tree, "with_post_processing", cat );
-    
-    function_string := CapJitPrettyPrintFunction( ENHANCED_SYNTAX_TREE_CODE( tree ) );
-    
-    if PositionSublist( function_string, "CAP_JIT_INTERNAL_GLOBAL_VARIABLE_" ) <> fail then
-        
-        # COVERAGE_IGNORE_NEXT_LINE
-        Error( "Could not get rid of all global variables, see <function_string>. You should use compiler_hints.category_attribute_names." );
-        
-    fi;
-    
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree := tree;
+    AttestValidInputs( );
     
     return "We let CompilerForCAP assume that all inputs are valid.";
     
