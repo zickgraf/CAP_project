@@ -17,7 +17,7 @@ CapJitEnableProofAssistantMode( );
 
 SetActiveCategory( cat, "the category defined by a $k$-algebra $R$" );
 
-StateProposition( "is_linear_category" );;
+StatePropositionAsLaTeX( "is_equipped_with_linear_structure" );;
 
 # MultiplyWithElementOfCommutativeRingForMorphisms is well-defined
 StateNextLemma( );

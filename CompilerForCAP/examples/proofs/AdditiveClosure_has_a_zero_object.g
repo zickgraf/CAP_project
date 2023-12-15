@@ -42,7 +42,7 @@ SetActiveCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive
     ),
 ] );
 
-StateProposition( "has_zero_object", function ( name )
+StatePropositionAsLaTeX( "has_zero_object", function ( name )
     
     if name = "alpha" then
         
