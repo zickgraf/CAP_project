@@ -95,14 +95,14 @@ StatePropositionAsLaTeX( "is_category", function ( name )
 end );
 
 # PreCompose well-defined
-StateNextLemma( );
+StateNextLemmaAsLaTeX( );
 
-AttestValidInputs( );
+AttestValidInputsAndReturnLaTeXString( );
 
 AssertLemma( );
 
 # PreCompose associative
-StateNextLemma( );
+StateNextLemmaAsLaTeX( );
 
 # PreCompose is additive in the first component
 ApplyLogicTemplateAndReturnLaTeXString(
@@ -166,9 +166,9 @@ ApplyLogicTemplateAndReturnLaTeXString(
 AssertLemma( );
 
 # IdentityMorphism well-defined
-StateNextLemma( );
+StateNextLemmaAsLaTeX( );
 
-AttestValidInputs( );
+AttestValidInputsAndReturnLaTeXString( );
 
 # if and else cases match
 ApplyLogicTemplateAndReturnLaTeXString(
@@ -183,7 +183,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
 AssertLemma( );
 
 # IdentityMorphism left-neutral
-StateNextLemma( );
+StateNextLemmaAsLaTeX( );
 
 # pull PreCompose into case distinction
 ApplyLogicTemplateAndReturnLaTeXString(
@@ -270,7 +270,7 @@ ApplyLogicTemplateAndReturnLaTeXString(
 AssertLemma( );
 
 # IdentityMorphism right-neutral
-StateNextLemma( );
+StateNextLemmaAsLaTeX( );
 
 # PreCompose( alpha, KroneckerDelta( ... ) )
 ApplyLogicTemplate(
@@ -354,4 +354,4 @@ AssertLemma( );
 
 
 
-AssertProposition( );
+AssertPropositionAndReturnLaTeXString( );
