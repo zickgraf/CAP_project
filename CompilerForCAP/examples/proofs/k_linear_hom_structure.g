@@ -36,13 +36,14 @@ AddCoefficientsOfMorphism( dummy, function ( cat, alpha )
 end );
 Finalize( dummy );
 
+# set a human readable name
+dummy!.Name := "any linear category with finitely generated free external homs";
+
 LoadPackage( "CompilerForCAP", false : OnlyNeeded );
 
 CapJitEnableProofAssistantMode( );
 
 StopCompilationAtPrimitivelyInstalledOperationsOfCategory( dummy );
-
-SetActiveCategory( dummy, "a linear category with finitely generated free external homs" );
 
 Assert( 0, CanCompute( dummy, "DistinguishedObjectOfHomomorphismStructure" ) );
 Assert( 0, CanCompute( dummy, "HomomorphismStructureOnObjects" ) );
@@ -50,11 +51,14 @@ Assert( 0, CanCompute( dummy, "HomomorphismStructureOnMorphisms" ) );
 Assert( 0, CanCompute( dummy, "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure" ) );
 Assert( 0, CanCompute( dummy, "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" ) );
 
-StateProposition( "is_equipped_with_hom_structure" );;
+#
+StateProposition( dummy, "is_equipped_with_hom_structure" );;
 
 # DistinguishedObjectOfHomomorphismStructure is well-defined
 
 StateNextLemma( );
+
+PrintLemma( );
 
 AttestValidInputs( );
 
@@ -71,6 +75,8 @@ AssertLemma( );
 # HomomorphismStructureOnObjects is well-defined
 StateNextLemma( );
 
+PrintLemma( );
+
 AttestValidInputs( );
 
 ApplyLogicTemplate(
@@ -86,6 +92,8 @@ AssertLemma( );
 
 # HomomorphismStructureOnMorphisms is well-defined
 StateNextLemma( );
+
+PrintLemma( );
 
 AttestValidInputs( );
 
@@ -185,6 +193,7 @@ ApplyLogicTemplate(
 ApplyLogicTemplate(
     rec(
         variable_names := [ "list1", "func1", "list2", "func2" ],
+        variable_filters := [ IsList, IsFunction, IsList, IsFunction ],
         src_template := "List( list1, func1 ) = List( list2, func2 )",
         dst_template := "Length( list1 ) = Length( list2 ) and ForAll( [ 1 .. Length( list1 ) ], i -> func1( list1[i] ) = func2( list2[i] ) )",
         new_funcs := [ [ "i" ] ],
@@ -234,8 +243,8 @@ ApplyLogicTemplate(
 # composition is linear
 ApplyLogicTemplate(
     rec(
-        variable_names := [ "cat", "A", "B", "source", "list", "alpha", "list2", "gamma", "target", "coeffs" ],
-        src_template := "LinearCombinationOfMorphisms( cat, source, coeffs, List( list, k -> PreComposeList( cat, A, [ alpha, list2[k], gamma ], B ) ), target )",
+        variable_names := [ "cat", "A", "B", "list", "alpha", "list2", "gamma", "coeffs" ],
+        src_template := "LinearCombinationOfMorphisms( cat, A, coeffs, List( list, k -> PreComposeList( cat, A, [ alpha, list2[k], gamma ], B ) ), B )",
         dst_template := "PreComposeList( cat, A, [ alpha, LinearCombinationOfMorphisms( cat, Target( alpha ), coeffs, list2, Source( gamma ) ), gamma ], B )",
     )
 );
@@ -275,7 +284,7 @@ ApplyLogicTemplate(
     rec(
         variable_names := [ "list_list1", "nr_rows", "nr_cols", "ring", "list_list2" ],
         src_template := "HomalgMatrixListList( list_list1, nr_rows, nr_cols, ring ) + HomalgMatrixListList( list_list2, nr_rows, nr_cols, ring )",
-        dst_template := "HomalgMatrixListList( List( [ 1 .. nr_rows ], i -> List( [ 1 .. nr_cols ], j -> list_list1[i][j] + list_list2[i][j] ) ) , nr_rows, nr_cols, ring )",
+        dst_template := "HomalgMatrixListList( List( [ 1 .. nr_rows ], i -> List( [ 1 .. nr_cols ], j -> list_list1[i][j] + list_list2[i][j] ) ), nr_rows, nr_cols, ring )",
         new_funcs := [ [ "i" ], [ "j" ] ],
     )
 );
@@ -283,9 +292,9 @@ ApplyLogicTemplate(
 # CoefficientsOfMorphism is linear
 ApplyLogicTemplate(
     rec(
-        variable_names := [ "cat", "mor1", "j", "mor2" ],
-        src_template := "CoefficientsOfMorphism( cat, mor1 )[j] + CoefficientsOfMorphism( cat, mor2 )[j]",
-        dst_template := "CoefficientsOfMorphism( cat, AdditionForMorphisms( cat, mor1, mor2 ) )[j]",
+        variable_names := [ "cat", "j", "A", "B", "list1", "list2" ],
+        src_template := "CoefficientsOfMorphism( cat, PreComposeList( cat, A, list1, B ) )[j] + CoefficientsOfMorphism( cat, PreComposeList( cat, A, list2, B ) )[j]",
+        dst_template := "CoefficientsOfMorphism( cat, AdditionForMorphisms( cat, PreComposeList( cat, A, list1, B ), PreComposeList( cat, A, list2, B ) ) )[j]",
     )
 );
 
@@ -311,6 +320,7 @@ ApplyLogicTemplate(
 ApplyLogicTemplate(
     rec(
         variable_names := [ "list1", "func1", "list2", "func2" ],
+        variable_filters := [ IsList, IsFunction, IsList, IsFunction ],
         src_template := "List( list1, func1 ) = List( list2, func2 )",
         dst_template := "Length( list1 ) = Length( list2 ) and ForAll( [ 1 .. Length( list1 ) ], i -> func1( list1[i] ) = func2( list2[i] ) )",
         new_funcs := [ [ "i" ] ],
@@ -369,11 +379,12 @@ ApplyLogicTemplate(
 # CoefficientsOfMorphism is linear
 ApplyLogicTemplate(
     rec(
-        variable_names := [ "cat", "mor1", "j", "mor2" ],
-        src_template := "CoefficientsOfMorphism( cat, mor1 )[j] + CoefficientsOfMorphism( cat, mor2 )[j]",
-        dst_template := "CoefficientsOfMorphism( cat, AdditionForMorphisms( cat, mor1, mor2 ) )[j]",
+        variable_names := [ "cat", "j", "A", "B", "list1", "list2" ],
+        src_template := "CoefficientsOfMorphism( cat, PreComposeList( cat, A, list1, B ) )[j] + CoefficientsOfMorphism( cat, PreComposeList( cat, A, list2, B ) )[j]",
+        dst_template := "CoefficientsOfMorphism( cat, AdditionForMorphisms( cat, PreComposeList( cat, A, list1, B ), PreComposeList( cat, A, list2, B ) ) )[j]",
     )
 );
+
 
 # PreComposeList is linear
 ApplyLogicTemplate(
@@ -439,6 +450,8 @@ AssertLemma( );
 # InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure well-defined
 StateNextLemma( );
 
+PrintLemma( );
+
 AttestValidInputs( );
 
 ApplyLogicTemplate(
@@ -463,6 +476,8 @@ AssertLemma( );
 # InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism well-defined
 StateNextLemma( );
 
+PrintLemma( );
+
 AttestValidInputs( );
 
 AssertLemma( );
@@ -481,11 +496,14 @@ ApplyLogicTemplate(
     )
 );
 
+PrintLemma( );
+
 # linear combination with basis
+# CONDITION: only if alpha : A -> B
 ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "alpha" ],
-        src_template := "LinearCombinationOfMorphisms( cat, A, CoefficientsOfMorphism( cat, alpha ), BasisOfExternalHom( cat, A, B ), B )", # FIXME: only if alpha : A -> B
+        src_template := "LinearCombinationOfMorphisms( cat, A, CoefficientsOfMorphism( cat, alpha ), BasisOfExternalHom( cat, A, B ), B )",
         dst_template := "alpha",
     )
 );
@@ -588,14 +606,17 @@ ApplyLogicTemplate(
     )
 );
 
+PrintLemma( );
+
 # CoefficientsOfMorphism * BasisOfExternalHom
+# CONDITION: only if mor : A -> B
 ApplyLogicTemplate(
     rec(
         variable_names := [ "cat", "A", "B", "mor" ],
         src_template := """
             LinearCombinationOfMorphisms( cat,
                 A,
-                List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> CoefficientsOfMorphism( cat, mor )[j] ), # FIXME
+                List( [ 1 .. Length( BasisOfExternalHom( cat, A, B ) ) ], j -> CoefficientsOfMorphism( cat, mor )[j] ),
                 BasisOfExternalHom( cat, A, B ),
                 B
             )
@@ -606,6 +627,8 @@ ApplyLogicTemplate(
 
 AssertLemma( );
 
+# all lemmata proven
+StateNextLemma( );
 
 #
 AssertProposition( );
