@@ -1012,6 +1012,7 @@ CapJitAddTypeSignature( "Target", [ IsCapCategoryMorphism ], function ( input_ty
 end );
 
 # GAP operations
+CapJitAddTypeSignature( "=", [ IsObject, IsObject ], IsBool );
 CapJitAddTypeSignature( "RETURN_TRUE", [ IsObject, IsObject ], IsBool );
 CapJitAddTypeSignature( "Length", [ IsList ], IsInt );
 CapJitAddTypeSignature( "IsEmpty", [ IsList ], IsBool );
@@ -1664,6 +1665,7 @@ CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "HomalgColumnVector", [ "Is
     return rec( filter := IsHomalgMatrix );
     
 end""" );
+CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "HomalgRing", [ "IsHomalgMatrix" ], "IsHomalgRing" );
 CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "HomalgIdentityMatrix", [ "IsInt", "IsHomalgRing" ], "IsHomalgMatrix" );
 CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "HomalgZeroMatrix", [ "IsInt", "IsInt", "IsHomalgRing" ], "IsHomalgMatrix" );
 CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "RandomMatrix", [ "IsInt", "IsInt", "IsHomalgRing" ], "IsHomalgMatrix" );
@@ -1677,6 +1679,8 @@ CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "CertainRows", [ "IsHomalgM
 CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "CertainColumns", [ "IsHomalgMatrix", "IsList" ], "IsHomalgMatrix" );
 CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "KroneckerMat", [ "IsHomalgMatrix", "IsHomalgMatrix" ], "IsHomalgMatrix" );
 CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "DualKroneckerMat", [ "IsHomalgMatrix", "IsHomalgMatrix" ], "IsHomalgMatrix" );
+CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "RightDivide", [ "IsHomalgMatrix", "IsHomalgMatrix" ], "IsHomalgMatrix" );
+CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "LeftDivide", [ "IsHomalgMatrix", "IsHomalgMatrix" ], "IsHomalgMatrix" );
 CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "SafeRightDivide", [ "IsHomalgMatrix", "IsHomalgMatrix" ], "IsHomalgMatrix" );
 CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "SafeLeftDivide", [ "IsHomalgMatrix", "IsHomalgMatrix" ], "IsHomalgMatrix" );
 CapJitAddTypeSignatureDeferred( "MatricesForHomalg", "UniqueRightDivide", [ "IsHomalgMatrix", "IsHomalgMatrix" ], "IsHomalgMatrix" );
