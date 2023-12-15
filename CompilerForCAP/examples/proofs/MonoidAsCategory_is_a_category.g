@@ -34,6 +34,42 @@ LoadPackage( "CompilerForCAP", false : OnlyNeeded );
 
 CapJitEnableProofAssistantMode( );
 
+# manual version
+statement := function ( cat, A, B, C, D, m, n, l )
+  local left, right;
+    
+    #CapJitAddLocalReplacement( Source( m ), A );
+    #CapJitAddLocalReplacement( Target( m ), B );
+    #CapJitAddLocalReplacement( Source( n ), B );
+    #CapJitAddLocalReplacement( Target( n ), C );
+    #CapJitAddLocalReplacement( Source( l ), C );
+    #CapJitAddLocalReplacement( Target( l ), D );
+    
+    left := PreCompose( PreCompose( m, n ), l );
+    
+    right := PreCompose( m, PreCompose( n, l ) );
+    
+    return IsCongruentForMorphisms( left, right );
+    
+end;;
+
+SetActiveCategory( cat, "$\\boldsymbol{\\mathcal{C}}(\\mathbb{Z})$" ); # TODO
+
+StateLemma( statement, cat, [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ] );
+
+ApplyLogicTemplateAndReturnLaTeXString(
+    rec(
+        variable_names := [ "a", "b", "c" ],
+        variable_filters := [ IsInt, IsInt, IsInt ],
+        src_template := "a * (b * c)",
+        dst_template := "(a * b) * c",
+    ),
+    cat, [ "integer", "integer", "integer" ], "=", "\\rlap{.}"
+);
+
+AssertLemma( );
+
+
 SetActiveCategory( cat, "$\\boldsymbol{\\mathcal{C}}(\\mathbb{Z})$" );
 
 StateProposition( "is_category" );
