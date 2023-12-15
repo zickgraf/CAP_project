@@ -1585,19 +1585,19 @@ FunctionAsMathString := function ( func, cat, input_filters, args... )
             
             name := tree.name;
             
-            if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
+            if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION <> fail then
                 
                 # TODO
                 if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                     
-                    name := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator( name );
+                    name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator( name );
                     
                 fi;
                 
                 # TODO
                 if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                     
-                    name := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator( name );
+                    name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator( name );
                     
                 fi;
                 

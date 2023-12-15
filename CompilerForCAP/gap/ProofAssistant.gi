@@ -2394,7 +2394,6 @@ end );
 
 
 
-
 #####
 
 BindGlobal( "IsJudgementallyEqual", function ( a, b )
@@ -2505,10 +2504,10 @@ BindGlobal( "StateLemmaAsLaTeX", function ( func, cat, input_filters, preconditi
     
     Assert( 0, Length( names ) >= Length( input_filters ) );
     
-    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION <> fail then
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION <> fail then
         
         # TODO: only names of things in the category
-        names := List( names, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator );
+        names := List( names, CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator );
         
     fi;
     
@@ -2999,845 +2998,13 @@ end );
 
 InstallDeprecatedAlias( "SetCurrentCategory", "SetActiveCategory", "2023" );
 
-specifications := rec(
-    PreCompose := rec(
-        lemmata := [
-            rec(
-                description := "the composite of two morphisms defines a morphism",
-                input_types := [ "category", "object", "object", "object", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, alpha, beta )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, PreCompose( cat, alpha, beta ), C );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "B" ),
-                    rec( src_template := "Range( beta )", dst_template := "C" ),
-                ],
-            ),
-            rec(
-                description := "composition is associative",
-                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, D, alpha, beta, gamma )
-                    
-                    return IsCongruentForMorphisms( cat, PreCompose( cat, PreCompose( cat, alpha, beta ), gamma ), PreCompose( cat, alpha, PreCompose( cat, beta, gamma ) ) );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "B" ),
-                    rec( src_template := "Range( beta )", dst_template := "C" ),
-                    rec( src_template := "Source( gamma )", dst_template := "C" ),
-                    rec( src_template := "Range( gamma )", dst_template := "D" ),
-                ],
-            ),
-        ],
-    ),
-    IdentityMorphism := rec(
-        lemmata := [
-            rec(
-                description := "the identity on an object defines a morphism",
-                input_types := [ "category", "object" ],
-                func := function ( cat, A )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, IdentityMorphism( cat, A ), A );
-                    
-                end,
-                preconditions := [ ],
-            ),
-            rec(
-                description := "identity morphisms are left neutral",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsCongruentForMorphisms( cat, PreCompose( cat, IdentityMorphism( cat, A ), alpha ), alpha );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "identity morphisms are right neutral",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsCongruentForMorphisms( cat, PreCompose( cat, alpha, IdentityMorphism( cat, B ) ), alpha );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-        ],
-    ),
-    AdditionForMorphisms := rec(
-        lemmata := [
-            rec(
-                description := "the addition of morphisms defines a morphism",
-                input_types := [ "category", "object", "object", "morphism", "morphism" ],
-                func := function ( cat, A, B, alpha, beta )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, AdditionForMorphisms( cat, alpha, beta ), B );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "A" ),
-                    rec( src_template := "Range( beta )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "addition of morphisms is associative",
-                input_types := [ "category", "object", "object", "morphism", "morphism", "morphism" ],
-                func := function ( cat, A, B, alpha, beta, gamma )
-                    
-                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, AdditionForMorphisms( cat, alpha, beta ), gamma ), AdditionForMorphisms( cat, alpha, AdditionForMorphisms( cat, beta, gamma ) ) );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "A" ),
-                    rec( src_template := "Range( beta )", dst_template := "B" ),
-                    rec( src_template := "Source( gamma )", dst_template := "A" ),
-                    rec( src_template := "Range( gamma )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "addition of morphisms is commutative",
-                input_types := [ "category", "object", "object", "morphism", "morphism" ],
-                func := function ( cat, A, B, alpha, beta )
-                    
-                    return IsCongruentForMorphisms( cat,
-                        AdditionForMorphisms( cat, alpha, beta ),
-                        AdditionForMorphisms( cat, beta, alpha )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "A" ),
-                    rec( src_template := "Range( beta )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "composition is additive in the first component",
-                input_types := [ "category", "object", "object", "object", "morphism", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, alpha, beta, phi )
-                    
-                    return IsCongruentForMorphisms( cat,
-                        PreCompose( cat, AdditionForMorphisms( cat, alpha, beta ), phi ),
-                        AdditionForMorphisms( cat, PreCompose( cat, alpha, phi ), PreCompose( cat, beta, phi ) )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "A" ),
-                    rec( src_template := "Range( beta )", dst_template := "B" ),
-                    
-                    rec( src_template := "Source( phi )", dst_template := "B" ),
-                    rec( src_template := "Range( phi )", dst_template := "C" ),
-                ],
-            ),
-            rec(
-                description := "composition is additive in the second component",
-                input_types := [ "category", "object", "object", "object", "morphism", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, alpha, beta, phi )
-                    
-                    return IsCongruentForMorphisms( cat,
-                        PreCompose( cat, phi, AdditionForMorphisms( cat, alpha, beta ) ),
-                        AdditionForMorphisms( cat, PreCompose( cat, phi, alpha ), PreCompose( cat, phi, beta ) )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( phi )", dst_template := "A" ),
-                    rec( src_template := "Range( phi )", dst_template := "B" ),
-                    
-                    rec( src_template := "Source( alpha )", dst_template := "B" ),
-                    rec( src_template := "Range( alpha )", dst_template := "C" ),
-                    rec( src_template := "Source( beta )", dst_template := "B" ),
-                    rec( src_template := "Range( beta )", dst_template := "C" ),
-                ],
-            ),
-        ],
-    ),
-    ZeroMorphism := rec(
-        lemmata := [
-            rec(
-                description := "the zero morphism between two objects is a morphism",
-                input_types := [ "category", "object", "object" ],
-                func := function ( cat, A, B )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, ZeroMorphism( cat, A, B ), B );
-                    
-                end,
-                preconditions := [ ],
-            ),
-            rec(
-                description := "zero morphisms are left neutral",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, ZeroMorphism( cat, A, B ), alpha ), alpha );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "zero morphisms are right neutral",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, ZeroMorphism( cat, A, B ) ), alpha );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-        ],
-    ),
-    AdditiveInverseForMorphisms := rec(
-        lemmata := [
-            rec(
-                description := "the additive inverse of a morphism defines a morphism",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, AdditiveInverseForMorphisms( cat, alpha ), B );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "additive inverses are left inverse",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, AdditiveInverseForMorphisms( cat, alpha ), alpha ), ZeroMorphism( cat, A, B ) );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "additive inverses are right inverse",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsCongruentForMorphisms( cat, AdditionForMorphisms( cat, alpha, AdditiveInverseForMorphisms( cat, alpha ) ), ZeroMorphism( cat, A, B ) );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-        ],
-    ),
-    MultiplyWithElementOfCommutativeRingForMorphisms := rec(
-        lemmata := [
-            rec(
-                description := "multiplying a morphism by a ring element defines a morphism",
-                input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism" ],
-                func := function ( cat, A, B, r, alpha )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), B );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "multiplication with ring elements is associative",
-                input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
-                func := function ( cat, A, B, r, s, alpha )
-                    
-                    return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, MultiplyWithElementOfCommutativeRingForMorphisms( s, alpha ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r * s, alpha ) );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "composition distributes over the addition of ring elements",
-                input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "element_of_commutative_ring_of_linear_structure", "morphism" ],
-                func := function ( cat, A, B, r, s, alpha )
-                    
-                    return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r + s, alpha ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, s, alpha ) ) );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "ring multiplication distributes over the addition of morphisms",
-                input_types := [ "category", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
-                func := function ( cat, A, B, r, alpha, beta )
-                    
-                    return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, AdditionForMorphisms( cat, alpha, beta ) ), AdditionForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ) );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "A" ),
-                    rec( src_template := "Range( beta )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "multiplication with ring elements has a neutral element",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsCongruentForMorphisms( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, One( CommutativeRingOfLinearCategory( cat ) ), alpha ), alpha );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                description := "composition is linear in the first component",
-                input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, r, alpha, beta )
-                    
-                    return IsCongruentForMorphisms( cat, PreCompose( cat, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, alpha ), beta ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "B" ),
-                    rec( src_template := "Range( beta )", dst_template := "C" ),
-                ],
-            ),
-            rec(
-                description := "composition is linear in the second component",
-                input_types := [ "category", "object", "object", "object", "element_of_commutative_ring_of_linear_structure", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, r, alpha, beta )
-                    
-                    return IsCongruentForMorphisms( cat, PreCompose( cat, alpha, MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, beta ) ), MultiplyWithElementOfCommutativeRingForMorphisms( cat, r, PreCompose( cat, alpha, beta ) ) );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "B" ),
-                    rec( src_template := "Range( beta )", dst_template := "C" ),
-                ],
-            ),
-        ],
-    ),
-    ZeroObject := rec(
-        lemmata := [
-            rec(
-                description := "the zero object is an object",
-                input_types := [ "category" ],
-                func := function ( cat )
-                    
-                    return IsWellDefinedForObjects( cat, ZeroObject( cat ) );
-                    
-                end,
-                preconditions := [ ],
-            ),
-        ],
-    ),
-    UniversalMorphismIntoZeroObject := rec(
-        lemmata := [
-            rec(
-                description := "the universal morphism into the zero objects defines a morphism",
-                input_types := [ "category", "object" ],
-                func := function ( cat, A )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, A, UniversalMorphismIntoZeroObject( cat, A ), ZeroObject( cat ) );
-                    
-                end,
-                preconditions := [ ],
-            ),
-            rec(
-                description := "the universal morphism into the zero object is unique",
-                input_types := [ "category", "object", "morphism" ],
-                func := function ( cat, A, u )
-                    
-                    return IsCongruentForMorphisms( cat,
-                        UniversalMorphismIntoZeroObject( cat, A ),
-                        u
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( u )", dst_template := "A" ),
-                    rec( src_template := "Range( u )", dst_template := "ZeroObject( cat )" ),
-                ],
-            ),
-        ],
-    ),
-    UniversalMorphismFromZeroObject := rec(
-        lemmata := [
-            rec(
-                description := "the universal morphism from the zero objects defines a morphism",
-                input_types := [ "category", "object" ],
-                func := function ( cat, B )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat, ZeroObject( cat ), UniversalMorphismFromZeroObject( cat, B ), B );
-                    
-                end,
-                preconditions := [ ],
-            ),
-            rec(
-                description := "the universal morphism from the zero object is unique",
-                input_types := [ "category", "object", "morphism" ],
-                func := function ( cat, B, u )
-                    
-                    return IsCongruentForMorphisms( cat,
-                        UniversalMorphismFromZeroObject( cat, B ),
-                        u
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( u )", dst_template := "ZeroObject( cat )" ),
-                    rec( src_template := "Range( u )", dst_template := "B" ),
-                ],
-            ),
-        ],
-    ),
-    DistinguishedObjectOfHomomorphismStructure := rec(
-        lemmata := [
-            rec(
-                description := "the distinguished object is an object in the range category of the homomorphism structure",
-                input_types := [ "category" ],
-                func := function ( cat )
-                    
-                    return IsWellDefinedForObjects( RangeCategoryOfHomomorphismStructure( cat ), DistinguishedObjectOfHomomorphismStructure( cat ) );
-                    
-                end,
-                preconditions := [ ],
-            ),
-        ],
-    ),
-    HomomorphismStructureOnObjects := rec(
-        lemmata := [
-            rec(
-                description := "the homomorphism structure on objects defines an object in the range category of the homomorphism structure",
-                input_types := [ "category", "object", "object" ],
-                func := function ( cat, A, B )
-                    
-                    return IsWellDefinedForObjects( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnObjects( cat, A, B ) );
-                    
-                end,
-                preconditions := [ ],
-            ),
-        ],
-    ),
-    HomomorphismStructureOnMorphisms := rec(
-        lemmata := [
-            rec(
-                description := "the homomorphism structure on morphisms defines a morphism in the range category of the homomorphism structure",
-                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, D, alpha, beta )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( RangeCategoryOfHomomorphismStructure( cat ),
-                        HomomorphismStructureOnObjects( cat, B, C ),
-                        HomomorphismStructureOnMorphisms( cat, alpha, beta ),
-                        HomomorphismStructureOnObjects( cat, A, D )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( beta )", dst_template := "C" ),
-                    rec( src_template := "Range( beta )", dst_template := "D" ),
-                ],
-            ),
-            # H( id, id ) = id
-            rec(
-                description := "the homomorphism structure preserves identities",
-                input_types := [ "category", "object", "object" ],
-                func := function ( cat, A, B )
-                    
-                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-                        HomomorphismStructureOnMorphisms( cat, IdentityMorphism( cat, A ), IdentityMorphism( cat, B ) ),
-                        IdentityMorphism( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnObjects( cat, A, B ) )
-                    );
-                    
-                end,
-            ),
-            # H( α₁, β₁ ) ⋅ H( α₂, β₂ ) = H( α₂ ⋅ α₁, β₁ ⋅ β₂ )
-            rec(
-                description := "the homomorphism structure is compatible with composition",
-                input_types := [ "category", "object", "object", "object", "object", "object", "object", "morphism", "morphism", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, D, E, F, alpha_1, alpha_2, beta_1, beta_2 )
-                    
-                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-                        PreCompose( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta_2 ) ),
-                        HomomorphismStructureOnMorphisms( cat, PreCompose( cat, alpha_2, alpha_1 ), PreCompose( cat, beta_1, beta_2 ) )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha_2 )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha_2 )", dst_template := "B" ),
-                    rec( src_template := "Source( alpha_1 )", dst_template := "B" ),
-                    rec( src_template := "Range( alpha_1 )", dst_template := "C" ),
-                    
-                    rec( src_template := "Source( beta_1 )", dst_template := "D" ),
-                    rec( src_template := "Range( beta_1 )", dst_template := "E" ),
-                    rec( src_template := "Source( beta_2 )", dst_template := "E" ),
-                    rec( src_template := "Range( beta_2 )", dst_template := "F" ),
-                ],
-            ),
-            # H( α₁, β ) + H( α₂, β ) = H( α₁ + α₂, β )
-            rec(
-                description := "the homomorphism structue is additive in the first component",
-                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, D, alpha_1, alpha_2, beta )
-                    
-                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-                        AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha_1, beta ), HomomorphismStructureOnMorphisms( cat, alpha_2, beta ) ),
-                        HomomorphismStructureOnMorphisms( cat, AdditionForMorphisms( cat, alpha_1, alpha_2 ), beta )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha_1 )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha_1 )", dst_template := "B" ),
-                    rec( src_template := "Source( alpha_2 )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha_2 )", dst_template := "B" ),
-                    
-                    rec( src_template := "Source( beta )", dst_template := "C" ),
-                    rec( src_template := "Range( beta )", dst_template := "D" ),
-                ],
-                category_filter := IsAbCategory,
-            ),
-            # H( α, β₁ ) + H( α, β₂ ) = H( α, β₁ + β₂ )
-            rec(
-                description := "the homomorphism structure is additive in the second component",
-                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, D, alpha, beta_1, beta_2 )
-                    
-                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-                        AdditionForMorphisms( RangeCategoryOfHomomorphismStructure( cat ), HomomorphismStructureOnMorphisms( cat, alpha, beta_1 ), HomomorphismStructureOnMorphisms( cat, alpha, beta_2 ) ),
-                        HomomorphismStructureOnMorphisms( cat, alpha, AdditionForMorphisms( cat, beta_1, beta_2 ) )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    
-                    rec( src_template := "Source( beta_1 )", dst_template := "C" ),
-                    rec( src_template := "Range( beta_1 )", dst_template := "D" ),
-                    rec( src_template := "Source( beta_2 )", dst_template := "C" ),
-                    rec( src_template := "Range( beta_2 )", dst_template := "D" ),
-                ],
-                category_filter := IsAbCategory,
-            ),
-        ],
-    ),
-    InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure := rec(
-        lemmata := [
-            rec(
-                description := "interpreting a morphism as a morphism from the distinguished object defines a morphism in the range category of the homomorphism structure",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( RangeCategoryOfHomomorphismStructure( cat ),
-                        DistinguishedObjectOfHomomorphismStructure( cat ),
-                        InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, alpha ),
-                        HomomorphismStructureOnObjects( cat, A, B )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            # for more, see InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism
-        ],
-    ),
-    InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism := rec(
-        lemmata := [
-            rec(
-                description := "reinterpreting a morphism from the distinguished morphism as a usual morphism defines a morphism",
-                input_types := [ "category", "object", "object", "morphism_in_range_category_of_homomorphism_structure" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsWellDefinedForMorphismsWithGivenSourceAndRange( cat,
-                        A,
-                        InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, A, B, alpha ),
-                        B
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "DistinguishedObjectOfHomomorphismStructure( cat )" ),
-                    rec( src_template := "Range( alpha )", dst_template := "HomomorphismStructureOnObjects( cat, A, B )" ),
-                ],
-            ),
-            rec(
-                # ν⁻¹(ν(α)) = α
-                description := "interpreting morphisms as morphisms from the distinguished object is an injective operation",
-                input_types := [ "category", "object", "object", "morphism" ],
-                func := function ( cat, A, B, alpha )
-                    
-                    return IsCongruentForMorphisms( cat,
-                        InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, A, B, InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, alpha ) ),
-                        alpha
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                ],
-            ),
-            rec(
-                # ν(ν⁻¹(α)) = α
-                description := "interpreting morphisms as morphisms from the distinguished object is a surjective operation",
-                input_types := [ "category", "object", "object", "morphism_in_range_category_of_homomorphism_structure" ],
-                func := function ( cat, S, T, alpha )
-                    
-                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-                        InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism( cat, S, T, alpha ) ),
-                        alpha
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "DistinguishedObjectOfHomomorphismStructure( cat )" ),
-                    rec( src_template := "Range( alpha )", dst_template := "HomomorphismStructureOnObjects( cat, S, T )" ),
-                ],
-            ),
-            rec(
-                # naturality of ν: ν(α ⋅ ξ ⋅ β) = ν(ξ) ⋅ H(α, β)
-                description := "interpreting morphisms as morphisms from the distinguished object is a natural transformation",
-                input_types := [ "category", "object", "object", "object", "object", "morphism", "morphism", "morphism" ],
-                func := function ( cat, A, B, C, D, alpha, xi, beta )
-                    
-                    return IsCongruentForMorphisms( RangeCategoryOfHomomorphismStructure( cat ),
-                        InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, PreComposeList( cat, A, [ alpha, xi, beta ], D ) ),
-                        PreCompose( RangeCategoryOfHomomorphismStructure( cat ), InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure( cat, xi ), HomomorphismStructureOnMorphisms( cat, alpha, beta ) )
-                    );
-                    
-                end,
-                preconditions := [
-                    rec( src_template := "Source( alpha )", dst_template := "A" ),
-                    rec( src_template := "Range( alpha )", dst_template := "B" ),
-                    rec( src_template := "Source( xi )", dst_template := "B" ),
-                    rec( src_template := "Range( xi )", dst_template := "C" ),
-                    rec( src_template := "Source( beta )", dst_template := "C" ),
-                    rec( src_template := "Range( beta )", dst_template := "D" ),
-                ],
-            ),
-        ],
-    ),
-);
-
-propositions := rec(
-    is_category := rec(
-        description := "is indeed a category",
-        operations := [ "PreCompose", "IdentityMorphism" ],
-    ),
-    is_preadditive_category := rec(
-        description := "is a preadditive category",
-        operations := [ "AdditionForMorphisms", "ZeroMorphism", "AdditiveInverseForMorphisms" ],
-    ),
-    is_linear_category := rec(
-        description := "is a linear category",
-        operations := [ "MultiplyWithElementOfCommutativeRingForMorphisms" ],
-    ),
-    has_zero_object := rec(
-        description := "has a zero object",
-        operations := [ "ZeroObject", "UniversalMorphismIntoZeroObject", "UniversalMorphismFromZeroObject" ],
-    ),
-    is_equipped_with_hom_structure := rec(
-        description := "is equipped with a homomorphism structure",
-        operations := [ "DistinguishedObjectOfHomomorphismStructure", "HomomorphismStructureOnObjects", "HomomorphismStructureOnMorphisms", "InterpretMorphismAsMorphismFromDistinguishedObjectToHomomorphismStructure", "InterpretMorphismFromDistinguishedObjectToHomomorphismStructureAsMorphism" ],
-    ),
-);
-
-enhance_propositions := function ( propositions )
-  local prop, info, specification, is_well_defined, is_well_defined_category, source_string, range_string, description, lemma, id, operation_name;
-    
-    for id in RecNames( propositions ) do
-        
-        prop := propositions.(id);
-        
-        Assert( 0, not IsBound( prop.lemmata ) );
-        
-        prop.lemmata := [ ];
-        
-        for operation_name in prop.operations do
-            
-            Assert( 0, IsBound( CAP_INTERNAL_METHOD_NAME_RECORD.(operation_name) ) );
-            Assert( 0, IsBound( specifications.(operation_name) ) );
-            
-            info := CAP_INTERNAL_METHOD_NAME_RECORD.(operation_name);
-            
-            specification := specifications.(operation_name);
-            
-            if IsBound( specification.lemmata ) then
-                
-                Assert( 0, not IsEmpty( specification.lemmata ) );
-                Assert( 0, PositionSublist( CapJitPrettyPrintFunction( specification.lemmata[1].func ), "IsWellDefined" ) <> fail );
-                
-                prop.lemmata := Concatenation( prop.lemmata, specification.lemmata );
-                continue;
-                
-            fi;
-            
-            #Assert( 0, Length( Set( [ IsBound( specification.input_arguments_names ), IsBound( specification.input_types ), IsBound( specification.operation_arguments_names ), IsBound( specification.preconditions ) ] ) ) = 1 );
-            Assert( 0, Length( Set( [ IsBound( specification.input_arguments_names ), IsBound( specification.preconditions ) ] ) ) = 1 );
-            
-            if not IsBound( specification.input_arguments_names ) then
-                
-                specification.input_arguments_names := info.input_arguments_names;
-                specification.input_types := info.filter_list;
-                specification.operation_arguments_names := info.input_arguments_names;
-                specification.preconditions := [ ];
-                
-            fi;
-            
-            if not IsBound( specification.input_types ) then
-                
-                specification.input_types := info.filter_list;
-                
-            fi;
-            
-            if not IsBound( specification.operation_arguments_names ) then
-                
-                specification.operation_arguments_names := info.input_arguments_names;
-                
-            fi;
-            
-            Assert( 0, Length( specification.input_arguments_names ) = Length( specification.input_types ) );
-            Assert( 0, specification.input_arguments_names[1] = "cat" );
-            Assert( 0, specification.input_types[1] = "category" );
-            Assert( 0, specification.operation_arguments_names[1] = "cat" );
-            Assert( 0, IsSubset( specification.input_arguments_names, specification.operation_arguments_names ) );
-            Assert( 0, ForAll( [ 1 .. Length( specification.operation_arguments_names ) ], i -> info.filter_list[i] = specification.input_types[SafeUniquePosition( specification.input_arguments_names, specification.operation_arguments_names[i] )] ) );
-            
-            ## check well-definedness
-            
-            if info.return_type = "object" then
-                
-                is_well_defined := "IsWellDefinedForObjects";
-                is_well_defined_category := "cat";
-                source_string := "";
-                range_string := "";
-                description := "an object";
-                
-            elif info.return_type = "object_in_range_category_of_homomorphism_structure" then
-                
-                is_well_defined := "IsWellDefinedForObjects";
-                is_well_defined_category := "RangeCategoryOfHomomorphismStructure( cat )";
-                source_string := "";
-                range_string := "";
-                description := "an object in the range category of the homomorphism structure";
-                
-            elif info.return_type = "morphism" then
-                
-                is_well_defined := "IsWellDefinedForMorphismsWithGivenSourceAndRange";
-                is_well_defined_category := "cat";
-                source_string := Concatenation( ", ", info.output_source_getter_string );
-                range_string := Concatenation( ", ", info.output_range_getter_string );
-                description := "a morphism";
-                
-            elif info.return_type = "morphism_in_range_category_of_homomorphism_structure" then
-                
-                is_well_defined := "IsWellDefinedForMorphismsWithGivenSourceAndRange";
-                is_well_defined_category := "RangeCategoryOfHomomorphismStructure( cat )";
-                source_string := Concatenation( ", ", info.output_source_getter_string );
-                range_string := Concatenation( ", ", info.output_range_getter_string );
-                description := "a morphism in the range category of the homomorphism structure";
-                
-            else
-                
-                Error( "return_type ", info.return_type, " is not supported yet when checking well-definedness" );
-                
-            fi;
-            
-            lemma := rec(
-                description := Concatenation( "the ", specification.description, " defines ", description ),
-                input_types := info.filter_list,
-                func := EvalString( ReplacedStringViaRecord(
-                    """function ( input_arguments... )
-                        
-                        return is_well_defined( category source, operation( op_arguments... ) range );
-                        
-                    end""",
-                    rec(
-                        is_well_defined := is_well_defined,
-                        category := is_well_defined_category,
-                        operation := operation_name,
-                        input_arguments := specification.input_arguments_names,
-                        op_arguments := specification.operation_arguments_names,
-                        source := source_string,
-                        range := range_string,
-                    )
-                ) )
-            );
-            
-            lemma.preconditions := specification.preconditions;
-            
-            Add( prop.lemmata, lemma );
-            
-            if IsBound( specification.postconditions ) then
-                
-                prop.lemmata := Concatenation( prop.lemmata, specification.postconditions );
-                
-            fi;
-            
-        od;
-        
-        Assert( 0, ForAll( prop.lemmata, l -> Length( l.input_types ) = NumberArgumentsFunction( l.func ) and l.input_types[1] = "category" ) );
-        
-    od;
-    
-end;
-
-enhance_propositions( propositions );
-
-CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
-
-StateProposition := function ( proposition_id, args... )
+StatePropositionAsLaTeX := function ( proposition_id, args... )
   local variable_name_translator, cat, cat_description, proposition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY <> fail );
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail );
+    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION = fail );
     
-    if not IsBound( propositions.(proposition_id) ) then
+    if not IsBound( CAP_JIT_INTERNAL_PROOF_ASSISTANT_PROPOSITIONS.(proposition_id) ) then
         
         Error( "unknown proposition ", proposition_id );
         
@@ -3860,13 +3027,13 @@ StateProposition := function ( proposition_id, args... )
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
     cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
     
-    proposition := propositions.(proposition_id);
+    proposition := CAP_JIT_INTERNAL_PROOF_ASSISTANT_PROPOSITIONS.(proposition_id);
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := rec( );
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.description := proposition.description;
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.lemmata := Filtered( proposition.lemmata, l -> not IsBound( l.category_filter ) or Tester( l.category_filter )( cat ) and l.category_filter( cat ) );
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index := 0;
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION := rec( );
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.description := proposition.description;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.lemmata := Filtered( proposition.lemmata, l -> not IsBound( l.category_filter ) or Tester( l.category_filter )( cat ) and l.category_filter( cat ) );
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.active_lemma_index := 0;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
     
     
     if LATEX_OUTPUT then
@@ -3885,85 +3052,91 @@ StateProposition := function ( proposition_id, args... )
     
 end;
 
-StateNextLemma := function ( )
-  local lemmata, active_lemma_index, active_lemma, preconditions, cat;
+StateNextLemmaAsLaTeX := function ( )
+  local lemmata, active_lemma_index, active_lemma, cat;
     
-    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail then
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION = fail then
         
-        Print( "No active proposition.\n" );
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "no active proposition, you can 'return;' to bail out" );
         return;
+        # COVERAGE_IGNORE_BLOCK_END
         
     fi;
     
     if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
         
-        Print( "There already is an active lemma.\n" );
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "there already is an active lemma, you can 'return;' to bail out" );
+        return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
+    fi;
+    
+    lemmata := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.lemmata;
+    
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.active_lemma_index = Length( lemmata ) then
+        
+        Print( "All lemmata proven!\n" );
         return;
         
     fi;
     
-    lemmata := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.lemmata;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.active_lemma_index := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.active_lemma_index + 1;
     
-    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( lemmata ) then
-        
-        Print( "All lemmata proven.\n" );
-        return;
-        
-    fi;
-    
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index + 1;
-    
-    active_lemma_index := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index;
+    active_lemma_index := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.active_lemma_index;
     
     active_lemma := lemmata[active_lemma_index];
-    
-    if IsBound( lemmata[active_lemma_index].preconditions ) then
-        
-        preconditions := lemmata[active_lemma_index].preconditions;
-        
-    else
-        
-        preconditions := [ ];
-        
-    fi;
     
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
     
     if LATEX_OUTPUT then
         
-        return StateLemmaAsLaTeX( active_lemma.func, cat, active_lemma.input_types, preconditions );
+        return StateLemmaAsLaTeX( active_lemma.func, cat, active_lemma.input_types, lemmata[active_lemma_index].preconditions );
         
     else
         
         Print( "\n\nLemma ", active_lemma_index, ":\n" );
-        StateLemma( active_lemma.description, active_lemma.func, cat, active_lemma.input_types, preconditions );
+        StateLemma( active_lemma.description, active_lemma.func, cat, active_lemma.input_types, lemmata[active_lemma_index].preconditions );
         
     fi;
     
 end;
 
-AssertProposition := function ( )
-  local cat_description, proposition_description;
+AssertPropositionAndReturnLaTeXString := function ( )
+    local cat_description, proposition_description;
     
-    if CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION = fail then
-        Error( "no active proposition" );
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION = fail then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "no active proposition, you can 'return;' to bail out" );
         return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
     fi;
     
     if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail then
-        Error( "there is an active unproven lemma" );
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "there already is an active unproven lemma, you can 'return;' to bail out" );
         return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
     fi;
     
-    if not CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.lemmata ) then
-        Error( "not all lemmata proven" );
+    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.active_lemma_index = Length( CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.lemmata ) then
+        
+        # COVERAGE_IGNORE_BLOCK_START
+        Error( "not all lemmata proven, you can 'return;' to bail out" );
         return;
+        # COVERAGE_IGNORE_BLOCK_END
+        
     fi;
     
     cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
-    proposition_description := CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION.description;
+    proposition_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.description;
     
-    CAP_JIT_PROOF_ASSISTANT_MODE_ACTIVE_PROPOSITION := fail;
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION := fail;
     
     return Concatenation(
         "With this, we have shown:\n",
@@ -3972,7 +3145,7 @@ AssertProposition := function ( )
     
 end;
 
-AttestValidInputs := function ( )
+AttestValidInputsAndReturnLaTeXString := function ( )
   local tree, cat, pre_func, old_tree, function_string;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA <> fail );
