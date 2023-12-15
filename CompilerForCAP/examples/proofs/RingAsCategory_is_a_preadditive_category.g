@@ -9,7 +9,7 @@ CapJitEnableProofAssistantMode( );
 
 SetActiveCategory( cat, "the category defined by a ring $R$" );
 
-StateProposition( "is_preadditive_category" );;
+StatePropositionAsLaTeX( "is_equipped_with_preadditive_structure" );;
 
 # AdditionForMorphisms well-defined
 StateNextLemma( );

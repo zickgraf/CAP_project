@@ -66,7 +66,7 @@ SetActiveCategory( cat, "the additive closure $\\Ccat^\\oplus$ of a pre-additive
     ),
 ] );
 
-StateProposition( "is_preadditive_category", function ( name )
+StatePropositionAsLaTeX( "is_equipped_with_preadditive_structure", function ( name )
     
     if name = "a" then
         

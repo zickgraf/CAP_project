@@ -78,7 +78,7 @@ AssertLemma( );
 
 SetActiveCategory( cat, "$\\boldsymbol{\\mathcal{C}}(\\mathbb{Z})$" );
 
-StateProposition( "is_category" );
+StatePropositionAsLaTeX( "is_category" );
 
 # PreCompose well-defined
 StateNextLemma( );
