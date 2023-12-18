@@ -2397,6 +2397,8 @@ end );
 
 #####
 
+LATEX_CODE := "";
+
 BindGlobal( "IsJudgementallyEqual", function ( a, b )
     
     Error( "IsJudgementallyEqual is not implemented yet" );
@@ -2405,11 +2407,14 @@ end );
 
 CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool );
 
-
-BindGlobal( "StateLemmaAsLaTeX", function ( description, func, cat, input_filters, preconditions )
+old_StateLemma := StateLemma;
+MakeReadWriteGlobal( "StateLemma" );
+BindGlobal( "StateLemma", function ( description, func, cat, input_filters, preconditions )
   local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, function_string, i, j, condition;
     
-    StateLemma( description, func, cat, input_filters, preconditions );
+    PrintTo1( "/dev/null", function ( )
+        old_StateLemma( description, func, cat, input_filters, preconditions );
+    end );
     
     tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
     
@@ -2545,7 +2550,7 @@ BindGlobal( "StateLemmaAsLaTeX", function ( description, func, cat, input_filter
                     
                     local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
                     
-                    Display( to_remove );
+                    #Display( to_remove );
                     
                 fi;
                 
@@ -2766,12 +2771,13 @@ BindGlobal( "StateLemmaAsLaTeX", function ( description, func, cat, input_filter
         
     fi;
     
-    return latex_string;
+    LATEX_CODE := latex_string;
     
 end );
 
-
-BindGlobal( "AssertLemmaAndReturnLaTeXString", function ( )
+old_AssertLemma := AssertLemma;
+MakeReadWriteGlobal( "AssertLemma" );
+BindGlobal( "AssertLemma", function ( )
   local cat, input_filters, tree;
     
     if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
@@ -2809,8 +2815,10 @@ BindGlobal( "AssertLemmaAndReturnLaTeXString", function ( )
     
 end );
 
-BindGlobal( "PrintLemmaAsLaTeXString", function ( args... )
-  local tree, cat, input_filters, latex_string;
+old_PrintLemma := PrintLemma;
+MakeReadWriteGlobal( "PrintLemma" );
+BindGlobal( "PrintLemma", function ( )
+  local suffix, tree, cat, input_filters, latex_string;
     
     if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
         
@@ -2821,16 +2829,32 @@ BindGlobal( "PrintLemmaAsLaTeXString", function ( args... )
         
     fi;
     
+    #if Length( args ) = 0 then
+    #    
+    #    # print and reset autogensuffix
+    #    suffix := "\\autogensuffix\\let\\autogensuffix\\myundefinedcommand";
+    #    
+    #elif Length( args ) = 1 then
+    #    
+    #    suffix := args[1];
+    #    Display( "PrintLemma non-default suffix" );
+    #    
+    #else
+    #    
+    #    Error( "PrintLemma can only be called with no or one argument" );
+    #    
+    #fi;
+    
     tree := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.tree;
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category;
     input_filters := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.input_filters;
     
     # TODO
-    latex_string := CallFuncList( FunctionAsMathString, Concatenation( [ tree, cat, input_filters ], args ) : raw := false );
+    latex_string := FunctionAsMathString( tree, cat, input_filters, "." : raw := false );
     
     #latex_string := Concatenation( "\\text{(claim)}\\quad ", latex_string );
     
-    return latex_string;
+    LATEX_CODE := latex_string;
     
 end );
 
@@ -2869,9 +2893,9 @@ BindGlobal( "SetActiveCategory", function ( category, description, symbols... )
     
 end );
 
-InstallDeprecatedAlias( "SetCurrentCategory", "SetActiveCategory", "2023" );
-
-StatePropositionAsLaTeX := function ( proposition_id, args... )
+old_StateProposition := StateProposition;
+MakeReadWriteGlobal( "StateProposition" );
+BindGlobal( "StateProposition", function ( proposition_id, args... )
   local variable_name_translator, cat, cat_description, proposition;
     
     Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY <> fail );
@@ -2893,7 +2917,9 @@ StatePropositionAsLaTeX := function ( proposition_id, args... )
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
     cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
     
-    StateProposition( cat, proposition_id );
+    PrintTo1( "/dev/null", function ( )
+        old_StateProposition( cat, proposition_id );
+    end );
     
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
     
@@ -2905,9 +2931,11 @@ StatePropositionAsLaTeX := function ( proposition_id, args... )
         "\\end{proposition}"
     );
     
-end;
+end );
 
-StateNextLemmaAsLaTeX := function ( )
+old_StateNextLemma := StateNextLemma;
+MakeReadWriteGlobal( "StateNextLemma" );
+BindGlobal( "StateNextLemma", function ( )
   local lemmata, active_lemma_index, active_lemma, cat;
     
     if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION = fail then
@@ -2945,31 +2973,33 @@ StateNextLemmaAsLaTeX := function ( )
     
     cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
     
-    return StateLemmaAsLaTeX( active_lemma.description, active_lemma.func, cat, active_lemma.input_types, active_lemma.preconditions );
+    StateLemma( active_lemma.description, active_lemma.func, cat, active_lemma.input_types, active_lemma.preconditions );
     
-end;
+end );
 
-AssertPropositionAndReturnLaTeXString := function ( )
+old_AssertProposition := AssertProposition;
+MakeReadWriteGlobal( "AssertProposition" );
+BindGlobal( "AssertProposition", function ( )
   local cat_description, proposition_description;
     
     cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
     proposition_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.description;
     
-    AssertProposition( );
+    PrintTo1( "/dev/null", old_AssertProposition );
     
-    return Concatenation(
+    LATEX_CODE := Concatenation(
         "Summing up, we have shown:\n",
         UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition_description, ".\\qed\n"
     );
     
-end;
+end );
 
-AttestValidInputsAndReturnLaTeXString := function ( )
+old_AttestValidInputs := AttestValidInputs;
+MakeReadWriteGlobal( "AttestValidInputs" );
+BindGlobal( "AttestValidInputs", function ( )
     
-    AttestValidInputs( );
+    PrintTo1( "/dev/null", old_AttestValidInputs );
     
-    return "We let CompilerForCAP assume that all inputs are valid.";
+    LATEX_CODE := "We let CompilerForCAP assume that all inputs are valid.";
     
-end;
-
-InstallDeprecatedAlias( "AssumeValidInputs", "AttestValidInputs", "2023" );
+end );

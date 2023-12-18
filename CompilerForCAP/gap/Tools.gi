@@ -1238,28 +1238,36 @@ MySplitString := function ( string, substring )
     
 end;
 
-FunctionAsMathString := function ( func, cat, input_filters, args... )
-  local suffix, arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i, collect, conditions, latex_strings, latex_record_left_morphism, latex_record_right, latex_string_left;
+FunctionAsMathString := function ( func, cat, input_filters, suffix )
+  local arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i, collect, conditions, latex_strings, latex_record_left_morphism, latex_record_right, latex_string_left;
     
-    if IsEmpty( args ) then
-        
-        suffix := "";
-        
-    elif Length( args ) = 1 then
-        
-        suffix := args[1];
-        
-    else
-        
-        Error( "FunctionAsMathString must be called with at most three arguments" );
-        
-    fi;
+    #if IsEmpty( args ) then
+    #    
+    #    suffix := "";
+    #    
+    #elif Length( args ) = 1 then
+    #    
+    #    suffix := args[1];
+    #    
+    #else
+    #    
+    #    Error( "FunctionAsMathString must be called with at most three arguments" );
+    #    
+    #fi;
     
     if not IsList( input_filters ) or (IsFunction( func ) and Length( input_filters ) <> NumberArgumentsFunction( func )) then
         
         Error( "<input_filters> must be a list of length `NumberArgumentsFunction( <func> )`" );
         
     fi;
+    
+    if PositionSublist( suffix, "rlap" ) <> fail then
+        
+        Error( "suffix should not contain rlap" );
+        
+    fi;
+    
+    suffix := Concatenation( "\\rlap{", suffix, "}" );
     
     arguments_data_types := List( input_filters, function ( x ) if IsFilter( x ) then return rec( filter := x ); else return CAP_INTERNAL_GET_DATA_TYPE_FROM_STRING( x, cat ); fi; end );
     
