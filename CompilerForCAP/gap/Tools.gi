@@ -1596,14 +1596,16 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
             if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION <> fail then
                 
                 # TODO
-                if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
+                if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category ) then
+                #if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                     
                     name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator( name );
                     
                 fi;
                 
                 # TODO
-                if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
+                if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category ) then
+                #if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                     
                     name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator( name );
                     
@@ -1673,7 +1675,8 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                 
             elif type = "object" then
                 
-                if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
+                if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category ) then
+                #if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                     
                     name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
                     
@@ -1694,7 +1697,8 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                     source := LaTeXName( parts[2] );
                     range := LaTeXName( parts[3] );
                     
-                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
+                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category ) then
+                    #if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                         
                         name := Concatenation( "\\bboxed{", name, "}" );
                         source := Concatenation( "\\bboxed{", source, "}" );
@@ -1706,7 +1710,8 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                     
                     name := LaTeXName( name );
                     
-                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
+                    if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category ) then
+                    #if IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
                         
                         name := Concatenation( "\\bboxed{", name, "}" );
                         
