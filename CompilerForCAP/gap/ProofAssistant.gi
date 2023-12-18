@@ -2420,15 +2420,7 @@ BindGlobal( "StateLemma", function ( description, func, cat, input_filters, prec
     
     local_replacements := ShallowCopy( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements );
     
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY = fail then
-        
-        text := "";
-        
-    else
-        
-        text := Concatenation( "In ", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description, " the following statement holds true: " );
-        
-    fi;
+    text := Concatenation( "In ", cat!.LaTeXName, ", the following statement holds true: " );
     
     text := Concatenation( text, "For" );
     
@@ -2801,7 +2793,7 @@ BindGlobal( "AssertLemma", function ( )
         
         Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
-        return "With this, the claim follows and we let CompilerForCAP end the proof.\\qedhere";
+        LATEX_CODE := "With this, the claim follows and we let CompilerForCAP end the proof.\\qedhere";
         
     else
         
@@ -2873,6 +2865,8 @@ end );
 
 CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY := fail;
 
+CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS := [ ];
+
 BindGlobal( "SetActiveCategory", function ( category, description, symbols... )
     
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY := rec( category := category, description := description );
@@ -2895,10 +2889,8 @@ end );
 
 old_StateProposition := StateProposition;
 MakeReadWriteGlobal( "StateProposition" );
-BindGlobal( "StateProposition", function ( proposition_id, args... )
-  local variable_name_translator, cat, cat_description, proposition;
-    
-    Assert( 0, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY <> fail );
+BindGlobal( "StateProposition", function ( cat, proposition_id, args... )
+  local variable_name_translator, cat_description, proposition, claim_string;
     
     if Length( args ) = 0 then
         
@@ -2914,8 +2906,7 @@ BindGlobal( "StateProposition", function ( proposition_id, args... )
         
     fi;
     
-    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
-    cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
+    cat_description := cat!.LaTeXName;
     
     PrintTo1( "/dev/null", function ( )
         old_StateProposition( cat, proposition_id );
@@ -2925,9 +2916,13 @@ BindGlobal( "StateProposition", function ( proposition_id, args... )
     
     proposition := CAP_JIT_INTERNAL_PROOF_ASSISTANT_PROPOSITIONS.(proposition_id);
     
-    return Concatenation(
+    claim_string := Concatenation( UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, "." );
+    
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.claim_string := claim_string;
+    
+    LATEX_CODE := Concatenation(
         "\\begin{proposition}\n",
-        UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, ".\n",
+        claim_string, "\n",
         "\\end{proposition}"
     );
     
@@ -2971,7 +2966,7 @@ BindGlobal( "StateNextLemma", function ( )
     
     active_lemma := lemmata[active_lemma_index];
     
-    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category;
+    cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.category;
     
     StateLemma( active_lemma.description, active_lemma.func, cat, active_lemma.input_types, active_lemma.preconditions );
     
@@ -2980,16 +2975,15 @@ end );
 old_AssertProposition := AssertProposition;
 MakeReadWriteGlobal( "AssertProposition" );
 BindGlobal( "AssertProposition", function ( )
-  local cat_description, proposition_description;
+  local claim_string;
     
-    cat_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.description;
-    proposition_description := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.description;
+    claim_string := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.claim_string;
     
     PrintTo1( "/dev/null", old_AssertProposition );
     
     LATEX_CODE := Concatenation(
         "Summing up, we have shown:\n",
-        UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition_description, ".\\qed\n"
+        claim_string, "\\qed\n"
     );
     
 end );
