@@ -54,7 +54,7 @@ CapJitLaTeXStringOfLogicTemplate := function ( template, cat, input_filters, con
     src_func := EvalString( Concatenation( "{ ", JoinStringsWithSeparator( template.variable_names, ", " ), " } -> ", src_template ) );
     dst_func := EvalString( Concatenation( "{ ", JoinStringsWithSeparator( template.variable_names, ", " ), " } -> ", dst_template ) );
     
-    src_string := FunctionAsMathString( src_func, cat, input_filters : raw );
+    src_string := FunctionAsMathString( src_func, cat, input_filters, "" : raw );
     
     if dst_template = "true" then
         
@@ -62,7 +62,7 @@ CapJitLaTeXStringOfLogicTemplate := function ( template, cat, input_filters, con
         
     else
         
-        dst_string := FunctionAsMathString( dst_func, cat, input_filters : raw );
+        dst_string := FunctionAsMathString( dst_func, cat, input_filters, "" : raw );
         
         latex_string := Concatenation( src_string, " ", connecting_symbol, " ", dst_string );
         
