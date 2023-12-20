@@ -1018,7 +1018,7 @@ end;
 
 BINDING_STRENGTHS := [
     [ "IsWellDefinedForObjects", "IsWellDefinedForMorphisms", "IsWellDefinedForMorphismsWithGivenSourceAndRange", "IsZeroForMorphisms", "IsZero", "IsInt", "IsHomalgMatrix", "IsCapCategoryMorphism", "IsList" ],
-    [ "AdditionForMorphisms", "AdditiveInverseForMorphisms", "+", "-" ],
+    [ "AdditionForMorphisms", "AdditiveInverseForMorphisms", "+", "-", "AdditiveInverseSameMutability" ],
     [ "TensorProductOnMorphisms", "TensorProductOnMorphismsWithGivenTensorProducts", "TensorProductOnObjects", "PreCompose", "PreComposeList", "*" ],
     [ "SumOfMorphisms" ],
     [ "DualOnObjects", "DualOnMorphisms", "[]", "List" ],
@@ -1138,8 +1138,25 @@ parenthesize_postfix := function ( tree, symbol, child_tree, child_result )
     
 end;
 
+MySplitString := function ( string, substring )
+  local pos;
+    
+    pos := PositionSublist( string, substring );
+    
+    if pos = fail then
+        
+        return [ string ];
+        
+    else
+        
+        return Concatenation( [ string{[ 1 .. pos - 1 ]} ], MySplitString( string{[ pos + Length( substring ) .. Length( string ) ]}, substring ) );
+        
+    fi;
+    
+end;
+
 BindGlobal( "LaTeXName", function ( name )
-  local latex_commands, pos, name_end, command;
+  local latex_commands, pos, name_end, parts, command;
     
     if StartsWith( name, "logic_new_func_" ) then
         
@@ -1215,28 +1232,25 @@ BindGlobal( "LaTeXName", function ( name )
         # TODO: parentheses
         name := Concatenation( "{", name, "}" );
         
+        if Length( Positions( name, '_' ) ) = 1 then
+            
+            parts := MySplitString( name, "_" );
+            
+            Assert( 0, Length( parts ) = 2 );
+            
+            if not StartsWith( parts[2], "{" ) then
+                
+                name := Concatenation( parts[1], "_{", parts[2], "}" );
+                
+            fi;
+            
+        fi;
+        
     fi;
     
     return name;
             
 end );
-
-MySplitString := function ( string, substring )
-  local pos;
-    
-    pos := PositionSublist( string, substring );
-    
-    if pos = fail then
-        
-        return [ string ];
-        
-    else
-        
-        return Concatenation( [ string{[ 1 .. pos - 1 ]} ], MySplitString( string{[ pos + 2 .. Length( string ) ]}, substring ) );
-        
-    fi;
-    
-end;
 
 FunctionAsMathString := function ( func, cat, input_filters, suffix )
   local arguments_data_types, type_signature, func_tree, old_stop_compilation, old_range_stop_compilation, return_value, result_func, additional_arguments_func, left_list, right, latex_string, max_length, mor, i, collect, conditions, latex_strings, latex_record_left_morphism, latex_record_right, latex_string_left;
@@ -1269,7 +1283,7 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
     
     suffix := Concatenation( "\\rlap{", suffix, "}" );
     
-    arguments_data_types := List( input_filters, function ( x ) if IsFilter( x ) then return rec( filter := x ); else return CAP_INTERNAL_GET_DATA_TYPE_FROM_STRING( x, cat ); fi; end );
+    arguments_data_types := List( input_filters, function ( x ) if IsRecord( x ) then return x; elif IsFilter( x ) then return rec( filter := x ); else return CAP_INTERNAL_GET_DATA_TYPE_FROM_STRING( x, cat ); fi; end );
     
     Assert( 0, not fail in arguments_data_types );
     
@@ -1496,10 +1510,21 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                 
             fi;
             
-            return rec(
-                type := "plain",
-                string := Concatenation( result.funcref.string, "[", LaTeXName( tree.funcref.nams[1] ), " \\from ", result.args.1.string, "]" ),
-            );
+            if result.funcref.string = "{\\varphi_{k}}" and tree.funcref.nams[1] = "k" and result.args.1.string = "i" then
+                
+                return rec(
+                    type := "plain",
+                    string := "{\\varphi_{i}}",
+                );
+                
+            else
+                
+                return rec(
+                    type := "plain",
+                    string := Concatenation( result.funcref.string, "[", LaTeXName( tree.funcref.nams[1] ), " \\from ", result.args.1.string, "]" ),
+                );
+                
+            fi;
             
         elif tree.type = "EXPR_CASE" then
             
@@ -1551,6 +1576,54 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                 
                 type := input_filters[pos];
                 
+                if IsFilter( type ) then
+                    
+                    type := rec( filter := type );
+                    
+                fi;
+                
+                if IsRecord( type ) then
+                
+                    if IsSpecializationOfFilter( "category", type.filter ) then
+                        
+                        type := "category";
+                        
+                    elif IsSpecializationOfFilter( "object", type.filter ) then
+                        
+                        type := "object";
+                        
+                    elif IsSpecializationOfFilter( "morphism", type.filter ) then
+                        
+                        type := "morphism";
+                        
+                    elif IsSpecializationOfFilter( "integer", type.filter ) then
+                        
+                        type := "integer";
+                        
+                    elif IsSpecializationOfFilter( "bool", type.filter ) then
+                        
+                        type := "bool";
+                        
+                    elif IsSpecializationOfFilter( IsList, type.filter ) and IsSpecializationOfFilter( "morphism", type.element_type.filter ) then
+                        
+                        type := "list_of_morphisms";
+                        
+                    elif IsSpecializationOfFilter( IsRing, type.filter ) then
+                        
+                        type := type.filter;
+                        
+                    elif IsSpecializationOfFilter( IsRingElement, type.filter ) then
+                        
+                        type := type.filter;
+                        
+                    else
+                        
+                        Error( "unknown type" );
+                        
+                    fi;
+                    
+                fi;
+                
             elif IsBound( func.data_type ) then
                 
                 type := func.data_type.signature[1][pos];
@@ -1593,25 +1666,25 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
             
             name := tree.name;
             
-            if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION <> fail then
-                
-                # TODO
-                if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category ) then
-                #if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
-                    
-                    name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator( name );
-                    
-                fi;
-                
-                # TODO
-                if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category ) then
-                #if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
-                    
-                    name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator( name );
-                    
-                fi;
-                
-            fi;
+            #if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION <> fail then
+            #    
+            #    # TODO
+            #    if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category ) then
+            #    #if IsBound( tree.data_type.category ) and IsIdenticalObj( tree.data_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
+            #        
+            #        name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator( name );
+            #        
+            #    fi;
+            #    
+            #    # TODO
+            #    if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category ) then
+            #    #if IsBound( tree.data_type.element_type ) and IsBound( tree.data_type.element_type.category ) and IsIdenticalObj( tree.data_type.element_type.category, CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY.category ) then
+            #        
+            #        name := CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator( name );
+            #        
+            #    fi;
+            #    
+            #fi;
             
             if IsBound( tree.data_type.category ) then
                 
@@ -2374,6 +2447,13 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                     
                 fi;
                 
+            elif tree.funcref.gvar = "UnderlyingRing" and tree.args.length = 1 and IsSpecializationOfFilter( "category", tree.args.1.data_type.filter ) then
+                
+                math_record := rec(
+                    type := "plain",
+                    string := ValueGlobal( "UnderlyingRing" )( tree.args.1.data_type.category )!.LaTeXSymbol,
+                );
+                
             elif tree.funcref.gvar = "SumOfMorphisms" then
                 
                 if CapJitIsCallToGlobalFunction( tree.args.3, "List" ) and tree.args.3.args.2.type = "EXPR_DECLARATIVE_FUNC" then
@@ -2518,6 +2598,28 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                     string := Concatenation( "u_{", result.args.3.string, "}^{\\mathcolor{black!50}{\\from\\bigoplus\\left(", result.args.2.string, "\\right)}}\\left(", result.args.4.string, "\\right)" ),
                 );
                 
+            elif tree.funcref.gvar = "UniversalMorphismIntoZeroObject" then
+                
+                cat := tree.args.1.data_type.category;
+                
+                Assert( 0, IsCapCategory( cat ) );
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "u^{\\to 0_{", cat!.LaTeXSymbol, "}}(", result.args.2.string, ")" ),
+                );
+                
+            elif tree.funcref.gvar = "UniversalMorphismFromZeroObject" then
+                
+                cat := tree.args.1.data_type.category;
+                
+                Assert( 0, IsCapCategory( cat ) );
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "u^{\\from 0_{", cat!.LaTeXSymbol, "}}(", result.args.2.string, ")" ),
+                );
+                
             elif tree.funcref.gvar = "IdentityMorphism" then
                 
                 math_record := rec(
@@ -2527,29 +2629,34 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                 
             elif tree.funcref.gvar = "ZeroObject" then
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( tree.args.1.data_type.category, s.category ) );
+                cat := tree.args.1.data_type.category;
                 
-                if pos = fail then
-                    
-                    math_record := rec(
-                        type := "plain",
-                        string := Concatenation( "\\mathrm{ZeroObject)(", result.args.2.string, ")" ),
-                    );
-                    
-                else
-                    
-                    math_record := rec(
-                        type := "morphism",
-                        string := Concatenation( "0_{", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "}" ),
-                    );
-                    
-                fi;
+                Assert( 0, IsCapCategory( cat ) );
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "0_{", cat!.LaTeXSymbol, "}" ),
+                );
                 
             elif tree.funcref.gvar = "ZeroMorphism" then
                 
                 math_record := rec(
                     type := "morphism",
                     string := Concatenation( "0_{", result.args.2.string, ", ", result.args.3.string, "}" ),
+                );
+                
+            elif tree.funcref.gvar = "ZeroImmutable" and tree.args.length = 1 then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "0_{", result.args.1.string, "}" ),
+                );
+                
+            elif tree.funcref.gvar = "AdditiveInverseSameMutability" and tree.args.length = 1 then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := parenthesize_prefix( tree, "-", tree.args.1, result.args.1 ),
                 );
                 
             elif tree.funcref.gvar = "RangeCategoryOfHomomorphismStructure" then
@@ -2796,21 +2903,9 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                 
                 Assert( 0, IsCapCategory( cat ) );
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
-                
-                if pos = fail then
-                    
-                    specifier := "";
-                    
-                else
-                    
-                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "$" );
-                    
-                fi;
-                
                 math_record := rec(
                     type := "plain",
-                    string := parenthesize_postfix( tree, Concatenation( " \\text{ defines an object", specifier, "}" ), tree.args.2, result.args.2 ),
+                    string := parenthesize_postfix( tree, Concatenation( " \\text{ defines an object in $", cat!.LaTeXSymbol, "$}" ), tree.args.2, result.args.2 ),
                 );
                 
             elif tree.funcref.gvar = "IsWellDefinedForMorphisms" then
@@ -2819,21 +2914,9 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                 
                 Assert( 0, IsCapCategory( cat ) );
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
-                
-                if pos = fail then
-                    
-                    specifier := "";
-                    
-                else
-                    
-                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "$" );
-                    
-                fi;
-                
                 math_record := rec(
                     type := "plain",
-                    string := parenthesize_postfix( tree, Concatenation( " \\text{ defines a morphism", specifier, "}" ), tree.args.2, result.args.2 ),
+                    string := parenthesize_postfix( tree, Concatenation( " \\text{ defines a morphism in $", cat!.LaTeXSymbol, "$}" ), tree.args.2, result.args.2 ),
                 );
                 
             elif tree.funcref.gvar = "IsWellDefinedForMorphismsWithGivenSourceAndRange" then
@@ -2842,22 +2925,10 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                 
                 Assert( 0, IsCapCategory( cat ) );
                 
-                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
-                
-                if pos = fail then
-                    
-                    specifier := "";
-                    
-                else
-                    
-                    specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "$" );
-                    
-                fi;
-                
                 math_record := rec(
                     type := "plain",
                     string := Concatenation(
-                        parenthesize_postfix( tree, Concatenation( " \\text{ defines a morphism", specifier, "}" ), tree.args.3, result.args.3 ),
+                        parenthesize_postfix( tree, Concatenation( " \\text{ defines a morphism in $", cat!.LaTeXSymbol, "$}" ), tree.args.3, result.args.3 ),
                         parenthesize_prefix( tree, " \\text{ from }", tree.args.2, result.args.2 ),
                         parenthesize_prefix( tree, " \\text{ to }", tree.args.4, result.args.4 )
                     ),

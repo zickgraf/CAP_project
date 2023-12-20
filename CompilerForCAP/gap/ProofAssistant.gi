@@ -797,9 +797,9 @@ InstallMethod( StateLemma,
         
         Print( "This is immediate from the construction.\n" );
         
-        CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
-        
-        Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
+        #CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
+        #
+        #Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
     fi;
     
@@ -1184,7 +1184,7 @@ BindGlobal( "CAP_JIT_INTERNAL_PROOF_ASSISTANT_LEMMATA", rec(
     PreCompose := rec(
         lemmata := [
             rec(
-                description := "the composite of two morphisms defines a morphism",
+                description := "the composite of two morphisms is a morphism",
                 input_types := [ "category", "object", "object", "object", "morphism", "morphism" ],
                 func := function ( cat, A, B, C, alpha, beta )
                     
@@ -2114,7 +2114,7 @@ BindGlobal( "CAP_JIT_INTERNAL_PROOF_ASSISTANT_LEMMATA", rec(
 
 BindGlobal( "CAP_JIT_INTERNAL_PROOF_ASSISTANT_PROPOSITIONS", rec(
     is_category := rec(
-        description := "is indeed a category",
+        description := "is a category",
         operations := [ "PreCompose", "IdentityMorphism" ],
     ),
     is_equipped_with_preadditive_structure := rec(
@@ -2397,7 +2397,7 @@ end );
 
 #####
 
-LATEX_CODE := "";
+GENERATED_LATEX_CODE := "";
 
 BindGlobal( "IsJudgementallyEqual", function ( a, b )
     
@@ -2410,7 +2410,7 @@ CapJitAddTypeSignature( "IsJudgementallyEqual", [ IsObject, IsObject ], IsBool )
 old_StateLemma := StateLemma;
 MakeReadWriteGlobal( "StateLemma" );
 BindGlobal( "StateLemma", function ( description, func, cat, input_filters, preconditions )
-  local tree, tmp_tree, src_template_tree, dst_template_tree, local_replacements, text, names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, length, condition_func, conditions, result, latex_string, arguments_data_types, type_signature, function_string, i, j, condition;
+  local tree, local_replacements, text, names, orig_names, handled_input_filters, parts, filter, positions, plural, numerals, numeral, current_names, part, name, source, range, inner_parts, to_remove, replacement, pos, length, condition_func, conditions, result, latex_string, i, j, condition;
     
     PrintTo1( "/dev/null", function ( )
         old_StateLemma( description, func, cat, input_filters, preconditions );
@@ -2420,235 +2420,307 @@ BindGlobal( "StateLemma", function ( description, func, cat, input_filters, prec
     
     local_replacements := ShallowCopy( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements );
     
-    text := Concatenation( "In ", cat!.LaTeXName, ", the following statement holds true: " );
+    text := Concatenation( "In $", cat!.LaTeXSymbol, "$, ", description, ":\n" );
     
-    text := Concatenation( text, "For" );
+    Assert( 0, input_filters[1] = "category" );
     
-    names := NamesLocalVariablesFunction( func );
-    
-    Assert( 0, Length( names ) >= Length( input_filters ) );
-    
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION <> fail then
+    if Length( input_filters ) = 1 then
         
-        # TODO: only names of things in the category
-        names := List( names, CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator );
+        Assert( 0, IsEmpty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.local_replacements ) );
+        
+        text := Concatenation( text, "We have" );
+        
+    elif Length( input_filters ) > 1 then
+        
+        text := Concatenation( text, "For" );
+        
+        names := NamesLocalVariablesFunction( func );
+        
+        Assert( 0, Length( names ) >= Length( input_filters ) );
+        
+        orig_names := names;
+        
+        #if CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION <> fail then
+        #    
+        #    # TODO: only names of things in the category
+        #    names := List( names, CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator );
+        #    
+        #fi;
+        
+        names := ShallowCopy( names );
+        
+        for i in [ 2 .. Length( input_filters ) ] do
+            
+            if input_filters[i] in [ "object", "morphism" ] then
+                
+                pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+                
+                if pos <> fail then
+                    
+                    if IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches ) and IsBound( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(names[i]) ) then
+                        
+                        names[i] := CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].variable_name_matches.(names[i]);
+                        
+                    fi;
+                    
+                fi;
+                
+                
+            fi;
+            
+        od;
+        
+        handled_input_filters := [ ];
+    
+        parts := [ ];
+        
+        for i in [ 2 .. Length( input_filters ) ] do
+            
+            filter := input_filters[i];
+            
+            if filter in handled_input_filters then
+                
+                continue;
+                
+            fi;
+            
+            positions := Positions( input_filters, filter );
+            
+            Assert( 0, i in positions );
+            
+            if Length( positions ) = 1 then
+                
+                plural := "";
+                
+            else
+                
+                plural := "s";
+                
+            fi;
+            
+            numerals := [ "a", "two", "three", "four", "five", "six", "seven", "eight", "nine" ];
+            
+            if Length( positions ) <= Length( numerals ) then
+                
+                numeral := numerals[Length( positions )];
+                
+            else
+                
+                numeral := String( Length( positions ) );
+                
+            fi;
+            
+            # TODO: only box things in the category
+            if filter = "integer" then
+                
+                current_names := ConcatenationOfStringsAsEnumerationWithAnd( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" ) ) );
+                
+                part := Concatenation( numeral, " integer", plural, " ", current_names );
+                
+            elif filter = "object" then
+                
+                current_names := ConcatenationOfStringsAsEnumerationWithAnd( List( positions, i -> Concatenation( "$\\bboxed{", LaTeXName( names[i] ), "}$" ) ) );
+                
+                part := Concatenation( numeral, " object", plural, " ", current_names );
+                
+            elif filter = "morphism" then
+                
+                current_names := [ ];
+                
+                for i in positions do
+                    
+                    name := names[i];
+                    
+                    source := fail;
+                    range := fail;
+                    
+                    inner_parts := MySplitString( name, "__" );
+                    
+                    if Length( inner_parts ) = 3 then
+                        
+                        #name := Concatenation( "\\bboxed{", LaTeXName( inner_parts[1] ), "}" );
+                        name := inner_parts[1];
+                        source := Concatenation( "\\bboxed{", LaTeXName( inner_parts[2] ), "}" );
+                        range := Concatenation( "\\bboxed{", LaTeXName( inner_parts[3] ), "}" );
+                        
+                    else
+                        
+                        to_remove := [ ];
+                        
+                        for j in [ 1 .. Length( local_replacements ) ] do
+                            
+                            replacement := local_replacements[j];
+                            
+                            if CapJitIsCallToGlobalFunction( replacement.src_template_tree, "Source" ) and replacement.src_template_tree.args.length = 1 and
+                               replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = orig_names[i] then
+                                
+                                if replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
+                                    
+                                    Assert( 0, source = fail );
+                                    
+                                    source := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
+                                    
+                                    Add( to_remove, j );
+                                    
+                                elif CapJitIsCallToGlobalFunction( replacement.dst_template_tree, "ZeroObject" ) and replacement.dst_template_tree.args.1.type = "EXPR_REF_GVAR" then
+                                    
+                                    Assert( 0, source = fail );
+                                    
+                                    cat := ValueGlobal( replacement.dst_template_tree.args.1.gvar );
+                                    
+                                    Assert( 0, IsCapCategory( cat ) );
+                                    
+                                    source := Concatenation( "0_{", cat!.LaTeXSymbol, "}" );
+                                    
+                                    Add( to_remove, j );
+                                    
+                                fi;
+                                    
+                                
+                            elif CapJitIsCallToGlobalFunction( replacement.src_template_tree, gvar -> gvar in [ "Range", "Target" ] ) and replacement.src_template_tree.args.length = 1 and
+                               replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = orig_names[i] then
+                                
+                                if replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
+                                    
+                                    Assert( 0, range = fail );
+                                    
+                                    range := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
+                                    
+                                    Add( to_remove, j );
+                                    
+                                elif CapJitIsCallToGlobalFunction( replacement.dst_template_tree, "ZeroObject" ) and replacement.dst_template_tree.args.1.type = "EXPR_REF_GVAR" then
+                                    
+                                    Assert( 0, range = fail );
+                                    
+                                    cat := ValueGlobal( replacement.dst_template_tree.args.1.gvar );
+                                    
+                                    Assert( 0, IsCapCategory( cat ) );
+                                    
+                                    range := Concatenation( "0_{", cat!.LaTeXSymbol, "}" );
+                                    
+                                    Add( to_remove, j );
+                                    
+                                fi;
+                                    
+                            fi;
+                            
+                        od;
+                        
+                        local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
+                        
+                        #Display( to_remove );
+                        
+                    fi;
+                    
+                    name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
+                    
+                    if source = fail and range <> fail then
+                        
+                        Display( "WARNING: LaTeX missing source" );
+                        source := "\\text{missing source}";
+                        
+                    fi;
+                    
+                    if source <> fail and range = fail then
+                        
+                        Display( "WARNING: LaTeX missing range" );
+                        range := "\\text{missing target}";
+                        
+                    fi;
+                    
+                    if source <> fail and range <> fail then
+                        
+                        Add( current_names, Concatenation( "$", name, " : ", source, " \\to ", range, "$" ) );
+                        
+                    elif source = fail and range = fail then
+                        
+                        Add( current_names, Concatenation( "$", name, "$" ) );
+                        
+                        #source := Concatenation( "s(", name, ")" );
+                        #range := Concatenation( "t(", name, ")" );
+                        
+                    else
+                        
+                        Error( "this case is not supported" );
+                        
+                    fi;
+                    
+                od;
+                
+                current_names := ConcatenationOfStringsAsEnumerationWithAnd( current_names );
+                
+                part := Concatenation( numeral, " morphism", plural, " ", current_names );
+                
+            #elif filter = "object_in_range_category_of_homomorphism_structure" then
+            #    
+            #    part := Concatenation( numeral, " object", plural, " ", current_names, " in the range category of the homomorphism structure" );
+            #    
+            #elif filter = "morphism_in_range_category_of_homomorphism_structure" then
+            #    
+            #    part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
+            #    
+            elif filter = "list_of_objects" then
+                Error("not supported anymore");
+                current_names := [ ];
+                
+                for i in positions do
+                    
+                    name := names[i];
+                    
+                    inner_parts := MySplitString( name, "__" );
+                    
+                    Assert( 0, Length( inner_parts ) > 0 );
+                    
+                    if Length( inner_parts ) = 1 then
+                        
+                        Add( current_names, Concatenation( "$", LaTeXName( name ), "$" ) );
+                        
+                    elif Length( inner_parts ) = 2 then
+                        
+                        name := LaTeXName( inner_parts[1] );
+                        length := LaTeXName( inner_parts[2] );
+                        
+                        Add( current_names, Concatenation( "$\\left(\\bboxed{", name , "^1},\\ldots,\\bboxed{", name, "^", length, "}\\right)$" ) );
+                        
+                    else
+                        
+                        Error( "wrong usage" );
+                        
+                    fi;
+                    
+                od;
+                
+                current_names := ConcatenationOfStringsAsEnumerationWithAnd( current_names );
+                
+                part := Concatenation( numeral, " tuple", plural, " of objects ", current_names );
+                
+            else
+                
+                part := Concatenation( "TODO: ", ReplacedString( filter, "_", "\\_" ) );
+                
+            fi;
+            
+            part := ReplacedString( part, "a object ", "an object " );
+            
+            Add( parts, part );
+            
+            Add( handled_input_filters, filter );
+            
+        od;
+        
+        text := Concatenation( text, " ", ConcatenationOfStringsAsEnumerationWithAnd( parts ), " " );
+        
+        text := Concatenation( text, "we have" );
+        
+    else
+        
+        Error("this should never happen");
         
     fi;
-    
-    handled_input_filters := [ ];
-    
-    parts := [ ];
-    
-    for i in [ 2 .. Length( input_filters ) ] do
         
-        filter := input_filters[i];
+    if not IsEmpty( local_replacements ) then
         
-        if filter in handled_input_filters then
-            
-            continue;
-            
-        fi;
-        
-        positions := Positions( input_filters, filter );
-        
-        Assert( 0, i in positions );
-        
-        if Length( positions ) = 1 then
-            
-            plural := "";
-            
-        else
-            
-            plural := "s";
-            
-        fi;
-        
-        numerals := [ "a", "two", "three", "four", "five", "six", "seven", "eight", "nine" ];
-        
-        if Length( positions ) <= Length( numerals ) then
-            
-            numeral := numerals[Length( positions )];
-            
-        else
-            
-            numeral := String( Length( positions ) );
-            
-        fi;
-        
-        # TODO: only box things in the category
-        if filter = "integer" then
-            
-            current_names := ConcatenationOfStringsAsEnumerationWithAnd( List( positions, i -> Concatenation( "$", LaTeXName( names[i] ), "$" ) ) );
-            
-            part := Concatenation( numeral, " integer", plural, " ", current_names );
-            
-        elif filter = "object" then
-            
-            current_names := ConcatenationOfStringsAsEnumerationWithAnd( List( positions, i -> Concatenation( "$\\bboxed{", LaTeXName( names[i] ), "}$" ) ) );
-            
-            part := Concatenation( numeral, " object", plural, " ", current_names );
-            
-        elif filter = "morphism" then
-            
-            current_names := [ ];
-            
-            for i in positions do
-                
-                name := names[i];
-                
-                source := fail;
-                range := fail;
-                
-                inner_parts := MySplitString( name, "__" );
-                
-                if Length( inner_parts ) = 3 then
-                    
-                    #name := Concatenation( "\\bboxed{", LaTeXName( inner_parts[1] ), "}" );
-                    name := inner_parts[1];
-                    source := Concatenation( "\\bboxed{", LaTeXName( inner_parts[2] ), "}" );
-                    range := Concatenation( "\\bboxed{", LaTeXName( inner_parts[3] ), "}" );
-                    
-                else
-                    
-                    to_remove := [ ];
-                    
-                    for j in [ 1 .. Length( local_replacements ) ] do
-                        
-                        replacement := local_replacements[j];
-                        
-                        if CapJitIsCallToGlobalFunction( replacement.src_template_tree, "Source" ) and replacement.src_template_tree.args.length = 1 and
-                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name and
-                           replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
-                            
-                            Assert( 0, source = fail );
-                            
-                            source := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
-                            
-                            Add( to_remove, j );
-                            
-                        elif CapJitIsCallToGlobalFunction( replacement.src_template_tree, gvar -> gvar in [ "Range", "Target" ] ) and replacement.src_template_tree.args.length = 1 and
-                           replacement.src_template_tree.args.1.type = "EXPR_REF_FVAR" and replacement.src_template_tree.args.1.func_id = tree.id and replacement.src_template_tree.args.1.name = name and
-                           replacement.dst_template_tree.type = "EXPR_REF_FVAR" and replacement.dst_template_tree.func_id = tree.id then
-                            
-                            Assert( 0, range = fail );
-                            
-                            range := Concatenation( "\\bboxed{", LaTeXName( replacement.dst_template_tree.name ), "}" );
-                            
-                            Add( to_remove, j );
-                            
-                        fi;
-                        
-                    od;
-                    
-                    local_replacements := local_replacements{Difference( [ 1 .. Length( local_replacements ) ], to_remove )};
-                    
-                    #Display( to_remove );
-                    
-                fi;
-                
-                name := Concatenation( "\\bboxed{", LaTeXName( name ), "}" );
-                
-                if source = fail and range <> fail then
-                    
-                    Display( "WARNING: LaTeX missing source" );
-                    source := "\\text{missing source}";
-                    
-                fi;
-                
-                if source <> fail and range = fail then
-                    
-                    Display( "WARNING: LaTeX missing range" );
-                    range := "\\text{missing target}";
-                    
-                fi;
-                
-                if source <> fail and range <> fail then
-                    
-                    Add( current_names, Concatenation( "$", name, " : ", source, " \\to ", range, "$" ) );
-                    
-                elif source = fail and range = fail then
-                    
-                    Add( current_names, Concatenation( "$", name, "$" ) );
-                    
-                    #source := Concatenation( "s(", name, ")" );
-                    #range := Concatenation( "t(", name, ")" );
-                    
-                else
-                    
-                    Error( "this case is not supported" );
-                    
-                fi;
-                
-            od;
-            
-            current_names := ConcatenationOfStringsAsEnumerationWithAnd( current_names );
-            
-            part := Concatenation( numeral, " morphism", plural, " ", current_names );
-            
-        #elif filter = "object_in_range_category_of_homomorphism_structure" then
-        #    
-        #    part := Concatenation( numeral, " object", plural, " ", current_names, " in the range category of the homomorphism structure" );
-        #    
-        #elif filter = "morphism_in_range_category_of_homomorphism_structure" then
-        #    
-        #    part := Concatenation( numeral, " morphism", plural, " ", current_names, " in the range category of the homomorphism structure" );
-        #    
-        elif filter = "list_of_objects" then
-            
-            current_names := [ ];
-            
-            for i in positions do
-                
-                name := names[i];
-                
-                inner_parts := MySplitString( name, "__" );
-                
-                Assert( 0, Length( inner_parts ) > 0 );
-                
-                if Length( inner_parts ) = 1 then
-                    
-                    Add( current_names, Concatenation( "$", LaTeXName( name ), "$" ) );
-                    
-                elif Length( inner_parts ) = 2 then
-                    
-                    name := LaTeXName( inner_parts[1] );
-                    length := LaTeXName( inner_parts[2] );
-                    
-                    Add( current_names, Concatenation( "$\\left(\\bboxed{", name , "^1},\\ldots,\\bboxed{", name, "^", length, "}\\right)$" ) );
-                    
-                else
-                    
-                    Error( "wrong usage" );
-                    
-                fi;
-                
-            od;
-            
-            current_names := ConcatenationOfStringsAsEnumerationWithAnd( current_names );
-            
-            part := Concatenation( numeral, " tuple", plural, " of objects ", current_names );
-            
-        else
-            
-            part := Concatenation( "TODO: ", ReplacedString( filter, "_", "\\_" ) );
-            
-        fi;
-        
-        part := ReplacedString( part, "a object ", "an object " );
-        
-        Add( parts, part );
-        
-        Add( handled_input_filters, filter );
-        
-    od;
-    
-    if Length( input_filters ) > 1 then
-        
-        text := Concatenation( text, " ", ConcatenationOfStringsAsEnumerationWithAnd( parts ) );
-        
-    fi;
-    
-    if false and not IsEmpty( local_replacements ) then
+        Display( local_replacements );
         
         Error( "currently not supported anymore" );
         
@@ -2741,7 +2813,7 @@ BindGlobal( "StateLemma", function ( description, func, cat, input_filters, prec
     #    
     #fi;
     
-    text := Concatenation( text, " we have that" );
+    #text := Concatenation( text, " we have that" );
     
     result := FunctionAsMathString( func, cat, input_filters, "." );
     
@@ -2752,7 +2824,7 @@ BindGlobal( "StateLemma", function ( description, func, cat, input_filters, prec
         "\\end{lemma}"
     );
     
-    if CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA = fail then
+    if tree.bindings.names = [ "RETURN_VALUE" ] and tree.bindings.BINDING_RETURN_VALUE.type = "EXPR_TRUE" then
         
         latex_string := Concatenation(
             latex_string, "\n\n",
@@ -2761,9 +2833,13 @@ BindGlobal( "StateLemma", function ( description, func, cat, input_filters, prec
             "\\end{proof}\n"
         );
         
+        CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA := fail;
+        
+        Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
+        
     fi;
     
-    LATEX_CODE := latex_string;
+    GENERATED_LATEX_CODE := latex_string;
     
 end );
 
@@ -2793,7 +2869,7 @@ BindGlobal( "AssertLemma", function ( )
         
         Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
-        LATEX_CODE := "With this, the claim follows and we let CompilerForCAP end the proof.\\qedhere";
+        GENERATED_LATEX_CODE := "With this, the claim follows and we let CompilerForCAP end the proof.\\qedhere";
         
     else
         
@@ -2846,19 +2922,18 @@ BindGlobal( "PrintLemma", function ( )
     
     #latex_string := Concatenation( "\\text{(claim)}\\quad ", latex_string );
     
-    LATEX_CODE := latex_string;
+    GENERATED_LATEX_CODE := latex_string;
     
 end );
 
 
-BindGlobal( "ApplyLogicTemplateAndReturnLaTeXString", function ( logic_template, args... )
-  local latex_string;
+old_ApplyLogicTemplate := ApplyLogicTemplate;
+MakeReadWriteGlobal( "ApplyLogicTemplate" );
+BindGlobal( "ApplyLogicTemplate", function ( logic_template, args... )
     
-    ApplyLogicTemplate( logic_template );
+    old_ApplyLogicTemplate( logic_template );
     
-    latex_string := CallFuncList( CapJitLaTeXStringOfLogicTemplate, Concatenation( [ logic_template ], args ) );
-    
-    return latex_string;
+    GENERATED_LATEX_CODE := CallFuncList( CapJitLaTeXStringOfLogicTemplate, Concatenation( [ logic_template ], args ) );
     
 end );
 
@@ -2889,38 +2964,47 @@ end );
 
 old_StateProposition := StateProposition;
 MakeReadWriteGlobal( "StateProposition" );
-BindGlobal( "StateProposition", function ( cat, proposition_id, args... )
-  local variable_name_translator, cat_description, proposition, claim_string;
+BindGlobal( "StateProposition", function ( cat, proposition_id )
+  local proposition, claim_string;
     
-    if Length( args ) = 0 then
+    #if Length( args ) = 0 then
+    #    
+    #    variable_name_translator := IdFunc;
+    #    
+    #elif Length( args ) = 1 then
+    #    
+    #    variable_name_translator := args[1];
+    #    
+    #else
+    #    
+    #    Error( "StatePropositionAsLaTeX accepts one or two arguments" );
+    #    
+    #fi;
+    
+    if IsBound( cat!.VariableLaTeXSymbols ) then
         
-        variable_name_translator := IdFunc;
-        
-    elif Length( args ) = 1 then
-        
-        variable_name_translator := args[1];
-        
-    else
-        
-        Error( "StatePropositionAsLaTeX accepts one or two arguments" );
+        CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS := [ rec(
+            category := cat,
+            variable_name_matches := cat!.VariableLaTeXSymbols,
+        ) ];
         
     fi;
-    
-    cat_description := cat!.LaTeXName;
     
     PrintTo1( "/dev/null", function ( )
         old_StateProposition( cat, proposition_id );
     end );
     
-    CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
+    #CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.variable_name_translator := variable_name_translator;
     
     proposition := CAP_JIT_INTERNAL_PROOF_ASSISTANT_PROPOSITIONS.(proposition_id);
     
-    claim_string := Concatenation( UppercaseString(cat_description{[ 1 ]}), cat_description{[ 2 .. Length( cat_description ) ]}, " ", proposition.description, "." );
+    claim_string := Concatenation( "$", cat!.LaTeXSymbol, "$ ", proposition.description, "." );
+    claim_string := Concatenation( [ UppercaseChar( claim_string[1] ) ], claim_string{[ 2 .. Length( claim_string ) ]} );
+    
     
     CAP_JIT_PROOF_ASSISTANT_ACTIVE_PROPOSITION.claim_string := claim_string;
     
-    LATEX_CODE := Concatenation(
+    GENERATED_LATEX_CODE := Concatenation(
         "\\begin{proposition}\n",
         claim_string, "\n",
         "\\end{proposition}"
@@ -2981,10 +3065,12 @@ BindGlobal( "AssertProposition", function ( )
     
     PrintTo1( "/dev/null", old_AssertProposition );
     
-    LATEX_CODE := Concatenation(
+    GENERATED_LATEX_CODE := Concatenation(
         "Summing up, we have shown:\n",
         claim_string, "\\qed\n"
     );
+    
+    CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS := [ ];
     
 end );
 
@@ -2994,6 +3080,6 @@ BindGlobal( "AttestValidInputs", function ( )
     
     PrintTo1( "/dev/null", old_AttestValidInputs );
     
-    LATEX_CODE := "We let CompilerForCAP assume that all inputs are valid.";
+    GENERATED_LATEX_CODE := "We let CompilerForCAP assume that all inputs are valid.";
     
 end );

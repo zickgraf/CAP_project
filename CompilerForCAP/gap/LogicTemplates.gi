@@ -13,12 +13,8 @@ InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
     
 end );
 
-CapJitLaTeXStringOfLogicTemplate := function ( template, cat, input_filters, connecting_symbol, args... )
-  local suffix, src_template, dst_template, src_func, dst_func, src_string, latex_string, dst_string, pos, specifier, name;
-    
-    if connecting_symbol <> "=" then
-        Error("unexpected connecting_symbol");
-    fi;
+CapJitLaTeXStringOfLogicTemplate := function ( template, args... )
+  local suffix, src_template, dst_template, src_func, dst_func, input_filters, positions, cat, src_string, latex_string, dst_string, specifier, name;
     
     if IsEmpty( args ) then
         
@@ -54,6 +50,30 @@ CapJitLaTeXStringOfLogicTemplate := function ( template, cat, input_filters, con
     src_func := EvalString( Concatenation( "{ ", JoinStringsWithSeparator( template.variable_names, ", " ), " } -> ", src_template ) );
     dst_func := EvalString( Concatenation( "{ ", JoinStringsWithSeparator( template.variable_names, ", " ), " } -> ", dst_template ) );
     
+    if not IsBound( template.variable_filters ) then
+        
+        Error( "no input filters" );
+        
+    fi;
+    
+    input_filters := template.variable_filters;
+    
+    positions := PositionsProperty( input_filters, x -> IsRecord( x ) and IsBound( x.category ) );
+    
+    if IsEmpty( positions ) then
+        
+        cat := CAP_JIT_PROOF_ASSISTANT_ACTIVE_LEMMA.category;
+        
+    else
+        
+        cat := input_filters[positions[1]].category;
+        
+    fi;
+    
+    if ForAny( positions, p -> not IsIdenticalObj( input_filters[p].category, cat ) ) then
+        Error( "not supported" );
+    fi;
+    
     src_string := FunctionAsMathString( src_func, cat, input_filters, "" : raw );
     
     if dst_template = "true" then
@@ -64,21 +84,21 @@ CapJitLaTeXStringOfLogicTemplate := function ( template, cat, input_filters, con
         
         dst_string := FunctionAsMathString( dst_func, cat, input_filters, "" : raw );
         
-        latex_string := Concatenation( src_string, " ", connecting_symbol, " ", dst_string );
+        latex_string := Concatenation( src_string, " = ", dst_string );
         
     fi;
     
-    pos := PositionProperty( CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS, s -> IsIdenticalObj( cat, s.category ) );
+    #if not IsDummyCategory( cat ) then
+    #    
+    #    specifier := "";
+    #    
+    #else
+    #    
+    #    specifier := Concatenation( " in $", cat!.LaTeXSymbol, "$" );
+    #    
+    #fi;
     
-    if pos = fail then
-        
-        specifier := "";
-        
-    else
-        
-        specifier := Concatenation( " in $", CAP_JIT_PROOF_ASSISTANT_ACTIVE_CATEGORY_SYMBOLS[pos].symbol, "$" );
-        
-    fi;
+    specifier := "";
     
     latex_string := Concatenation( "\\llap{\\text{(rule", specifier, ")}\\qquad} ", latex_string );
     
