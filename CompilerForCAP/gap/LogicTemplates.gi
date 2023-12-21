@@ -14,7 +14,7 @@ InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
 end );
 
 CapJitLaTeXStringOfLogicTemplate := function ( template, args... )
-  local suffix, src_template, dst_template, src_func, dst_func, input_filters, positions, cat, src_string, latex_string, dst_string, specifier, name;
+  local suffix, src_template, dst_template, src_func, dst_func, input_filters, positions, cat, src_string, latex_string, dst_string, arguments_data_types, type_signature, src_tree, dst_tree, separator, specifier, name;
     
     if IsEmpty( args ) then
         
@@ -84,7 +84,31 @@ CapJitLaTeXStringOfLogicTemplate := function ( template, args... )
         
         dst_string := FunctionAsMathString( dst_func, cat, input_filters, "" : raw );
         
-        latex_string := Concatenation( src_string, " = ", dst_string );
+        
+        arguments_data_types := List( input_filters, function ( x ) if IsRecord( x ) then return x; elif IsFilter( x ) then return rec( filter := x ); else return CAP_INTERNAL_GET_DATA_TYPE_FROM_STRING( x, cat ); fi; end );
+        
+        Assert( 0, not fail in arguments_data_types );
+        
+        type_signature := Pair( arguments_data_types, fail );
+        
+        src_tree := ENHANCED_SYNTAX_TREE( src_func );
+        src_tree.data_type := rec( filter := IsFunction, signature := type_signature );
+        src_tree := CapJitInferredDataTypes( src_tree );
+        
+        dst_tree := ENHANCED_SYNTAX_TREE( src_func );
+        dst_tree.data_type := rec( filter := IsFunction, signature := type_signature );
+        dst_tree := CapJitInferredDataTypes( src_tree );
+        
+        Assert( 0, src_tree.bindings.BINDING_RETURN_VALUE.data_type = dst_tree.bindings.BINDING_RETURN_VALUE.data_type );
+        
+        if IsSpecializationOfFilter( "object", src_tree.bindings.BINDING_RETURN_VALUE.data_type.filter ) then
+            separator := "\\equiv";
+            Display( separator );
+        else
+            separator := "=";
+        fi;
+        
+        latex_string := Concatenation( src_string, " ", separator, " ", dst_string );
         
     fi;
     
