@@ -1489,6 +1489,15 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
             
         elif tree.type = "EXPR_REF_GVAR" then
             
+            if IsIntegers( ValueGlobal( tree.gvar ) ) then
+                
+                return rec(
+                    type := "plain",
+                    string := "\\mathbb{Z}",
+                );
+                
+            fi;
+            
             return rec(
                 type := "plain",
                 string := LaTeXName( tree.gvar ),
@@ -1603,6 +1612,10 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                     elif IsSpecializationOfFilter( "bool", type.filter ) then
                         
                         type := "bool";
+                        
+                    elif IsSpecializationOfFilter( IsList, type.filter ) and IsSpecializationOfFilter( "object", type.element_type.filter ) then
+                        
+                        type := "list_of_objects";
                         
                     elif IsSpecializationOfFilter( IsList, type.filter ) and IsSpecializationOfFilter( "morphism", type.element_type.filter ) then
                         
@@ -2650,6 +2663,13 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                 math_record := rec(
                     type := "morphism",
                     string := Concatenation( "0_{", result.args.1.string, "}" ),
+                );
+                
+            elif tree.funcref.gvar = "OneImmutable" and tree.args.length = 1 then
+                
+                math_record := rec(
+                    type := "morphism",
+                    string := Concatenation( "1_{", result.args.1.string, "}" ),
                 );
                 
             elif tree.funcref.gvar = "AdditiveInverseSameMutability" and tree.args.length = 1 then
