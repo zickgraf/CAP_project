@@ -13,22 +13,8 @@ InstallGlobalFunction( CapJitAddLogicTemplate, function ( template )
     
 end );
 
-CapJitLaTeXStringOfLogicTemplate := function ( template, args... )
-  local suffix, src_template, dst_template, src_func, dst_func, input_filters, positions, cat, src_string, latex_string, dst_string, arguments_data_types, type_signature, src_tree, dst_tree, separator, specifier, name;
-    
-    if IsEmpty( args ) then
-        
-        suffix := "";
-        
-    elif Length( args ) = 1 then
-        
-        suffix := args[1];
-        
-    else
-        
-        Error( "CapJiLaTeXStringOfLogicTemplate called with two many arguments" );
-        
-    fi;
+CapJitLaTeXStringOfLogicTemplate := function ( template, suffix )
+  local src_template, dst_template, src_func, dst_func, input_filters, positions, cat, src_string, latex_string, dst_string, arguments_data_types, type_signature, src_tree, dst_tree, separator, specifier, name;
     
     src_template := template.src_template;
     dst_template := template.dst_template;
@@ -129,7 +115,7 @@ CapJitLaTeXStringOfLogicTemplate := function ( template, args... )
     #latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
     #latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}\n" );
     
-    return Concatenation( "\\[", latex_string, suffix, "\\]\n" );
+    return Concatenation( "\\[", latex_string, "\\rlap{", suffix, "}\\]\n" );
     
 end;
 
