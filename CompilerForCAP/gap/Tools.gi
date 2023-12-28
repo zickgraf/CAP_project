@@ -2074,7 +2074,7 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
                 return rec(
                     type := "plain",
                     #string := Concatenation( "\\displaystyle\\mathop{\\mathlarger{\\mathlarger{\\mathlarger{\\mathlarger{\\mathsurround0pt \\forall}}}}}_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.string ),
-                    string := Concatenation( "\\bigwedge_{", index_symbol, below, "}", above, " \\enspace ", result.args.2.string ),
+                    string := Concatenation( "\\bigwedge_{", index_symbol, below, "}", above, "\\;", result.args.2.string ),
                 );
                 
             #elif tree.funcref.gvar = "Concatenation" then
@@ -3200,6 +3200,7 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
         
         #return Concatenation( "\\[\n    ", latex_string, "\n\\]\n" );
         
+        Error("not supported anymore");
         latex_string := Concatenation( "\\begin{tikzcd}\n", latex_string, "\\end{tikzcd}\n" );
         #return Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}\n" );
         #return Concatenation( "\\begin{center}\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}}\\end{center}\n" );
@@ -3271,6 +3272,7 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
         
         #return Concatenation( "\\[\n    ", latex_string, "\n\\]\n" );
     
+        Error("not supported anymore");
         latex_string := Concatenation( "\\begin{tikzcd}\n", latex_string, "\\end{tikzcd}\n" );
         #return Concatenation( "\\begin{center}\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}}\\end{center}\n" );
         return Concatenation( "\\begin{center}\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, "$}\\end{center}\n" );
@@ -3322,6 +3324,7 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
             
         fi;
         
+        Error("not supported anymore");
         latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{", latex_string_left, " is $", latex_record_right.string, "$", suffix, "}\n" );
         
         return Concatenation( "\\[", latex_string, "\\]\n" );
@@ -3359,9 +3362,10 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
         fi;
         
         #latex_string := Concatenation( "\\framebox[\\textwidth]{\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$", latex_string, suffix, "$}}\n" );
-        latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$\\displaystyle ", latex_string, suffix, "$}\n" );
+        #latex_string := Concatenation( "\\resizebox{\\ifdim\\width>\\hsize\\hsize\\else\\width\\fi}{!}{$\\displaystyle ", latex_string, suffix, "$}\n" );
+        #return Concatenation( "\\[", latex_string, "\\]\n" );
         
-        return Concatenation( "\\[", latex_string, "\\]\n" );
+        return Concatenation( "\\[", latex_string, suffix, "\\]\n" );
         
         #return latex_string;
         

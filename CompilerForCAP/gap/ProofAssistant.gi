@@ -2869,7 +2869,7 @@ BindGlobal( "AssertLemma", function ( )
         
         Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
-        GENERATED_LATEX_CODE := "With this, the claim follows and we let CompilerForCAP end the proof.\\qedhere";
+        GENERATED_LATEX_CODE := "\\rule[-0.15em]{0pt}{1em}With this, the claim follows and we let CompilerForCAP end the proof.\\qedhere";
         
     else
         
@@ -3066,7 +3066,7 @@ BindGlobal( "AssertProposition", function ( )
     PrintTo1( "/dev/null", old_AssertProposition );
     
     GENERATED_LATEX_CODE := Concatenation(
-        "Summing up, we have shown:\n",
+        "\\rule[-0.15em]{0pt}{1em}Summing up, we have shown:\n",
         claim_string, "\\qed\n"
     );
     
@@ -3080,6 +3080,6 @@ BindGlobal( "AttestValidInputs", function ( )
     
     PrintTo1( "/dev/null", old_AttestValidInputs );
     
-    GENERATED_LATEX_CODE := "We let CompilerForCAP assume that all inputs are valid.";
+    GENERATED_LATEX_CODE := "\\rule[-0.15em]{0pt}{1em}We let CompilerForCAP assume that all inputs are valid.";
     
 end );
