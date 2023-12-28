@@ -2929,11 +2929,15 @@ end );
 
 old_ApplyLogicTemplate := ApplyLogicTemplate;
 MakeReadWriteGlobal( "ApplyLogicTemplate" );
-BindGlobal( "ApplyLogicTemplate", function ( logic_template, args... )
+BindGlobal( "ApplyLogicTemplate", function ( logic_template )
+    
+    Assert( 0, IsBoundGlobal( "LATEX_SUFFIX" ) );
     
     old_ApplyLogicTemplate( logic_template );
     
-    GENERATED_LATEX_CODE := CallFuncList( CapJitLaTeXStringOfLogicTemplate, Concatenation( [ logic_template ], args ) );
+    GENERATED_LATEX_CODE := CapJitLaTeXStringOfLogicTemplate( logic_template, ValueGlobal( "LATEX_SUFFIX" ) );
+    
+    UnbindGlobal( "LATEX_SUFFIX" );
     
 end );
 
