@@ -2869,7 +2869,7 @@ BindGlobal( "AssertLemma", function ( )
         
         Remove( CAP_JIT_INTERNAL_COMPILED_FUNCTIONS_STACK );
         
-        GENERATED_LATEX_CODE := "\\rule[-0.15em]{0pt}{1em}With this, the claim follows and we let CompilerForCAP end the proof.\\qedhere";
+        GENERATED_LATEX_CODE := "\\rule[-0.15em]{0pt}{1em}With this, $\\CompilerForCAP$ has verified the lemma.\\qedhere";
         
     else
         
