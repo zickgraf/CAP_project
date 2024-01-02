@@ -1489,11 +1489,11 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
             
         elif tree.type = "EXPR_REF_GVAR" then
             
-            if IsIntegers( ValueGlobal( tree.gvar ) ) then
+            if IsRing( ValueGlobal( tree.gvar ) ) then
                 
                 return rec(
                     type := "plain",
-                    string := "\\mathbb{Z}",
+                    string := ValueGlobal( tree.gvar )!.LaTeXSymbol,
                 );
                 
             fi;
