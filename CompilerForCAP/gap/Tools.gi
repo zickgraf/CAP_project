@@ -1412,7 +1412,7 @@ FunctionAsMathString := function ( func, cat, input_filters, suffix )
             
             return rec(
                 type := "plain",
-                string := "\\qed",
+                string := "\\blacksquare",
             );
             
         # TODO: this should be a function!!!
