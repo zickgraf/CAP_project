@@ -40,6 +40,143 @@ InstallGlobalFunction( CapJitAppliedLogic, function ( tree )
     
 end );
 
+# constant folding
+BindGlobal( "CAP_JIT_INTERNAL_FUNCTIONS_", [
+    "BigInt",
+    "CAP_JIT_INCOMPLETE_LOGIC",
+    "CAP_JIT_EXPR_CASE_WRAPPER",
+] );
+
+CapJitAddLogicFunction( function ( tree )
+  local pre_func;
+    
+    Info( InfoCapJit, 1, "####" );
+    Info( InfoCapJit, 1, "Apply constant folding." );
+    
+    pre_func := function ( tree, additional_arguments )
+      local involves_big_int, values_of_arguments, result;
+        
+        if CapJitIsCallToGlobalFunction( tree, gvar -> gvar <> "BigInt" ) and IsBound( tree.data_type ) and tree.data_type.filter in [ IsInt, IsStringRep, IsChar, IsBool ] then
+            
+            if ForAll( tree.args, a -> a.type in [ "EXPR_INT", "EXPR_STRING", "EXPR_CHAR", "EXPR_TRUE", "EXPR_FALSE", "EXPR_REF_GVAR" ] or (CapJitIsCallToGlobalFunction( a, "BigInt" ) and a.args.1.type = "EXPR_INT") ) then
+                
+                involves_big_int := false;
+                
+                values_of_arguments := List( AsListMut( tree.args ), function ( a )
+                    
+                    if a.type in [ "EXPR_INT", "EXPR_STRING", "EXPR_CHAR" ] then
+                        
+                        return a.value;
+                        
+                    elif a.type = "EXPR_TRUE" then
+                        
+                        return true;
+                        
+                    elif a.type = "EXPR_FALSE" then
+                        
+                        return false;
+                        
+                    elif a.type = "EXPR_REF_GVAR" then
+                        
+                        return ValueGlobal( a.gvar );
+                        
+                    elif CapJitIsCallToGlobalFunction( a, "BigInt" ) then
+                        
+                        Assert( 0, a.args.length = 1 );
+                        Assert( 0, a.args.1.type = "EXPR_INT" );
+                        
+                        involves_big_int := true;
+                        
+                        return a.args.1.value;
+                        
+                    else
+                        
+                        # COVERAGE_IGNORE_NEXT_LINE
+                        Error( "this should never happen" );
+                        
+                    fi;
+                    
+                end );
+                
+                result := CallFuncList( ValueGlobal( tree.funcref.gvar ), values_of_arguments );
+                
+                Assert( 0, tree.data_type.filter( result ) );
+                
+                if tree.data_type.filter = IsInt then
+                    
+                    tree := rec(
+                        type := "EXPR_INT",
+                        value := result,
+                    );
+                    
+                    # we assume that if some input was a big integer, also the result should be a big interger
+                    if involves_big_int then
+                        
+                        tree := rec(
+                            type := "EXPR_FUNCCALL",
+                            funcref := rec(
+                                type := "EXPR_REF_GVAR",
+                                gvar := "BigInt",
+                            ),
+                            args := AsSyntaxTreeList( [ tree ] ),
+                        );
+                        
+                    fi;
+                    
+                elif tree.data_type.filter = IsStringRep then
+                    
+                    tree := rec(
+                        type := "EXPR_STRING",
+                        value := result,
+                    );
+                    
+                elif tree.data_type.filter = IsChar then
+                    
+                    tree := rec(
+                        type := "EXPR_CAHR",
+                        value := result,
+                    );
+                    
+                elif tree.data_type.filter = IsBool then
+                    
+                    if result = true then
+                        
+                        tree := rec(
+                            type := "EXPR_TRUE",
+                        );
+                        
+                    elif result = false then
+                        
+                        tree := rec(
+                            type := "EXPR_FALSE",
+                        );
+                        
+                    else
+                        
+                        # COVERAGE_IGNORE_NEXT_LINE
+                        Error( "this should never happen" );
+                        
+                    fi;
+                    
+                else
+                    
+                    # COVERAGE_IGNORE_NEXT_LINE
+                    Error( "this should never happen" );
+                    
+                fi;
+                
+            fi;
+            
+        fi;
+        
+        return tree;
+        
+    end;
+    
+    return CapJitIterateOverTree( tree, pre_func, CapJitResultFuncCombineChildren, ReturnTrue, true );
+    
+end );
+
 # [ int1 .. int2 ] = [ int1, ..., int2 ]
 CapJitAddLogicFunction( function ( tree )
   local pre_func;
