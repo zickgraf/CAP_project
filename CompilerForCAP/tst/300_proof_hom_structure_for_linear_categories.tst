@@ -94,8 +94,6 @@ function ( cat_1 )
     fi;
     return;
 end
-gap> AttestValidInputs( );
-We let CompilerForCAP assume that all inputs are valid.
 gap> ApplyLogicTemplate(
 >     rec(
 >         variable_names := [ ],
