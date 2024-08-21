@@ -43,9 +43,11 @@ InstallMethod( CategoryOfRows,
         
     fi;
     
-    INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS( cat );
-    
-    if ValueOption( "no_precompiled_code" ) <> true then
+    if ValueOption( "no_precompiled_code" ) = true then
+        
+        INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS( cat );
+        
+    else
         
         if HasIsFieldForHomalg( homalg_ring ) and IsFieldForHomalg( homalg_ring ) then
             
@@ -68,6 +70,99 @@ InstallMethod( CategoryOfRows,
         fi;
         
     fi;
+    
+    ## add operations which cannot be precompiled
+    
+    ##
+    AddPreCompose( cat,
+      
+      [
+        [ function( cat, left_morphism, identity_morphism )
+            
+            return left_morphism;
+            
+          end, [ IsCapCategory, IsCapCategoryMorphism, IsEqualToIdentityMorphism ] ],
+        
+        [ function( cat, identity_morphism, right_morphism )
+            
+            return right_morphism;
+            
+          end, [ IsCapCategory, IsEqualToIdentityMorphism, IsCapCategoryMorphism ] ],
+        
+        [ function( cat, left_morphism, zero_morphism )
+            
+            return CategoryOfRowsMorphism( cat, Source( left_morphism ),
+                                        HomalgZeroMatrix( RankOfObject( Source( left_morphism ) ),
+                                        RankOfObject( Range( zero_morphism ) ), homalg_ring ),
+                                        Range( zero_morphism ) );
+          
+          end, [ IsCapCategory, IsCapCategoryMorphism, IsZeroForMorphisms ] ],
+        
+        [ function( cat, zero_morphism, right_morphism )
+            
+            return CategoryOfRowsMorphism( cat, Source( zero_morphism ),
+                                           HomalgZeroMatrix( RankOfObject( Source( zero_morphism ) ),
+                                           RankOfObject( Range( right_morphism ) ), homalg_ring ),
+                                           Range( right_morphism ) );
+          
+          end, [ IsCapCategory, IsZeroForMorphisms, IsCapCategoryMorphism ] ],
+      ]
+    
+    );
+    
+    ##
+    ## Random Methods
+    ##
+    AddRandomObjectByList( cat,
+      function ( category, L )
+        
+        if IsEmpty( L ) or ForAny( L, IsNegInt ) then
+          Error( "the list passed to 'RandomObjectByList' in ", Name( category ), " must be a non-empty list of non-negative integers!\n" );
+        fi;
+        
+        return CategoryOfRowsObject( category, Random( L ) );
+        
+    end );
+    
+    ##
+    AddRandomObjectByInteger( cat,
+      function ( category, n )
+        
+        if IsNegInt( n ) then
+          Error( "the integer passed to 'RandomObjectByInteger' in ", Name( category ), " must be a non-negative integer!\n" );
+        fi;
+        
+        return RandomObjectByList( category, [ 0 .. n ] );
+        
+    end );
+    
+    ##
+    AddRandomMorphismWithFixedSourceAndRangeByList( cat,
+      function ( category, S, R, L )
+        local ring, s, r, mat;
+        
+        ring := UnderlyingRing( category );
+        
+        if not ForAll( L, c -> ForAny( [ IsInt, IsHomalgRingElement ], is -> is( c ) ) ) then
+          Error( "the list passed to 'RandomMorphismWithFixedSourceAndRangeByList' in ", Name( category ), " must be a list of integers or elements in the underlying ring!\n" );
+        fi;
+        
+        s := RankOfObject( S );
+        r := RankOfObject( R );
+        
+        mat := Sum( L, c -> c * RandomMatrix( s, r, ring ), HomalgZeroMatrix( s, r, ring ) );
+        
+        return CategoryOfRowsMorphism( category, S, mat, R );
+        
+    end );
+    
+    ##
+    AddRandomMorphismWithFixedSourceAndRangeByInteger( cat,
+      function ( category, S, R, n )
+        
+        return RandomMorphismWithFixedSourceAndRangeByList( category, S, R, [ 1 ] );
+        
+    end );
     
     if CAP_NAMED_ARGUMENTS.FinalizeCategory then
         
@@ -406,48 +501,14 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
     ##
     AddPreCompose( category,
       
-      [
-        [ function( cat, morphism_1, morphism_2 )
-            local composition;
-            
-            composition := UnderlyingMatrix( morphism_1 ) * UnderlyingMatrix( morphism_2 );
-            
-            return CategoryOfRowsMorphism( cat, Source( morphism_1 ), composition, Range( morphism_2 ) );
-            
-          end, [ ] ],
+      function( cat, morphism_1, morphism_2 )
+        local composition;
         
-        [ function( cat, left_morphism, identity_morphism )
-            
-            return left_morphism;
-            
-          end, [ IsCapCategory, IsCapCategoryMorphism, IsEqualToIdentityMorphism ] ],
+        composition := UnderlyingMatrix( morphism_1 ) * UnderlyingMatrix( morphism_2 );
         
-        [ function( cat, identity_morphism, right_morphism )
-            
-            return right_morphism;
-            
-          end, [ IsCapCategory, IsEqualToIdentityMorphism, IsCapCategoryMorphism ] ],
+        return CategoryOfRowsMorphism( cat, Source( morphism_1 ), composition, Range( morphism_2 ) );
         
-        [ function( cat, left_morphism, zero_morphism )
-            
-            return CategoryOfRowsMorphism( cat, Source( left_morphism ),
-                                        HomalgZeroMatrix( RankOfObject( Source( left_morphism ) ),
-                                        RankOfObject( Range( zero_morphism ) ), ring ),
-                                        Range( zero_morphism ) );
-          
-          end, [ IsCapCategory, IsCapCategoryMorphism, IsZeroForMorphisms ] ],
-        
-        [ function( cat, zero_morphism, right_morphism )
-            
-            return CategoryOfRowsMorphism( cat, Source( zero_morphism ),
-                                           HomalgZeroMatrix( RankOfObject( Source( zero_morphism ) ),
-                                           RankOfObject( Range( right_morphism ) ), ring ),
-                                           Range( right_morphism ) );
-          
-          end, [ IsCapCategory, IsZeroForMorphisms, IsCapCategoryMorphism ] ],
-      ]
-    
-    );
+    end );
     
     ## Basic Operations for an Additive Category
     ##
@@ -1297,60 +1358,6 @@ InstallGlobalFunction( INSTALL_FUNCTIONS_FOR_CATEGORY_OF_ROWS,
             CATEGORY_OF_ROWS_SimplificationRangeTuple( alpha )[2],
             Range( alpha )
           );
-        
-    end );
-    
-    ##
-    ## Random Methods
-    ##
-    AddRandomObjectByList( category,
-      function ( category, L )
-        
-        if IsEmpty( L ) or ForAny( L, IsNegInt ) then
-          Error( "the list passed to 'RandomObjectByList' in ", Name( category ), " must be a non-empty list of non-negative integers!\n" );
-        fi;
-        
-        return CategoryOfRowsObject( category, Random( L ) );
-        
-    end );
-    
-    ##
-    AddRandomObjectByInteger( category,
-      function ( category, n )
-        
-        if IsNegInt( n ) then
-          Error( "the integer passed to 'RandomObjectByInteger' in ", Name( category ), " must be a non-negative integer!\n" );
-        fi;
-        
-        return RandomObjectByList( category, [ 0 .. n ] );
-        
-    end );
-    
-    ##
-    AddRandomMorphismWithFixedSourceAndRangeByList( category,
-      function ( category, S, R, L )
-        local ring, s, r, mat;
-        
-        ring := UnderlyingRing( category );
-        
-        if not ForAll( L, c -> ForAny( [ IsInt, IsHomalgRingElement ], is -> is( c ) ) ) then
-          Error( "the list passed to 'RandomMorphismWithFixedSourceAndRangeByList' in ", Name( category ), " must be a list of integers or elements in the underlying ring!\n" );
-        fi;
-        
-        s := RankOfObject( S );
-        r := RankOfObject( R );
-        
-        mat := Sum( L, c -> c * RandomMatrix( s, r, ring ), HomalgZeroMatrix( s, r, ring ) );
-        
-        return CategoryOfRowsMorphism( category, S, mat, R );
-        
-    end );
-    
-    ##
-    AddRandomMorphismWithFixedSourceAndRangeByInteger( category,
-      function ( category, S, R, n )
-        
-        return RandomMorphismWithFixedSourceAndRangeByList( category, S, R, [ 1 ] );
         
     end );
     
