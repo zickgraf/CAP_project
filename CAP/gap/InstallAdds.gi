@@ -71,20 +71,15 @@ InstallMethod( AddCapOperation,
     # Display a warning when overwriting primitive operations with derivations.
     if (is_derivation or is_final_derivation or is_precompiled_derivation) and IsBound( category!.primitive_operations.( function_name ) ) and category!.primitive_operations.( function_name ) then
         
-        # There are some derivations of weight 1 for thin categories which overwrite methods installed by CategoryConstructor with weight 100.
-        if weight <> 1 then
+        Print( "WARNING: Overriding a function for ", function_name, " primitively added to \"", category_name, "\" with a derivation." );
+        
+        if is_precompiled_derivation then
             
-            Print( "WARNING: Overriding a function for ", function_name, " primitively added to \"", category_name, "\" with a derivation." );
-            
-            if is_precompiled_derivation then
-                
-                Print( " Probably you have to rerun the precompilation to adjust the weights in the precompiled code." );
-                
-            fi;
-            
-            Print( "\n" );
+            Print( " Probably you have to rerun the precompilation to adjust the weights in the precompiled code." );
             
         fi;
+        
+        Print( "\n" );
         
     fi;
     
